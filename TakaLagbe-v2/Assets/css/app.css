@@ -1,17 +1,7 @@
-/* =====================================================================
-   TakaLagbe! design system :  "ink and brass"
-
-   A ledger, not a start-up: deep navy ink on cool statement paper, with brass for
-   anything that has to be noticed. IBM Plex is used throughout because it
-   was drawn for engineering documentation, and its mono is a true sibling
-   of the sans, so a column of amounts lines up exactly.
-
-   The fonts load from Google when there is a connection and fall back to
-   the system stack when there is not, so the app still works with the
-   network unplugged.
-
-   Light and dark theme driven by [data-theme] on <html>.
-   ===================================================================== */
+/* Colours and fonts for the whole app.
+   Navy and brass on a light blue-grey. Serif headings, IBM Plex for the
+   rest, and the mono is for amounts so the columns line up.
+   Dark mode: data-theme="dark" on <html>. */
 
 /* ------------------------------------------------------------ tokens */
 :root{
@@ -36,7 +26,7 @@
   --shadow-lg:0 14px 40px rgba(15,27,51,.18);
   --ring:0 0 0 3px rgba(30,58,99,.25);
   --font:'IBM Plex Sans','Segoe UI',Roboto,Arial,sans-serif;
-  --font-display:'IBM Plex Sans','Segoe UI Semibold','Segoe UI',Arial,sans-serif;
+  --font-display:'Source Serif 4',Georgia,'Times New Roman',serif;
   --mono:'IBM Plex Mono',Consolas,'SF Mono',Menlo,monospace;
 }
 
@@ -73,12 +63,12 @@ a{color:var(--brand-dark);text-decoration:none}
 a:hover{text-decoration:underline}
 img{max-width:100%;display:block}
 h1,h2,h3,h4{
-  margin:0 0 .5rem;line-height:1.25;font-weight:600;letter-spacing:-.015em;
+  margin:0 0 .5rem;line-height:1.22;font-weight:700;letter-spacing:-.005em;
   font-family:var(--font-display);
 }
 /* every figure in the app is tabular, so columns of taka line up */
 .num,.amt,td.num,.stat-value,.balance{font-variant-numeric:tabular-nums}
-h1{font-size:1.6rem} h2{font-size:1.25rem} h3{font-size:1.05rem}
+h1{font-size:1.75rem} h2{font-size:1.35rem} h3{font-size:1.1rem}
 p{margin:0 0 .8rem}
 small{font-size:.8rem}
 
