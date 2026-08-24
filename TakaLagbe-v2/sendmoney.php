@@ -1,0 +1,98 @@
+<?php
+/* ---------------------------------------------------------------------
+ *  Send money to another TakaLagbe! user.
+ *  The whole transfer is handed to move_money(), which locks both
+ *  accounts and writes the ledger inside one database transaction.
+ * ------------------------------------------------------------------- */
+require_once __DIR__ . '/config/helpers.php';
+require_once __DIR__ . '/lib/money.php';
+
+$phone = require_login();
+$user  = current_user();
+$bal   = balance_of($phone);
+
+$error   = '';
+$prefill = ['to' => get('to'), 'amount' => get('amount'), 'note' => get('note')];
+
+/* an unpaid request can pre-fill the whole form */
+$requestId = (int) get('request');
+if ($requestId) {
+    $req = one("SELECT * FROM money_requests
+                 WHERE id = ? AND payer_phone = ? AND status = 'pending'",
+               [$requestId, $phone]);
+    if ($req) {
+        $prefill = ['to' => $req['requester_phone'],
+                    'amount' => $req['amount'],
+                    'note' => $req['note'] ?: 'Request payment'];
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
+    $receiver = post('receiver_phone');
+    $amount   = post('amount');
+    $note     = mb_substr(post('note'), 0, 120);
+    $pin      = post('pin');
+    $saveFav  = post('save_favourite') === '1';
+    $reqId    = (int) post('request_id');
+
+    $prefill = ['to' => $receiver, 'amount' => $amount, 'note' => $note];
+
+    if (!valid_phone($receiver)) {
+        $error = 'Enter a valid 11 digit mobile number.';
+    } elseif ($receiver === $phone) {
+        $error = 'You cannot send money to your own account.';
+    } elseif (!valid_amount($amount)) {
+        $error = 'Enter a valid amount.';
+    } elseif ((float) $amount < MIN_AMOUNT) {
+        $error = 'The smallest amount you can send is ' . money(MIN_AMOUNT) . '.';
+    } elseif ((float) $amount > SEND_MONEY_MAX) {
+        $error = 'You cannot send more than ' . money(SEND_MONEY_MAX) . ' in one go.';
+    } elseif (!scalar('SELECT 1 FROM account WHERE phone = ?', [$receiver])) {
+        $error = 'That number is not registered on ' . APP_NAME . '.';
+    } elseif (scalar("SELECT 1 FROM user WHERE phone = ? AND status = 'frozen'", [$receiver])) {
+        $error = 'That account cannot receive money right now.';
+    } elseif (!verify_pin($phone, $pin)) {
+        $left  = pin_tries_left($phone);
+        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+    } else {
+        try {
+            $trx = move_money([
+                'from'     => $phone,
+                'to'       => $receiver,
+                'amount'   => (float) $amount,
+                'type'     => 'Send Money',
+                'category' => 'Transfer',
+                'note'     => $note ?: null,
+                'fee_pct'  => FEE_SEND_MONEY_PCT,
+            ]);
+
+            if ($saveFav) {
+                q('INSERT IGNORE INTO favourites (owner_phone, saved_phone, label)
+                   VALUES (?,?,?)',
+                  [$phone, $receiver, mb_substr(name_of($receiver), 0, 120)]);
+            }
+            if ($reqId) {
+                q("UPDATE money_requests SET status = 'paid'
+                    WHERE id = ? AND payer_phone = ?", [$reqId, $phone]);
+            }
+
+            flash('ok', money($amount) . ' sent to ' . name_of($receiver) . '.');
+            redirect('receipt.php?id=' . urlencode($trx['trx_id']));
+
+        } catch (MoneyError $e) {
+            $error = $e->getMessage();
+        } catch (Throwable $e) {
+            $error = 'The transfer could not be completed. Nothing has left your account.';
+        }
+    }
+}
+
+$favourites = all(
+    "SELECT f.saved_phone, f.label, u.firstname, u.lastname, u.avatar_color
+       FROM favourites f LEFT JOIN user u ON u.phone = f.saved_phone
+      WHERE f.owner_phone = ? ORDER BY f.created_at DESC LIMIT 8", [$phone]);
+
+$pageTitle = 'Send money';
+$activeNav = 'home';
+include('Front_end/front_sendmoney.php');

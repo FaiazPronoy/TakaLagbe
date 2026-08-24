@@ -1,0 +1,67 @@
+<?php
+/* ---------------------------------------------------------------------
+ *  Merchant payment. Each merchant carries its own cashback rate, which
+ *  is credited back to the customer as part of the same transaction.
+ * ------------------------------------------------------------------- */
+require_once __DIR__ . '/config/helpers.php';
+require_once __DIR__ . '/lib/money.php';
+
+$phone = require_login();
+$bal   = balance_of($phone);
+$error = '';
+
+$merchants = all('SELECT * FROM merchants ORDER BY merchant_name');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_csrf();
+    $merchantId = post('merchant_id');
+    $amount     = post('amount');
+    $reference  = mb_substr(post('reference'), 0, 60);
+    $pin        = post('pin');
+
+    $merchant = one('SELECT * FROM merchants WHERE merchant_id = ?', [$merchantId]);
+
+    if (!$merchant) {
+        $error = 'Please choose a merchant.';
+    } elseif (!valid_amount($amount)) {
+        $error = 'Enter a valid amount.';
+    } elseif ((float) $amount < MIN_AMOUNT) {
+        $error = 'The smallest payment is ' . money(MIN_AMOUNT) . '.';
+    } elseif (!verify_pin($phone, $pin)) {
+        $left  = pin_tries_left($phone);
+        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+    } else {
+        $pdo = db();
+        $pdo->beginTransaction();
+        try {
+            $trx = move_money([
+                'from'         => $phone,
+                'to'           => null,
+                'to_ref'       => $merchant['merchant_name'],
+                'amount'       => (float) $amount,
+                'type'         => 'Payment',
+                'category'     => array_key_exists($merchant['category'], TRX_CATEGORIES)
+                                    ? $merchant['category'] : 'Shopping',
+                'note'         => $reference ?: ('Payment to ' . $merchant['merchant_name']),
+                'cashback_pct' => (float) $merchant['cashback_pct'],
+            ]);
+            q('UPDATE merchants SET total_received_amount = total_received_amount + ?
+                WHERE merchant_id = ?', [(float) $amount, $merchantId]);
+            $pdo->commit();
+
+            flash('ok', money($amount) . ' paid to ' . $merchant['merchant_name'] . '.');
+            redirect('receipt.php?id=' . urlencode($trx['trx_id']));
+
+        } catch (MoneyError $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            $error = $e->getMessage();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            $error = 'The payment could not be completed. Please try again.';
+        }
+    }
+}
+
+$pageTitle = 'Make a payment';
+$activeNav = 'home';
+include('Front_end/front_payment.php');

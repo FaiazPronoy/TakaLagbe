@@ -1,0 +1,121 @@
+<?php
+include __DIR__ . '/partials/head.php';
+include __DIR__ . '/partials/nav.php';
+?>
+<main class="wrap section">
+
+  <div class="between no-print" style="margin-bottom:1rem">
+    <h1 class="mb0">Account statement</h1>
+    <div style="display:flex;gap:.4rem">
+      <a class="btn btn-ghost btn-sm" href="history.php">Back</a>
+      <a class="btn btn-ghost btn-sm"
+         href="?format=csv&amp;from=<?= e($from) ?>&amp;to=<?= e($to) ?>&amp;type=<?= e($type) ?>">CSV</a>
+      <button class="btn btn-primary btn-sm" onclick="window.print()">Print or save as PDF</button>
+    </div>
+  </div>
+
+  <form class="card no-print" method="get" style="margin-bottom:1rem">
+    <div class="row" style="align-items:flex-end">
+      <div class="col field mb0">
+        <label for="from">From</label>
+        <input id="from" name="from" type="date" value="<?= e($from) ?>">
+      </div>
+      <div class="col field mb0">
+        <label for="to">To</label>
+        <input id="to" name="to" type="date" value="<?= e($to) ?>">
+      </div>
+      <div class="col" style="flex:0 1 auto">
+        <button class="btn btn-primary" type="submit">Update</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="card">
+    <div class="between" style="align-items:flex-start;border-bottom:2px solid var(--border);
+         padding-bottom:1rem;margin-bottom:1rem">
+      <div>
+        <h2 class="mb0"><?= e(APP_NAME) ?></h2>
+        <div class="tiny muted">Account statement</div>
+      </div>
+      <div style="text-align:right" class="tiny">
+        <strong><?= e($user['firstname'] . ' ' . $user['lastname']) ?></strong><br>
+        <span class="mono"><?= e($phone) ?></span><br>
+        <?= e($user['email']) ?>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:1rem">
+      <div class="col"><div class="stat"><div class="k">Period</div>
+        <div class="v" style="font-size:.95rem"><?= e(date('d M Y', strtotime($from))) ?>
+          to <?= e(date('d M Y', strtotime($to))) ?></div></div></div>
+      <div class="col"><div class="stat"><div class="k">Opening balance</div>
+        <div class="v"><?= e(money($opening, false)) ?></div></div></div>
+      <div class="col"><div class="stat"><div class="k">Closing balance</div>
+        <div class="v"><?= e(money($closing, false)) ?></div></div></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Reference</th><th>Description</th>
+            <th class="num">In</th><th class="num">Out</th>
+            <th class="num">Charge</th><th class="num">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php if (!$rows): ?>
+          <tr><td colspan="7" class="center muted" style="padding:2rem">
+            No transactions in this period.</td></tr>
+        <?php else: foreach ($rows as $t):
+          $out = trx_is_out($t, $phone); ?>
+          <tr>
+            <td class="tiny"><?= e(date('d M Y', strtotime($t['transaction_time']))) ?><br>
+              <span class="muted"><?= e(date('g:i a', strtotime($t['transaction_time']))) ?></span></td>
+            <td class="mono tiny"><?= e($t['trx_id']) ?></td>
+            <td>
+              <?= e($t['transaction_type']) ?>
+              <div class="tiny muted">
+                <?= e($out ? 'To ' : 'From ') ?><?= e(trx_counterparty($t, $phone)) ?>
+                <?= $t['note'] ? ' &middot; ' . e($t['note']) : '' ?>
+              </div>
+            </td>
+            <td class="num pos"><?= $out ? '' : e(money($t['amount'], false)) ?></td>
+            <td class="num neg"><?= $out ? e(money($t['amount'], false)) : '' ?></td>
+            <td class="num"><?= (float) $t['fee'] > 0 ? e(money($t['fee'], false)) : '' ?></td>
+            <td class="num"><?= e($out ? ($t['sender_balance_after'] !== null
+                    ? money($t['sender_balance_after'], false) : '')
+                  : ($t['receiver_balance_after'] !== null
+                    ? money($t['receiver_balance_after'], false) : '')) ?></td>
+          </tr>
+        <?php endforeach; endif; ?>
+        </tbody>
+        <?php if ($rows): ?>
+          <tfoot>
+            <tr style="font-weight:800;border-top:2px solid var(--border)">
+              <td colspan="3">Totals for the period</td>
+              <td class="num pos"><?= e(money($totalIn, false)) ?></td>
+              <td class="num neg"><?= e(money($totalOut, false)) ?></td>
+              <td class="num"><?= e(money($totalFee, false)) ?></td>
+              <td class="num"><?= e(money($closing, false)) ?></td>
+            </tr>
+          </tfoot>
+        <?php endif; ?>
+      </table>
+    </div>
+
+    <?php if ($totalBack > 0): ?>
+      <p class="tiny" style="margin-top:.8rem">
+        Cashback earned in this period: <strong class="pos"><?= e(money($totalBack)) ?></strong>
+      </p>
+    <?php endif; ?>
+
+    <hr class="dashed">
+    <p class="tiny muted center mb0">
+      This statement was generated by <?= e(APP_NAME) ?> on <?= date('d M Y \a\t g:i a') ?>.
+      Figures are taken directly from the transaction ledger.
+    </p>
+  </div>
+
+</main>
+<?php include __DIR__ . '/partials/foot.php'; ?>

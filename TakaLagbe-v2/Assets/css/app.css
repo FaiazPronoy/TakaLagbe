@@ -1,0 +1,484 @@
+/* =====================================================================
+   TakaLagbe! design system :  "ink and brass"
+
+   A ledger, not a start-up: deep navy ink on cool statement paper, with brass for
+   anything that has to be noticed. IBM Plex is used throughout because it
+   was drawn for engineering documentation, and its mono is a true sibling
+   of the sans, so a column of amounts lines up exactly.
+
+   The fonts load from Google when there is a connection and fall back to
+   the system stack when there is not, so the app still works with the
+   network unplugged.
+
+   Light and dark theme driven by [data-theme] on <html>.
+   ===================================================================== */
+
+/* ------------------------------------------------------------ tokens */
+:root{
+  --brand:#1E3A63;          /* navy, the ink */
+  --brand-dark:#132743;
+  --brand-soft:#E7EBF2;
+  --accent:#A87A2B;         /* brass, used sparingly */
+  --danger:#A9412C;
+  --warn:#B8862B;
+  --ok:#2C6E4E;
+
+  --bg:#E9EEF7;             /* cool statement paper, blue under the white */
+  --surface:#FFFFFF;
+  --surface-2:#F3F7FD;
+  --border:#CFD9EA;
+  --text:#0F1B33;
+  --muted:#51648A;
+
+  --radius:6px;             /* squarer than the rest: this is a document */
+  --radius-sm:4px;
+  --shadow:0 1px 2px rgba(15,27,51,.07), 0 6px 20px rgba(15,27,51,.08);
+  --shadow-lg:0 14px 40px rgba(15,27,51,.18);
+  --ring:0 0 0 3px rgba(30,58,99,.25);
+  --font:'IBM Plex Sans','Segoe UI',Roboto,Arial,sans-serif;
+  --font-display:'IBM Plex Sans','Segoe UI Semibold','Segoe UI',Arial,sans-serif;
+  --mono:'IBM Plex Mono',Consolas,'SF Mono',Menlo,monospace;
+}
+
+html[data-theme="dark"]{
+  --brand:#82A6DF;
+  --brand-dark:#5F86C4;
+  --brand-soft:#18243D;
+  --accent:#D9AE62;
+  --danger:#E88A72;
+  --warn:#D9AE62;
+  --ok:#6FC79B;
+  --bg:#0A0F1D;
+  --surface:#131B2E;
+  --surface-2:#182238;
+  --border:#25314C;
+  --text:#E4E9F2;
+  --muted:#8D9AB6;
+  --shadow:0 1px 2px rgba(0,0,0,.35), 0 6px 18px rgba(0,0,0,.4);
+  --shadow-lg:0 12px 36px rgba(0,0,0,.55);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  transition:background .2s ease, color .2s ease;
+}
+a{color:var(--brand-dark);text-decoration:none}
+a:hover{text-decoration:underline}
+img{max-width:100%;display:block}
+h1,h2,h3,h4{
+  margin:0 0 .5rem;line-height:1.25;font-weight:600;letter-spacing:-.015em;
+  font-family:var(--font-display);
+}
+/* every figure in the app is tabular, so columns of taka line up */
+.num,.amt,td.num,.stat-value,.balance{font-variant-numeric:tabular-nums}
+h1{font-size:1.6rem} h2{font-size:1.25rem} h3{font-size:1.05rem}
+p{margin:0 0 .8rem}
+small{font-size:.8rem}
+
+/* ------------------------------------------------------------ layout */
+.wrap{max-width:1120px;margin:0 auto;padding:0 18px}
+.wrap-sm{max-width:560px;margin:0 auto;padding:0 18px}
+.stack>*+*{margin-top:1rem}
+.row{display:flex;gap:1rem;flex-wrap:wrap}
+.row>.col{flex:1 1 260px;min-width:0}
+.grid{display:grid;gap:1rem}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.between{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.center{text-align:center}
+.mt0{margin-top:0}.mb0{margin-bottom:0}
+.muted{color:var(--muted)}
+.tiny{font-size:.78rem}
+.mono{font-family:var(--mono);letter-spacing:.02em}
+.section{padding:1.6rem 0}
+.hide{display:none !important}
+
+/* ------------------------------------------------------------ navbar */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(19,30,54,.05);
+}
+.nav-inner{max-width:1120px;margin:0 auto;padding:.6rem 18px;
+  display:flex;align-items:center;gap:.75rem}
+.brand{display:flex;align-items:center;gap:.55rem;font-weight:800;
+  font-size:1.15rem;color:var(--text);letter-spacing:-.02em}
+.brand:hover{text-decoration:none}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;flex:none;
+  background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+  color:#fff;display:grid;place-items:center;font-weight:800;font-size:1rem;
+}
+.nav-links{display:flex;align-items:center;gap:.25rem;margin-left:auto}
+.nav-links a, .nav-links button{
+  padding:.45rem .7rem;border-radius:var(--radius-sm);
+  color:var(--muted);font-weight:600;font-size:.9rem;
+  background:none;border:0;cursor:pointer;font-family:inherit;
+}
+.nav-links a:hover,.nav-links button:hover{background:var(--surface-2);color:var(--text);text-decoration:none}
+.nav-links a.active{background:var(--brand-soft);color:var(--brand-dark)}
+.nav-toggle{display:none;margin-left:auto;background:none;border:0;
+  font-size:1.4rem;color:var(--text);cursor:pointer;padding:.2rem .5rem}
+.bell{position:relative}
+.bell .dot{
+  position:absolute;top:2px;right:2px;min-width:17px;height:17px;padding:0 4px;
+  background:var(--danger);color:#fff;border-radius:9px;
+  font-size:.66rem;font-weight:700;display:grid;place-items:center;line-height:1;
+}
+@media (max-width:820px){
+  .nav-toggle{display:block}
+  .nav-links{
+    display:none;position:absolute;top:100%;left:0;right:0;
+    flex-direction:column;align-items:stretch;
+    background:var(--surface);border-bottom:1px solid var(--border);
+    padding:.5rem 18px 1rem;box-shadow:var(--shadow);
+  }
+  .nav-links.open{display:flex}
+  .nav-links a,.nav-links button{text-align:left;padding:.6rem .5rem}
+}
+
+/* ------------------------------------------------------------- cards */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow);
+}
+.card-pad-sm{padding:.9rem}
+.card-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--muted);font-weight:700;margin-bottom:.6rem}
+
+/* balance hero */
+.balance{
+  background:linear-gradient(135deg,var(--brand) 0%,var(--brand-dark) 100%);
+  color:#fff;border:0;position:relative;overflow:hidden;
+  box-shadow:var(--shadow-lg);
+}
+.balance::after{
+  content:'';position:absolute;right:-60px;top:-70px;
+  width:230px;height:230px;border-radius:50%;
+  background:rgba(255,255,255,.11);
+}
+.balance::before{
+  content:'';position:absolute;right:40px;bottom:-90px;
+  width:150px;height:150px;border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+.balance .label{font-size:.8rem;opacity:.85;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.balance .amount{font-size:2.3rem;font-weight:800;letter-spacing:-.02em;line-height:1.15}
+.balance .meta{opacity:.9;font-size:.85rem}
+.balance a{color:#fff}
+.eye{background:rgba(255,255,255,.2);border:0;color:#fff;cursor:pointer;
+  border-radius:9px;padding:.3rem .6rem;font-size:.85rem;font-family:inherit}
+.eye:hover{background:rgba(255,255,255,.32)}
+
+/* buttons sitting on the coloured balance card */
+.balance .btn-ghost{
+  background:rgba(255,255,255,.16);
+  border-color:rgba(255,255,255,.45);
+  color:#fff;
+}
+.balance .btn-ghost:hover{background:rgba(255,255,255,.28);border-color:#fff;color:#fff}
+
+/* stat tiles */
+/* figures sit on a shared baseline across the row even when only some cards
+   carry a sub-line underneath */
+.stat{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1rem 1rem .9rem;box-shadow:var(--shadow);
+  position:relative;overflow:hidden;display:flex;flex-direction:column;gap:.15rem;
+  min-height:104px}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--brand);opacity:.85}
+.stat .k{font-size:.75rem;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.06em;font-weight:700}
+.stat .v{font-size:1.75rem;font-weight:800;letter-spacing:-.03em;line-height:1.1;
+  font-variant-numeric:tabular-nums}
+.stat .tiny,.stat .small{margin-top:auto;padding-top:.4rem}
+
+/* ---------------------------------------------------- action tiles -- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(126px,1fr));gap:.85rem}
+.tile{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1rem .6rem;text-align:center;
+  box-shadow:var(--shadow);color:var(--text);
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+  display:block;
+}
+.tile:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);
+  border-color:var(--brand);text-decoration:none}
+.tile .ico{
+  width:46px;height:46px;margin:0 auto .55rem;border-radius:14px;
+  background:var(--brand-soft);display:grid;place-items:center;font-size:1.4rem;
+}
+.tile .name{font-weight:700;font-size:.86rem;line-height:1.3}
+
+/* ------------------------------------------------------------- forms */
+label{display:block;font-weight:600;font-size:.86rem;margin-bottom:.3rem}
+.field{margin-bottom:1rem}
+input,select,textarea{
+  width:100%;padding:.68rem .8rem;font:inherit;font-size:.95rem;
+  color:var(--text);background:var(--surface-2);
+  border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  transition:border-color .15s, box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--brand);box-shadow:var(--ring);background:var(--surface);
+}
+input[readonly]{background:var(--bg);color:var(--muted);cursor:not-allowed}
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:.75}
+textarea{min-height:100px;resize:vertical}
+.hint{font-size:.78rem;color:var(--muted);margin-top:.25rem}
+.err{font-size:.8rem;color:var(--danger);margin-top:.25rem;font-weight:600}
+fieldset{border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  padding:.8rem 1rem 1rem;margin:0 0 1rem}
+legend{font-weight:700;font-size:.85rem;padding:0 .4rem}
+.radio-row{display:flex;gap:1.1rem;flex-wrap:wrap;align-items:center}
+.radio-row label{display:flex;align-items:center;gap:.35rem;margin:0;font-weight:500}
+.radio-row input{width:auto;margin:0}
+
+/* input with a prefix, used for money */
+.money-input{position:relative}
+.money-input span{
+  position:absolute;left:.8rem;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-weight:700;pointer-events:none;
+}
+.money-input input{padding-left:2.1rem;font-size:1.15rem;font-weight:700}
+
+/* the live charge preview stays out of the way until there is an amount */
+#chargeBox:empty{display:none}
+
+/* quick amount chips */
+.chips{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.5rem}
+.chip{
+  padding:.35rem .75rem;border-radius:999px;font-size:.83rem;font-weight:700;
+  background:var(--surface-2);border:1.5px solid var(--border);
+  color:var(--text);cursor:pointer;font-family:inherit;
+}
+.chip:hover{border-color:var(--brand);color:var(--brand-dark)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+
+/* ----------------------------------------------------------- buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  padding:.68rem 1.15rem;border:1.5px solid transparent;
+  border-radius:var(--radius-sm);font:inherit;font-weight:700;font-size:.93rem;
+  cursor:pointer;transition:transform .12s, filter .15s, background .15s;
+  text-decoration:none;line-height:1.2;
+}
+.btn:hover{text-decoration:none;filter:brightness(1.06)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed;filter:none}
+.btn-primary{background:var(--brand);color:#fff}
+.btn-dark{background:var(--brand-dark);color:#fff}
+.btn-ghost{background:var(--surface);color:var(--text);border-color:var(--border)}
+.btn-ghost:hover{border-color:var(--brand);color:var(--brand-dark)}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-success{background:var(--accent);color:#fff}
+.btn-block{width:100%}
+.btn-sm{padding:.38rem .7rem;font-size:.82rem}
+
+/* the long press send button, kept from the original build */
+.hold{position:relative;overflow:hidden;user-select:none;-webkit-user-select:none}
+.hold .fill{
+  position:absolute;left:0;top:0;bottom:0;width:0;
+  background:rgba(255,255,255,.3);transition:width .05s linear;pointer-events:none;
+}
+.hold .txt{position:relative;z-index:1}
+
+/* ------------------------------------------------------------ alerts */
+.alert{
+  padding:.8rem 1rem;border-radius:var(--radius-sm);font-size:.9rem;
+  font-weight:600;border:1.5px solid;display:flex;gap:.6rem;align-items:flex-start;
+}
+.alert-ok   {background:rgba(44,110,78,.1); border-color:rgba(44,110,78,.4); color:#2C6E4E}
+.alert-error{background:rgba(169,65,44,.09);  border-color:rgba(169,65,44,.35);  color:#8C3423}
+.alert-warn {background:rgba(168,122,43,.1);   border-color:rgba(168,122,43,.4);   color:#8A6320}
+.alert-info {background:var(--brand-soft);    border-color:rgba(30,58,99,.4);  color:var(--brand-dark)}
+html[data-theme="dark"] .alert-ok{color:#6FC79B}
+html[data-theme="dark"] .alert-error{color:#E88A72}
+html[data-theme="dark"] .alert-warn{color:#D9AE62}
+html[data-theme="dark"] .alert-info{color:#A6BEE0}
+
+/* toast for the flash message */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+  z-index:200;max-width:min(560px,92vw);box-shadow:var(--shadow-lg);
+  background:var(--surface);animation:rise .3s ease;
+}
+@keyframes rise{from{opacity:0;transform:translate(-50%,14px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ------------------------------------------------------------ badges */
+.badge{
+  display:inline-block;padding:.2rem .55rem;border-radius:999px;
+  font-size:.72rem;font-weight:800;letter-spacing:.02em;
+  background:var(--surface-2);color:var(--muted);border:1px solid var(--border);
+}
+.badge-ok{background:rgba(44,110,78,.13);color:#2C6E4E;border-color:transparent}
+.badge-fail{background:rgba(169,65,44,.13);color:#8C3423;border-color:transparent}
+.badge-pending{background:rgba(168,122,43,.14);color:#8A6320;border-color:transparent}
+html[data-theme="dark"] .badge-ok{color:#6FC79B}
+html[data-theme="dark"] .badge-fail{color:#E88A72}
+html[data-theme="dark"] .badge-pending{color:#D9AE62}
+
+/* ------------------------------------------------------------ tables */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th{
+  text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);font-weight:800;padding:.6rem .7rem;
+  border-bottom:1.5px solid var(--border);white-space:nowrap;
+}
+td{padding:.7rem;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:hover{background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pos{color:var(--accent);font-weight:800}
+.neg{color:var(--danger);font-weight:800}
+
+/* --------------------------------------------------- list of entries */
+.entry{display:flex;align-items:center;gap:.85rem;padding:.75rem 0;
+  border-bottom:1px solid var(--border)}
+.entry:last-child{border-bottom:0}
+.entry .ico{
+  width:40px;height:40px;border-radius:12px;flex:none;
+  display:grid;place-items:center;font-size:1.1rem;background:var(--brand-soft);
+}
+.entry .body{flex:1;min-width:0}
+.entry .body .t{display:block;font-weight:700;font-size:.92rem}
+.entry .body .s{display:block;font-size:.8rem;color:var(--muted);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.entry .amt{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ------------------------------------------------------------ avatar */
+.avatar{
+  width:46px;height:46px;border-radius:50%;flex:none;
+  display:grid;place-items:center;color:#fff;font-weight:800;font-size:1.05rem;
+  border:2px solid rgba(255,255,255,.5);
+}
+.avatar-sm{width:34px;height:34px;font-size:.8rem}
+
+/* -------------------------------------------------------- progress -- */
+.bar{height:9px;background:var(--border);border-radius:999px;overflow:hidden}
+.bar>span{display:block;height:100%;border-radius:999px;
+  background:linear-gradient(90deg,var(--brand),var(--accent));transition:width .5s ease}
+
+/* ------------------------------------------------------ mini charts */
+.donut{display:block;margin:0 auto}
+.legend{display:flex;flex-direction:column;gap:.4rem;font-size:.85rem}
+.legend div{display:flex;align-items:center;gap:.5rem}
+.legend i{width:11px;height:11px;border-radius:3px;flex:none}
+.bars{display:flex;align-items:flex-end;gap:.5rem;height:130px;padding-top:.5rem}
+.bars .b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;
+  align-items:center;gap:.3rem;height:100%}
+.bars .b i{width:100%;max-width:34px;border-radius:6px 6px 0 0;
+  background:linear-gradient(180deg,var(--brand),var(--brand-dark));min-height:3px;
+  transition:height .4s ease}
+.bars .b small{font-size:.68rem;color:var(--muted);white-space:nowrap}
+
+/* -------------------------------------------------------------- tabs */
+.tabs{display:flex;gap:.3rem;border-bottom:1.5px solid var(--border);
+  margin-bottom:1rem;overflow-x:auto}
+.tabs a{padding:.55rem .85rem;font-weight:700;font-size:.88rem;color:var(--muted);
+  border-bottom:2.5px solid transparent;margin-bottom:-1.5px;white-space:nowrap}
+.tabs a:hover{color:var(--text);text-decoration:none}
+.tabs a.on{color:var(--brand-dark);border-bottom-color:var(--brand)}
+
+/* -------------------------------------------------------- pagination */
+.pager{display:flex;gap:.3rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+.pager a,.pager span{padding:.4rem .7rem;border-radius:8px;font-size:.85rem;
+  font-weight:700;border:1.5px solid var(--border);color:var(--text)}
+.pager a:hover{border-color:var(--brand);text-decoration:none}
+.pager .on{background:var(--brand);border-color:var(--brand);color:#fff}
+.pager .off{opacity:.4}
+
+/* ------------------------------------------------------------- modal */
+.modal{
+  position:fixed;inset:0;z-index:150;display:none;
+  background:rgba(10,15,29,.55);backdrop-filter:blur(3px);
+  padding:1rem;overflow-y:auto;
+}
+.modal.open{display:grid;place-items:center}
+.modal-box{
+  background:var(--surface);border-radius:var(--radius);width:min(460px,100%);
+  padding:1.4rem;box-shadow:var(--shadow-lg);animation:pop .2s ease;
+}
+@keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* --------------------------------------------------------- PIN entry */
+.pin{display:flex;gap:.5rem;justify-content:center;margin:.8rem 0}
+.pin input{
+  width:46px;height:54px;text-align:center;font-size:1.4rem;font-weight:800;
+  padding:0;letter-spacing:0;
+}
+
+/* -------------------------------------------------------- receipt -- */
+.receipt{
+  background:var(--surface);border-radius:var(--radius);padding:1.5rem;
+  box-shadow:var(--shadow);border:1px solid var(--border);
+  max-width:420px;margin:0 auto;position:relative;
+}
+.receipt .tick{
+  width:64px;height:64px;border-radius:50%;margin:0 auto .8rem;
+  background:rgba(44,110,78,.14);color:var(--accent);
+  display:grid;place-items:center;font-size:2rem;
+  animation:pop .35s ease;
+}
+.receipt dl{margin:1rem 0 0;display:grid;grid-template-columns:1fr auto;gap:.55rem 1rem}
+.receipt dt{color:var(--muted);font-size:.85rem}
+.receipt dd{margin:0;text-align:right;font-weight:700;font-size:.88rem;
+  font-variant-numeric:tabular-nums;word-break:break-all}
+.dashed{border:0;border-top:2px dashed var(--border);margin:1.1rem 0}
+
+/* ------------------------------------------------------------- empty */
+.empty{text-align:center;padding:2.4rem 1rem;color:var(--muted)}
+.empty .big{font-size:2.6rem;margin-bottom:.4rem;opacity:.65}
+
+/* ------------------------------------------------------------ footer */
+.foot{padding:1.8rem 0;text-align:center;color:var(--muted);font-size:.82rem}
+.foot a{color:var(--muted)}
+
+/* --------------------------------------------------------- auth page */
+.auth{min-height:100vh;display:grid;place-items:center;padding:2rem 1rem;
+  background:linear-gradient(160deg,var(--brand) 0%,var(--brand-dark) 100%)}
+html[data-theme="dark"] .auth{background:linear-gradient(160deg,#18243D,#0A0F1D)}
+.auth-card{background:var(--surface);border-radius:22px;padding:2rem;
+  width:min(430px,100%);box-shadow:var(--shadow-lg)}
+.auth-wide{width:min(660px,100%)}
+.auth-logo{text-align:center;margin-bottom:1.4rem}
+.auth-logo .brand-mark{width:54px;height:54px;font-size:1.4rem;
+  border-radius:16px;margin:0 auto .6rem}
+.auth-logo h1{font-size:1.45rem;margin-bottom:.15rem}
+.auth-logo p{color:var(--muted);font-size:.88rem;margin:0}
+
+/* strength meter for the signup password */
+.meter{height:6px;border-radius:999px;background:var(--border);
+  overflow:hidden;margin-top:.4rem}
+.meter>span{display:block;height:100%;width:0;transition:width .25s, background .25s}
+
+/* ---------------------------------------------------------- QR code */
+.qr{background:#fff;padding:12px;border-radius:var(--radius-sm);
+  display:inline-block;box-shadow:var(--shadow)}
+.qr table{border-collapse:collapse;width:auto}
+.qr td{padding:0;border:0;width:5px;height:5px}
+.qr td.on{background:#000}
+.qr td.off{background:#fff}
+
+/* --------------------------------------------------------- printing */
+@media print{
+  .nav,.foot,.no-print,.toast{display:none !important}
+  body{background:#fff;color:#000}
+  .card,.receipt{box-shadow:none;border:1px solid #ccc}
+  a{color:#000;text-decoration:none}
+}
+
+/* respects the reduced motion preference */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none !important;transition:none !important}
+}
