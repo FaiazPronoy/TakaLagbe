@@ -1,8 +1,5 @@
 <?php
-/* =====================================================================
- *  TakaLagbe!  -  application configuration
- *  Every tunable number lives here so nothing is hard coded in a page.
- * =====================================================================*/
+/* Database and app settings. */
 
 /* ---- database ---------------------------------------------------- */
 define('DB_HOST', getenv('TKL_DB_HOST') ?: 'localhost');

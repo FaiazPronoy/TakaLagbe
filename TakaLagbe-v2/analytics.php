@@ -1,8 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Spending insights, entirely from SQL: category totals, a six month
- *  trend, the people you send to most and a few habit numbers.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/view.php';
 

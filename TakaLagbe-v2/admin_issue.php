@@ -1,8 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  The audit log and the risk view: everything that happened, plus the
- *  declined transactions and the failed sign ins worth looking at.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/view.php';
 

@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Request money, and split a bill between friends.
- *  A split creates one request per person, all tagged with the same
- *  split_group, so the whole group can be tracked together.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 
@@ -15,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post('action');
 
     try {
-        /* ------------------------------------------- ask one person */
+        /* ask one person */
         if ($action === 'request') {
             $from   = post('from_phone');
             $amount = post('amount');
@@ -50,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('requests.php');
         }
 
-        /* ---------------------------------------------- split a bill */
+        /* split a bill */
         if ($action === 'split') {
             $total   = post('total');
             $note    = mb_substr(post('split_note'), 0, 120);
@@ -105,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('requests.php');
         }
 
-        /* ------------------------------------------------ pay or not */
+        /* pay or not */
         if ($action === 'decline' || $action === 'cancel') {
             $id  = (int) post('request_id');
             $col = $action === 'decline' ? 'payer_phone' : 'requester_phone';

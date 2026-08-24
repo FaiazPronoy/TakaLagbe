@@ -1,10 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Add money from a linked bank or card.
- *  The money comes from outside the wallet, so there is no account to
- *  debit: move_money() is told `from` is null and the bank name is
- *  recorded in the ledger instead.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 
@@ -17,6 +11,7 @@ const BANKS = ['BRAC Bank', 'City Bank', 'Dutch Bangla Bank', 'Eastern Bank',
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_fresh('add_money');
     $bank   = post('bank');
     $amount = post('amount');
     $pin    = post('pin');

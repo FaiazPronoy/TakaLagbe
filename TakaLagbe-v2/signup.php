@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Create an account.
- *  Creates the user row and its wallet row inside one transaction, so a
- *  user can never exist without an account to hold money.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 
 if (is_logged_in()) {

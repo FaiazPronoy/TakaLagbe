@@ -45,7 +45,7 @@ include __DIR__ . '/partials/nav.php';
     </form>
   </div>
 
-  <!-- ------------------------------------------------- scanner -->
+  <!-- scanner -->
   <div class="card" style="margin-top:1rem">
     <div class="card-title">Scan someone else's code</div>
 

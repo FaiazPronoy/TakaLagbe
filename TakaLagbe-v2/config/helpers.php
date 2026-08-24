@@ -1,13 +1,9 @@
 <?php
-/* =====================================================================
- *  Shared helpers: session, auth guard, CSRF, flash messages,
- *  formatting, notifications and the audit trail.
- *  Every page starts by requiring this one file.
- * =====================================================================*/
+/* Session, auth and the small shared helpers. */
 
 require_once __DIR__ . '/db.php';
 
-/* ---------------------------------------------------------- session -- */
+/* session */
 function start_session(): void
 {
     if (session_status() !== PHP_SESSION_NONE) {
@@ -19,7 +15,7 @@ function start_session(): void
 }
 start_session();
 
-/* ------------------------------------------------------------- auth -- */
+/* auth */
 function current_phone(): ?string
 {
     return $_SESSION['user_phone'] ?? null;
@@ -117,7 +113,7 @@ function pin_tries_left(string $phone): int
     return max(0, LOGIN_MAX_ATTEMPTS - $bad);
 }
 
-/* ----------------------------------------------------------- admin -- */
+/* admin */
 function require_admin(): string
 {
     if (!isset($_SESSION['admin_user'])) {
@@ -127,7 +123,7 @@ function require_admin(): string
     return $_SESSION['admin_user'];
 }
 
-/* ------------------------------------------------------------ CSRF -- */
+/* CSRF */
 function csrf_token(): string
 {
     if (empty($_SESSION['csrf'])) {
@@ -157,7 +153,42 @@ function require_csrf(): void
     }
 }
 
-/* ----------------------------------------------------------- flash -- */
+/* One shot tokens.
+
+   The CSRF token lasts the whole session, so it stops another site posting
+   for you but it does not stop the same form being posted twice. Anything
+   that moves money gets one of these instead, and the handler spends it. */
+function once_field(string $form): string
+{
+    $token = bin2hex(random_bytes(16));
+    $_SESSION['once'][$form][$token] = time();
+    if (count($_SESSION['once'][$form]) > 10) {
+        array_shift($_SESSION['once'][$form]);
+    }
+    return '<input type="hidden" name="once" value="' . $token . '">';
+}
+
+/** Spends the token. False if it was never issued or has already been used. */
+function once_ok(string $form): bool
+{
+    $token = (string) ($_POST['once'] ?? '');
+    if ($token === '' || !isset($_SESSION['once'][$form][$token])) {
+        return false;
+    }
+    unset($_SESSION['once'][$form][$token]);
+    return true;
+}
+
+/** Use in any POST handler that moves money. */
+function require_fresh(string $form): void
+{
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !once_ok($form)) {
+        http_response_code(409);
+        exit('That looks like a repeat of something you already sent. Check your history before trying again.');
+    }
+}
+
+/* flash */
 function flash(string $type, string $message): void
 {
     $_SESSION['flash'] = [$type, $message];
@@ -173,7 +204,7 @@ function take_flash(): ?array
     return $f;
 }
 
-/* ------------------------------------------------------ formatting -- */
+/* formatting */
 function e($v): string
 {
     return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
@@ -226,7 +257,7 @@ function name_of(string $phone): string
     return $r ? $r['firstname'] . ' ' . $r['lastname'] : $phone;
 }
 
-/* --------------------------------------------------- notifications -- */
+/* notifications */
 /** Writes a notification. */
 function notify(string $phone, string $title, string $body,
                 string $icon = 'bell', ?float $amount = null): void
@@ -249,7 +280,7 @@ function unread_count(string $phone): int
     );
 }
 
-/* ---------------------------------------------------------- audit --- */
+/* audit */
 function audit(string $actor, string $action, string $detail = ''): void
 {
     try {
@@ -265,7 +296,7 @@ function client_ip(): string
     return $_SERVER['REMOTE_ADDR'] ?? 'cli';
 }
 
-/* ------------------------------------------------------ validation -- */
+/* validation */
 function valid_phone($p): bool
 {
     return (bool) preg_match('/^01[3-9]\d{8}$/', (string) $p);

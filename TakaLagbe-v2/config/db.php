@@ -1,8 +1,5 @@
 <?php
-/* =====================================================================
- *  Single PDO connection for the whole application.
- *  Prepared statements only, so SQL injection has nowhere to land.
- * =====================================================================*/
+/* Single PDO connection, prepared statements everywhere. */
 
 require_once __DIR__ . '/config.php';
 

@@ -5,7 +5,7 @@
 (function () {
   'use strict';
 
-  /* ------------------------------------------------------ dark mode */
+  /* dark mode */
   var root = document.documentElement;
 
   window.toggleTheme = function () {
@@ -16,13 +16,13 @@
     if (b) b.textContent = next === 'dark' ? '☀️' : '🌙';
   };
 
-  /* ------------------------------------------------- mobile menu */
+  /* mobile menu */
   window.toggleNav = function () {
     var n = document.getElementById('navLinks');
     if (n) n.classList.toggle('open');
   };
 
-  /* ------------------------------------------------- balance hiding */
+  /* balance hiding */
   window.toggleBalance = function () {
     var a = document.getElementById('balanceAmount');
     if (!a) return;
@@ -34,7 +34,7 @@
     if (b) b.textContent = hidden ? 'Hide' : 'Show';
   };
 
-  /* ----------------------------------------------------- amount chips */
+  /* amount chips */
   function wireChips() {
     document.querySelectorAll('[data-chip-target]').forEach(function (chip) {
       chip.addEventListener('click', function () {
@@ -50,7 +50,7 @@
     });
   }
 
-  /* ------------------------------------------- live charge preview */
+  /* live charge preview */
   function wireCharge() {
     document.querySelectorAll('[data-charge]').forEach(function (input) {
       var out = document.getElementById(input.dataset.charge);
@@ -92,7 +92,7 @@
     });
   }
 
-  /* -------------------------------------- long press to send money */
+  /* long press to send money */
   function wireHold() {
     document.querySelectorAll('.hold').forEach(function (btn) {
       var need = parseInt(btn.dataset.holdMs || '900', 10);
@@ -137,7 +137,7 @@
     });
   }
 
-  /* ------------------------------------------------------- PIN boxes */
+  /* PIN boxes */
   function wirePin() {
     document.querySelectorAll('[data-pin]').forEach(function (box) {
       var hidden = document.getElementById(box.dataset.pin);
@@ -170,7 +170,7 @@
     });
   }
 
-  /* -------------------------------------------- password strength */
+  /* password strength */
   function wireStrength() {
     document.querySelectorAll('[data-strength]').forEach(function (input) {
       var meter = document.getElementById(input.dataset.strength);
@@ -191,7 +191,7 @@
     });
   }
 
-  /* ------------------------------------------------- confirm dialogs */
+  /* confirm dialogs */
   function wireConfirm() {
     document.querySelectorAll('[data-confirm]').forEach(function (el) {
       el.addEventListener('submit', function (e) {
@@ -205,7 +205,7 @@
     });
   }
 
-  /* --------------------------------------------- live table filter */
+  /* live table filter */
   function wireFilter() {
     document.querySelectorAll('[data-filter]').forEach(function (input) {
       var scope = document.getElementById(input.dataset.filter);
@@ -224,7 +224,7 @@
     });
   }
 
-  /* -------------------------------------------------------- modals */
+  /* modals */
   window.openModal = function (id) {
     var m = document.getElementById(id);
     if (m) { m.classList.add('open'); var f = m.querySelector('input,select,textarea');
@@ -245,7 +245,7 @@
     });
   }
 
-  /* ------------------------------------------------ copy to clipboard */
+  /* copy to clipboard */
   window.copyText = function (text, btn) {
     var done = function () {
       if (!btn) return;
@@ -263,7 +263,7 @@
     }
   };
 
-  /* --------------------------------------------- operator detection */
+  /* operator detection */
   function wireOperator() {
     document.querySelectorAll('[data-operator]').forEach(function (input) {
       var out = document.getElementById(input.dataset.operator);
@@ -280,7 +280,7 @@
     });
   }
 
-  /* --------------------------------------- dismiss the flash toast */
+  /* dismiss the flash toast */
   function wireToast() {
     var t = document.getElementById('flashToast');
     if (!t) return;
@@ -292,7 +292,7 @@
     t.addEventListener('click', function () { t.remove(); });
   }
 
-  /* ------------------------------ stop a double submit on every form */
+  /* stop a double submit on every form */
   function wireOnce() {
     document.querySelectorAll('form[data-once]').forEach(function (f) {
       f.addEventListener('submit', function () {
@@ -304,7 +304,7 @@
     });
   }
 
-  /* ------------------------------------------------------ live clock */
+  /* live clock */
   function wireClock() {
     var el = document.getElementById('clock');
     if (!el) return;
@@ -315,7 +315,7 @@
     tick(); setInterval(tick, 20000);
   }
 
-  /* ------------------------------------------------------- bootstrap */
+  /* bootstrap */
   document.addEventListener('DOMContentLoaded', function () {
     wireChips(); wireCharge(); wireHold(); wirePin(); wireStrength();
     wireConfirm(); wireFilter(); wireModals(); wireOperator();

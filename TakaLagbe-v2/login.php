@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Sign in.
- *  Passwords are checked with password_verify against a bcrypt hash,
- *  and repeated failures lock the number for a while.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 
 if (is_logged_in()) {

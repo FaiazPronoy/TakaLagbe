@@ -240,10 +240,21 @@ the root does the work, then includes its view from `Front_end/`.
 `tests/e2e.py` drives the real application over HTTP the way a browser would,
 then checks the database behind it.
 
+The suite empties every table before it runs, so give it its own database
+rather than the one you have been using. The dump names the database itself,
+so swap the name on the way in:
+
 ```bash
-php -S 127.0.0.1:8080 -t .          # in one terminal
-python3 tests/e2e.py                # in another
+sed "s/`takalagbe`/`takalagbe_test`/g" takalagbe.sql | mysql -u root
+
+php -S 127.0.0.1:8080 -t .                          # one terminal
+set TKL_DB_NAME=takalagbe_test
+set TKL_DB=takalagbe_test
+python tests/e2e.py                                 # another
 ```
+
+Both variables matter: `TKL_DB_NAME` is what the app connects to and `TKL_DB`
+is what the suite checks.
 
 The suite finds the MySQL client itself, so it works with XAMPP as well as with
 a system MariaDB. If it is not on your PATH, point it at the binary:

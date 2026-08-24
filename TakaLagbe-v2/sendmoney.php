@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Send money to another TakaLagbe! user.
- *  The whole transfer is handed to move_money(), which locks both
- *  accounts and writes the ledger inside one database transaction.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 
@@ -29,6 +24,7 @@ if ($requestId) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_fresh('sendmoney');
     $receiver = post('receiver_phone');
     $amount   = post('amount');
     $note     = mb_substr(post('note'), 0, 120);

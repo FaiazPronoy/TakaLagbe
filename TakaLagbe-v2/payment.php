@@ -1,8 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Merchant payment. Each merchant carries its own cashback rate, which
- *  is credited back to the customer as part of the same transaction.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 
@@ -14,6 +10,7 @@ $merchants = all('SELECT * FROM merchants ORDER BY merchant_name');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_fresh('payment');
     $merchantId = post('merchant_id');
     $amount     = post('amount');
     $reference  = mb_substr(post('reference'), 0, 60);

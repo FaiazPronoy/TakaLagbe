@@ -1,10 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Reset a forgotten password.
- *  Identity is proved with the NID and the date of birth that were used
- *  at signup, which is the same idea the original build used, tightened
- *  up with prepared statements, hashing and an attempt limit.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 
 $error = '';
@@ -42,7 +36,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             q('UPDATE user SET password_hash = ? WHERE phone = ?',
               [password_hash($new, PASSWORD_BCRYPT), $phone]);
-            q('DELETE FROM login_attempts WHERE identifier = ?', [$phone]);
+            // only the login lockout clears here; the pin counter is what
+            // freezes an account, and a password reset must not unfreeze it
+            q("DELETE FROM login_attempts WHERE identifier = ? AND kind = 'login'", [$phone]);
             notify($phone, 'Password changed',
                    'Your password was reset. If this was not you, contact support now.', 'lock');
             audit($phone, 'password_reset', 'password reset from ' . client_ip());

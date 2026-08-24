@@ -77,7 +77,7 @@
                           type="submit"><?= $u['status'] === 'active' ? 'Freeze' : 'Unfreeze' ?></button>
                 </form>
                 <button class="btn btn-ghost btn-sm" type="button"
-                        onclick="editLimit(<?= json_encode($u['phone']) ?>, <?= (float) $u['daily_limit'] ?>)">
+                        onclick="editLimit(<?= json_encode($u['phone'], JSON_HEX_QUOT | JSON_HEX_APOS) ?>, <?= (float) $u['daily_limit'] ?>)">
                   Limit
                 </button>
               </div>

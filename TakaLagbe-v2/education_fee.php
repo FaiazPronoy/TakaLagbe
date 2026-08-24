@@ -1,7 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Pay a semester fee to a registered institute.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 

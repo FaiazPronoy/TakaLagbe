@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Currency converter.
- *  Rates are stored in the file rather than fetched, so the page works
- *  with no internet. Change them in one place when they move.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 
 require_login();

@@ -22,7 +22,7 @@ $actions = [
 ?>
 <main class="wrap section">
 
-  <!-- ---------------------------------------------------- balance -->
+  <!-- balance -->
   <div class="row" style="align-items:stretch">
     <div class="col" style="flex:2 1 420px">
       <div class="card balance">
@@ -78,7 +78,7 @@ $actions = [
     </div>
   </div>
 
-  <!-- ------------------------------------------------ pending asks -->
+  <!-- pending asks -->
   <?php if ($requests): ?>
     <div class="card" style="margin-top:1rem;border-left:4px solid var(--warn)">
       <div class="card-title">Waiting for you</div>
@@ -96,7 +96,7 @@ $actions = [
     </div>
   <?php endif; ?>
 
-  <!-- ------------------------------------------------ quick actions -->
+  <!-- quick actions -->
   <h2 style="margin:1.6rem 0 .8rem">What would you like to do?</h2>
   <div class="tiles">
     <?php foreach ($actions as [$href, $icon, $name]): ?>
@@ -107,7 +107,7 @@ $actions = [
     <?php endforeach; ?>
   </div>
 
-  <!-- ----------------------------------------------- favourites row -->
+  <!-- favourites row -->
   <?php if ($favourites): ?>
     <div class="card" style="margin-top:1.4rem">
       <div class="between">
@@ -130,7 +130,7 @@ $actions = [
     </div>
   <?php endif; ?>
 
-  <!-- ------------------------------------- activity and week chart -->
+  <!-- activity and week chart -->
   <div class="row" style="margin-top:1.4rem">
     <div class="col" style="flex:2 1 420px">
       <div class="card">

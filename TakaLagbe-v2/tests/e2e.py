@@ -6,6 +6,13 @@ Drives the real application over HTTP the way a browser would: it signs
 users up, signs them in, moves money, pays bills and then checks the
 database to prove the balances and the ledger agree.
 
+This wipes every table before it runs, so it will not touch the database the
+app normally uses. Point TKL_DB at a scratch copy first:
+
+    mysql -u root -e "CREATE DATABASE takalagbe_test"
+    mysql -u root takalagbe_test < takalagbe.sql
+    set TKL_DB=takalagbe_test && python tests/e2e.py
+
 Run:  python3 tests/e2e.py            (server must be on 127.0.0.1:8080)
 """
 import os, re, shutil, subprocess, sys
@@ -14,6 +21,7 @@ import requests
 BASE = os.environ.get("TKL_BASE", "http://127.0.0.1:8080")
 DB_USER = os.environ.get("TKL_DB_USER", "root")
 DB_PASS = os.environ.get("TKL_DB_PASS", "")
+DB_NAME = os.environ.get("TKL_DB", "takalagbe_test")
 PASS, FAIL = [], []
 
 
@@ -52,7 +60,7 @@ def _args(extra):
 
 
 def db(sql):
-    out = subprocess.run(_args(["-N", "-B", "takalagbe", "-e", sql]),
+    out = subprocess.run(_args(["-N", "-B", DB_NAME, "-e", sql]),
                          capture_output=True, text=True)
     if out.returncode:
         raise RuntimeError(out.stderr)
@@ -60,7 +68,7 @@ def db(sql):
 
 
 def run_sql(sql):
-    subprocess.run(_args(["takalagbe", "-e", sql]), check=True)
+    subprocess.run(_args([DB_NAME, "-e", sql]), check=True)
 
 
 def val(sql):
@@ -105,6 +113,8 @@ def login(u):
 
 
 def reset_db():
+    if DB_NAME == "takalagbe":
+        sys.exit("Refusing to wipe 'takalagbe'. Set TKL_DB to a scratch database.")
     run_sql("SET FOREIGN_KEY_CHECKS=0;"
             "TRUNCATE transactions; TRUNCATE notifications;"
                     "TRUNCATE login_attempts; TRUNCATE audit_log;"
@@ -526,7 +536,7 @@ def main():
 
     # the schema itself
     fks = int(val("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS "
-                  "WHERE CONSTRAINT_SCHEMA='takalagbe' AND CONSTRAINT_TYPE='FOREIGN KEY'"))
+                  "WHERE CONSTRAINT_SCHEMA='" + DB_NAME + "' AND CONSTRAINT_TYPE='FOREIGN KEY'"))
     check("the schema declares its relationships as real foreign keys", fks >= 10, fks)
 
     # the running totals are kept by a trigger, not by PHP

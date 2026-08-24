@@ -1,8 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  A printable receipt for one transaction.
- *  Only the two people involved can open it.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/view.php';
 require_once __DIR__ . '/lib/qr.php';

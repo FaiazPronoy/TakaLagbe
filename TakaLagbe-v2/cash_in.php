@@ -1,10 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Cash in at an agent point.
- *  The customer hands notes to the agent, the agent's float goes up and
- *  the same amount is credited to the customer's wallet. Free of charge,
- *  which is how cash in works in real life.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 
@@ -16,6 +10,7 @@ $agents = all('SELECT agent_id, phone_number, cash_in_amount FROM agent_details 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_fresh('cash_in');
     $agentId = post('agent_id');
     $amount  = post('cash_in_amount');
     $pin     = post('pin');

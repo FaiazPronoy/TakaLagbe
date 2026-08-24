@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Cash out at an agent point.
- *  The user is debited, the agent's float goes up, and the standard
- *  1.85 percent charge is applied.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 
@@ -15,6 +10,7 @@ $agents = all('SELECT agent_id, phone_number, cash_in_amount FROM agent_details 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_fresh('cash_out');
     $agentId = post('agent_id');
     $amount  = post('cash_out_amount');
     $pin     = post('pin');

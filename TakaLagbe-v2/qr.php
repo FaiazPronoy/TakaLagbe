@@ -1,11 +1,5 @@
 <?php
-/* ---------------------------------------------------------------------
- *  My QR code.
- *  The code is drawn by lib/qr.php, written from scratch, so nothing is
- *  fetched from the internet and the page works offline.
- *  Scanning is done in the browser with the built in BarcodeDetector
- *  where it exists, and there is a manual fallback everywhere else.
- * ------------------------------------------------------------------- */
+/* QR payload build and parse. */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/qr.php';
 

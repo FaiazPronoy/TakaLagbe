@@ -14,7 +14,7 @@ include __DIR__ . '/partials/nav.php';
     </div>
   </div>
 
-  <!-- --------------------------------------------------- headline -->
+  <!-- headline -->
   <div class="row" style="margin-bottom:1.2rem">
     <div class="col"><div class="stat"><div class="k">Total spent</div>
       <div class="v neg"><?= e(money($spendTotal, false)) ?></div></div></div>
@@ -27,7 +27,7 @@ include __DIR__ . '/partials/nav.php';
   </div>
 
   <div class="row">
-    <!-- ------------------------------------------ category donut -->
+    <!-- category donut -->
     <div class="col" style="flex:1 1 300px">
       <div class="card">
         <div class="card-title">Where the money went</div>
@@ -53,7 +53,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
     </div>
 
-    <!-- --------------------------------------------- month trend -->
+    <!-- month trend -->
     <div class="col" style="flex:1.4 1 380px">
       <div class="card">
         <div class="card-title">Six month trend</div>
@@ -95,7 +95,7 @@ include __DIR__ . '/partials/nav.php';
   </div>
 
   <div class="row" style="margin-top:1.2rem">
-    <!-- ------------------------------------------- top receivers -->
+    <!-- top receivers -->
     <div class="col">
       <div class="card">
         <div class="card-title">You send to these people most</div>
@@ -114,7 +114,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
     </div>
 
-    <!-- --------------------------------------------- habit facts -->
+    <!-- habit facts -->
     <div class="col">
       <div class="card">
         <div class="card-title">Good to know</div>

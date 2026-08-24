@@ -14,7 +14,7 @@ include __DIR__ . '/partials/nav.php';
     </div>
   </div>
 
-  <!-- --------------------------------------------------- filters -->
+  <!-- filters -->
   <form class="card" method="get" style="margin-bottom:1rem">
     <div class="row">
       <div class="col field mb0" style="flex:2 1 240px">
@@ -56,7 +56,7 @@ include __DIR__ . '/partials/nav.php';
     </div>
   </form>
 
-  <!-- ---------------------------------------------------- summary -->
+  <!-- summary -->
   <div class="row" style="margin-bottom:1rem">
     <div class="col"><div class="stat"><div class="k">Transactions found</div>
       <div class="v"><?= number_format($total) ?></div></div></div>
@@ -69,7 +69,7 @@ include __DIR__ . '/partials/nav.php';
         <?= e(money($sumIn - $sumOut, false)) ?></div></div></div>
   </div>
 
-  <!-- ------------------------------------------------------ table -->
+  <!-- table -->
   <div class="card">
     <?php if (!$rows): ?>
       <div class="empty">
@@ -119,7 +119,7 @@ include __DIR__ . '/partials/nav.php';
     <?php endif; ?>
   </div>
 
-  <!-- ------------------------------------------------- pagination -->
+  <!-- pagination -->
   <?php if ($pages > 1): ?>
     <div class="pager">
       <?php if ($page > 1): ?>

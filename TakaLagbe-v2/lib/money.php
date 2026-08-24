@@ -1,12 +1,5 @@
 <?php
-/* =====================================================================
- *  The money engine. Every taka that moves goes through move_money(),
- *  and nothing else writes to the `account` table.
- *
- *  The debit, the credit and the ledger row all happen in one database
- *  transaction, and the accounts are locked with SELECT ... FOR UPDATE
- *  before any balance is read.
- * =====================================================================*/
+/* Balance changes and the ledger. Everything here runs in a transaction. */
 
 require_once __DIR__ . '/../config/helpers.php';
 

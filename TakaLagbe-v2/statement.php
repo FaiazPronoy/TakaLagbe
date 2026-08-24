@@ -1,10 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Account statement.
- *  ?format=csv  streams a spreadsheet friendly file.
- *  Otherwise it renders a clean page that prints to one tidy PDF from
- *  the browser's own print dialog.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/view.php';
 
@@ -43,7 +37,7 @@ if ($openingRow) {
 
 $closing = balance_of($phone);
 
-/* ------------------------------------------------------------- CSV -- */
+/* CSV */
 if (get('format') === 'csv') {
     // the dates come from the form, so only use them if they look like dates
     $safe = static fn(string $d): string =>

@@ -1,8 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Mobile recharge, with the operator detected from the number and one
- *  percent cashback credited straight back to the wallet.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 

@@ -15,6 +15,7 @@ include __DIR__ . '/partials/nav.php';
 
   <form method="post" class="card" data-once>
     <?= csrf_field() ?>
+    <?= once_field('payment') ?>
 
     <div class="field">
       <label for="merchant_id">Merchant</label>

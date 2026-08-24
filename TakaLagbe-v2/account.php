@@ -1,8 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  The dashboard. Balance, quick actions, recent activity and a small
- *  seven day spending chart, all built from the ledger.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 

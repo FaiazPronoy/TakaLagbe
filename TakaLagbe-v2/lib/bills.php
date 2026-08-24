@@ -1,12 +1,5 @@
 <?php
-/* =====================================================================
- *  One bill engine for all four utility types.
- *
- *  The original build had four almost identical controllers and four
- *  almost identical tables. Everything now runs through this one file
- *  and one `bill_payments` table, with the bill type as a column.
- *  The four page names are kept so the old links still work.
- * =====================================================================*/
+/* Bill payment lookups. */
 
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/money.php';

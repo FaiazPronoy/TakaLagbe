@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Transaction history with search, filters and pagination.
- *  The filters are built as bound parameters, never as string joins, so
- *  the search box cannot be used to inject SQL.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/view.php';
 

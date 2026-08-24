@@ -1,16 +1,5 @@
 <?php
-/* =====================================================================
- *  A small QR code encoder written from scratch in PHP.
- *
- *  Why not a library? The project has to run from a plain XAMPP folder
- *  with no Composer and no internet, so the QR code has to be produced
- *  by the application itself.
- *
- *  Supports byte mode, error correction level L, versions 1 to 10,
- *  which is far more than a payment string needs. It picks the smallest
- *  version that fits and the mask with the lowest penalty score, exactly
- *  as ISO/IEC 18004 describes.
- * =====================================================================*/
+/* QR payload build and parse. */
 
 final class QrCode
 {
@@ -49,7 +38,7 @@ final class QrCode
     /** @var array<int,array<int,bool>> true = reserved function module */
     private array $fixed = [];
 
-    /* --------------------------------------------------------- public */
+    /* public */
 
     /** @return array<int,array<int,int>> matrix of 0/1, [row][col] */
     public static function matrix(string $text): array
@@ -86,7 +75,7 @@ final class QrCode
         return 'data:image/svg+xml;base64,' . base64_encode(self::svg($text, $scale));
     }
 
-    /* -------------------------------------------------------- building */
+    /* building */
 
     private function __construct(string $text)
     {
@@ -158,7 +147,7 @@ final class QrCode
         return $out;
     }
 
-    /* --------------------------------------- Reed-Solomon over GF(256) */
+    /* Reed-Solomon over GF(256) */
 
     private static array $exp = [];
     private static array $log = [];
@@ -256,7 +245,7 @@ final class QrCode
         return $out;
     }
 
-    /* ---------------------------------------------------- the matrix */
+    /* the matrix */
 
     private function blank(): void
     {

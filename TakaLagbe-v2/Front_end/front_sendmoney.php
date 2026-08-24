@@ -30,6 +30,7 @@ include __DIR__ . '/partials/nav.php';
 
   <form method="post" class="card" data-once>
     <?= csrf_field() ?>
+    <?= once_field('sendmoney') ?>
     <input type="hidden" name="request_id" value="<?= (int) ($requestId ?? 0) ?>">
 
     <div class="field">

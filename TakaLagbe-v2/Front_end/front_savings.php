@@ -112,7 +112,7 @@ $pinBoxes = static function (string $id): void { ?>
   <?php endif; ?>
 </main>
 
-<!-- ------------------------------------------------ new goal modal -->
+<!-- new goal modal -->
 <div class="modal" id="newGoal">
   <div class="modal-box">
     <h2>New savings goal</h2>
@@ -143,13 +143,14 @@ $pinBoxes = static function (string $id): void { ?>
   </div>
 </div>
 
-<!-- ------------------------------------------- move money modal -->
+<!-- move money modal -->
 <div class="modal" id="moveGoal">
   <div class="modal-box">
     <h2 id="moveTitle">Add money</h2>
     <p class="muted tiny" id="moveSub"></p>
     <form method="post" data-once>
       <?= csrf_field() ?>
+      <?= once_field('savings_move') ?>
       <input type="hidden" name="action" id="moveAction" value="deposit">
       <input type="hidden" name="goal_id" id="moveGoalId">
       <div class="field">

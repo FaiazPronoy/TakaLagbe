@@ -1,8 +1,5 @@
 <?php
-/* =====================================================================
- *  Small view helpers shared by the dashboard, the history page and
- *  the receipt, so a transaction looks the same everywhere.
- * =====================================================================*/
+/* Pulls a file out of Front_end and renders it. */
 
 require_once __DIR__ . '/../config/helpers.php';
 

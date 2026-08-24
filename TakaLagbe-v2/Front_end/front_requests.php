@@ -26,7 +26,7 @@ include __DIR__ . '/partials/nav.php';
   </div>
 
   <div class="row">
-    <!-- ------------------------------------------------- incoming -->
+    <!-- incoming -->
     <div class="col">
       <div class="card">
         <div class="card-title">Asked of you</div>
@@ -64,7 +64,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
     </div>
 
-    <!-- ------------------------------------------------- outgoing -->
+    <!-- outgoing -->
     <div class="col">
       <div class="card">
         <div class="card-title">You asked for</div>
@@ -102,7 +102,7 @@ include __DIR__ . '/partials/nav.php';
   </div>
 </main>
 
-<!-- --------------------------------------------------- ask modal -->
+<!-- ask modal -->
 <div class="modal" id="askMoney">
   <div class="modal-box">
     <h2>Ask someone for money</h2>
@@ -134,7 +134,7 @@ include __DIR__ . '/partials/nav.php';
   </div>
 </div>
 
-<!-- ------------------------------------------------- split modal -->
+<!-- split modal -->
 <div class="modal" id="splitBill">
   <div class="modal-box">
     <h2>Split a bill</h2>

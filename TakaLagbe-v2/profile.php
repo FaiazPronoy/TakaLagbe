@@ -1,9 +1,6 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Profile and security settings: contact details, avatar colour,
- *  password, transaction PIN, daily limit and the sign in log.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
+require_once __DIR__ . '/lib/money.php';
 
 $phone = require_login();
 $user  = current_user();
@@ -13,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
     $action = post('action');
 
-    /* ------------------------------------------------------ details */
+    /* details */
     if ($action === 'details') {
         $email  = strtolower(post('email'));
         $colour = post('avatar_color');
@@ -33,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ----------------------------------------------------- password */
+    /* password */
     if ($action === 'password') {
         $current = post('current_password');
         $new     = post('new_password');
@@ -58,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* ---------------------------------------------------------- PIN */
+    /* PIN */
     if ($action === 'pin') {
         $current = post('current_pin');
         $new     = post('new_pin');
@@ -82,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* -------------------------------------------------- daily limit */
+    /* daily limit */
     if ($action === 'limit') {
         $limit = post('daily_limit');
         $pin   = post('pin');

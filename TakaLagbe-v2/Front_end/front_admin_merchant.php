@@ -59,8 +59,8 @@
                 <td class="num"><?= e(money($m['total_received_amount'], false)) ?></td>
                 <td>
                   <button class="btn btn-ghost btn-sm" type="button"
-                          onclick="editCb(<?= json_encode($m['merchant_id']) ?>,
-                                          <?= json_encode($m['merchant_name']) ?>,
+                          onclick="editCb(<?= json_encode($m['merchant_id'], JSON_HEX_QUOT | JSON_HEX_APOS) ?>,
+                                          <?= json_encode($m['merchant_name'], JSON_HEX_QUOT | JSON_HEX_APOS) ?>,
                                           <?= (float) $m['cashback_pct'] ?>)">Edit</button>
                 </td>
               </tr>

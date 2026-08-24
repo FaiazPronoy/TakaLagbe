@@ -1,9 +1,4 @@
 <?php
-/* ---------------------------------------------------------------------
- *  Savings goals.
- *  Money put into a goal leaves the spendable balance, so it cannot be
- *  spent by accident, and it comes back the moment the goal is released.
- * ------------------------------------------------------------------- */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
 
@@ -16,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post('action');
 
     try {
-        /* ---------------------------------------------------- create */
+        /* create */
         if ($action === 'create') {
             $title    = mb_substr(post('title'), 0, 60);
             $target   = post('target_amount');
@@ -44,8 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('savings.php');
         }
 
-        /* --------------------------------------------------- deposit */
+        /* deposit */
         if ($action === 'deposit' || $action === 'withdraw') {
+            require_fresh('savings_move');
             $goalId = (int) post('goal_id');
             $amount = post('amount');
             $pin    = post('pin');
@@ -122,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        /* ----------------------------------------------------- close */
+        /* close */
         if ($action === 'close') {
             $goalId = (int) post('goal_id');
             $pdo = db();

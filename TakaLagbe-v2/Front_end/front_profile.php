@@ -15,7 +15,7 @@ $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E', '#
     <div class="alert alert-error" style="margin-bottom:1rem"><span><?= e($error) ?></span></div>
   <?php endif; ?>
 
-  <!-- ---------------------------------------------------- summary -->
+  <!-- summary -->
   <div class="card" style="margin-bottom:1.2rem">
     <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
       <span class="avatar" style="width:64px;height:64px;font-size:1.4rem;
@@ -48,7 +48,7 @@ $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E', '#
 
   <div class="grid grid-2">
 
-    <!-- ------------------------------------------------- details -->
+    <!-- details -->
     <div class="card">
       <div class="card-title">Your details</div>
       <form method="post" data-once>
@@ -94,7 +94,7 @@ $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E', '#
       </form>
     </div>
 
-    <!-- ------------------------------------------------- password -->
+    <!-- password -->
     <div class="card">
       <div class="card-title">Change password</div>
       <form method="post" data-once>
@@ -146,7 +146,7 @@ $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E', '#
       </form>
     </div>
 
-    <!-- ---------------------------------------------------- limit -->
+    <!-- limit -->
     <div class="card">
       <div class="card-title">Daily spending limit</div>
       <p class="tiny muted">
@@ -185,7 +185,7 @@ $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E', '#
       </form>
     </div>
 
-    <!-- ------------------------------------------------- activity -->
+    <!-- activity -->
     <div class="card">
       <div class="card-title">Recent sign in attempts</div>
       <div class="table-wrap">
