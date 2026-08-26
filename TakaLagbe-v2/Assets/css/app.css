@@ -18,7 +18,7 @@
   --surface-2:#F3F7FD;
   --border:#CFD9EA;
   --text:#0F1B33;
-  --muted:#51648A;
+  --muted:#4A5C80;
 
   --radius:6px;             /* squarer than the rest: this is a document */
   --radius-sm:4px;
@@ -471,4 +471,54 @@ html[data-theme="dark"] .auth{background:linear-gradient(160deg,#18243D,#0A0F1D)
 /* respects the reduced motion preference */
 @media (prefers-reduced-motion:reduce){
   *{animation:none !important;transition:none !important}
+}
+
+/* ------------------------------------------------------------------------
+   The page behind everything.
+
+   Engraved arcs and fine diagonal lines, the way a cheque or a banknote is
+   printed. It suits a ledger better than anything soft would, and it keeps
+   the navy from reading as an empty screen.
+   ------------------------------------------------------------------------ */
+
+:root{
+  --engrave:rgba(30,58,99,.075);
+  --engrave-2:rgba(168,122,43,.085);
+  --hatch:rgba(30,58,99,.055);
+  --wash-1:rgba(30,58,99,.11);
+  --wash-2:rgba(168,122,43,.13);
+}
+
+html[data-theme="dark"]{
+  --engrave:rgba(130,166,223,.085);
+  --engrave-2:rgba(217,174,98,.075);
+  --hatch:rgba(130,166,223,.06);
+  --wash-1:rgba(130,166,223,.13);
+  --wash-2:rgba(217,174,98,.10);
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  background:
+    radial-gradient(58rem 34rem at 4% 0%, var(--wash-1), transparent 70%),
+    radial-gradient(50rem 32rem at 98% 10%, var(--wash-2), transparent 68%),
+    radial-gradient(64rem 40rem at 50% 108%, var(--wash-1), transparent 72%);
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background-image:
+    repeating-radial-gradient(circle at 6% 4%, var(--engrave) 0 1px, transparent 1px 22px),
+    repeating-radial-gradient(circle at 96% 96%, var(--engrave-2) 0 1px, transparent 1px 19px),
+    repeating-linear-gradient(58deg, var(--hatch) 0 1px, transparent 1px 9px);
+  background-repeat:no-repeat,no-repeat,repeat;
+  background-size:100% 100%,100% 100%,auto;
 }
