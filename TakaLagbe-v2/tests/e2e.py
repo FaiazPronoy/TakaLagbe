@@ -15,7 +15,8 @@ app normally uses. Point TKL_DB at a scratch copy first:
 
 Run:  python3 tests/e2e.py            (server must be on 127.0.0.1:8080)
 """
-import os, re, shutil, subprocess, sys
+import csv, os, re, shutil, subprocess, sys, threading
+from datetime import date, timedelta
 import requests
 
 BASE = os.environ.get("TKL_BASE", "http://127.0.0.1:8080")
@@ -23,6 +24,10 @@ DB_USER = os.environ.get("TKL_DB_USER", "root")
 DB_PASS = os.environ.get("TKL_DB_PASS", "")
 DB_NAME = os.environ.get("TKL_DB", "takalagbe_test")
 PASS, FAIL = [], []
+
+TODAY = date.today()
+LAST_MONTH = (TODAY.replace(day=1) - timedelta(days=1)).strftime("%B %Y")
+SEMESTER = "Fall %d" % TODAY.year
 
 
 def _client():
@@ -86,15 +91,23 @@ class User:
         self.s = requests.Session()
         self.phone, self.pw, self.pin = phone, pw, pin
 
-    def token(self, path):
+    def tokens(self, path):
+        """The CSRF token, plus the one shot token a money form carries."""
         html = self.s.get(BASE + "/" + path).text
-        m = re.search(r'name="csrf" value="([a-f0-9]+)"', html)
-        return m.group(1) if m else ""
+        csrf = re.search(r'name="csrf" value="([a-f0-9]+)"', html)
+        once = re.search(r'name="once" value="([a-f0-9]+)"', html)
+        return (csrf.group(1) if csrf else ""), (once.group(1) if once else None)
 
-    def post(self, path, data, token_from=None):
-        data = dict(data)
-        data["csrf"] = self.token(token_from or path)
-        return self.s.post(BASE + "/" + path, data=data, allow_redirects=True)
+    def form(self, path, data):
+        """Loads the form and fills in its tokens, without sending it yet."""
+        csrf, once = self.tokens(path)
+        data = dict(data, csrf=csrf)
+        if once:
+            data["once"] = once
+        return data
+
+    def post(self, path, data):
+        return self.s.post(BASE + "/" + path, data=self.form(path, data), allow_redirects=True)
 
     def get(self, path):
         return self.s.get(BASE + "/" + path)
@@ -265,20 +278,20 @@ def main():
 
     before = after
     a.post("electricity_bills.php", {"organization_id": "444", "consumer_no": "MTR-9981",
-                                     "amount": "1200", "month": "August 2026", "pin": a.pin})
+                                     "amount": "1200", "month": LAST_MONTH, "pin": a.pin})
     after = float(val("SELECT balance FROM account WHERE phone='01711111111'"))
     check("bill takes a flat 5 charge", abs((before - after) - 1205) < 0.001, before - after)
     r = a.post("electricity_bills.php", {"organization_id": "444", "consumer_no": "MTR-9981",
-                                         "amount": "1200", "month": "August 2026", "pin": a.pin})
+                                         "amount": "1200", "month": LAST_MONTH, "pin": a.pin})
     check("the same bill cannot be paid twice", "already paid" in r.text)
 
     a.post("education_fee.php", {"institute_id": "555", "student_id": "21301234",
-                                 "student_name": "faiaz abrar", "semester": "Spring 2026",
+                                 "student_name": "faiaz abrar", "semester": SEMESTER,
                                  "amount": "3000", "pin": a.pin})
     check("institute total updated",
           val("SELECT total_received_amount FROM institutes WHERE institute_id='555'") == "3000.00")
     r = a.post("education_fee.php", {"institute_id": "555", "student_id": "21301234",
-                                     "student_name": "faiaz abrar", "semester": "Spring 2026",
+                                     "student_name": "faiaz abrar", "semester": SEMESTER,
                                      "amount": "3000", "pin": a.pin})
     check("the same semester cannot be paid twice", "already been paid" in r.text)
 
@@ -296,7 +309,8 @@ def main():
     # ------------------------------------------------------- savings
     print("\n=== savings goals ===")
     a.post("savings.php", {"action": "create", "title": "New laptop",
-                           "target_amount": "60000", "deadline": "2026-12-31"})
+                           "target_amount": "60000",
+                           "deadline": (date.today() + timedelta(days=90)).isoformat()})
     gid = val("SELECT id FROM savings_goals WHERE phone='01711111111'")
     before = float(val("SELECT balance FROM account WHERE phone='01711111111'"))
     a.post("savings.php", {"action": "deposit", "goal_id": gid, "amount": "2000", "pin": a.pin})
@@ -376,12 +390,11 @@ def main():
     check("you cannot open someone else's receipt",
           r.status_code == 404 and "Nothing here" in r.text, r.status_code)
     r = a.get("receipt.php?id=" + str(stranger_trx))
-    check("but a party to it can", r.status_code == 200 and "Transaction ID" in r.text)
+    check("but a party to it can", r.status_code == 200 and stranger_trx in r.text)
 
     # --------------------------------------------------- concurrency
     print("\n=== two transfers at the same moment ===")
     seed_balance("01911111111", 1000, limit=100000)
-    import threading
     results = []
     def race():
         s = User("01911111111", pw="nabila2026", pin="907152")
@@ -546,6 +559,182 @@ def main():
                      "WHERE organization_id='444'") or 0)
     check("the trigger keeps the biller total in step with its payments",
           abs(org_total - paid) < 0.001, (org_total, paid))
+
+    # ------------------------------------------- found in the v2 audit
+    print("\n=== v2 audit regressions ===")
+
+    def balance(u):
+        return float(val("SELECT balance FROM account WHERE phone='%s'" % u.phone))
+
+    def failed_count():
+        return int(val("SELECT COUNT(*) FROM transactions WHERE status='failed'"))
+
+    seed_balance(a.phone, 30000, limit=100000)
+    seed_balance(b.phone, 30000, limit=100000)
+    seed_balance(c.phone, 30000, limit=100000)
+
+    before = balance(a)
+    data = a.form("mobilerecharge.php", {"rechargePhoneNumber": a.phone, "rechargeAmount": "99",
+                                         "connection": "Prepaid", "pin": a.pin})
+    a.s.post(BASE + "/mobilerecharge.php", data=data)
+    r = a.s.post(BASE + "/mobilerecharge.php", data=data)
+    check("a replayed recharge is refused", r.status_code == 409, r.status_code)
+    check("and the recharge was only charged once", abs((before - balance(a)) - 98.01) < 0.001,
+          before - balance(a))
+
+    for page, fields in [("gas_bills.php", {"organization_id": "111", "consumer_no": "TGL-1001",
+                                            "amount": "1080", "month": LAST_MONTH}),
+                         ("education_fee.php", {"institute_id": "556", "student_id": "2106001",
+                                                "student_name": "rafid hasan", "semester": SEMESTER,
+                                                "amount": "5000"})]:
+        data = b.form(page, dict(fields, pin=b.pin))
+        b.s.post(BASE + "/" + page, data=data)
+        r = b.s.post(BASE + "/" + page, data=data)
+        check("a replayed %s post is refused" % page, r.status_code == 409, r.status_code)
+
+    a.post("requests.php", {"action": "request", "from_phone": b.phone, "amount": "350",
+                            "note": "kacchi at Sultans Dine"})
+    rid = val("SELECT id FROM money_requests WHERE requester_phone='%s' AND amount=350 "
+              "ORDER BY id DESC LIMIT 1" % a.phone)
+    r = b.post("sendmoney.php?request=%s" % rid, {"receiver_phone": c.phone, "amount": "10",
+                                                   "pin": b.pin, "request_id": rid})
+    check("sending ten taka to someone else does not settle a request",
+          val("SELECT status FROM money_requests WHERE id=%s" % rid) == "pending")
+    check("and the page says what the request was for", "That request is for" in r.text)
+    b.post("sendmoney.php?request=%s" % rid, {"receiver_phone": a.phone, "amount": "350",
+                                              "pin": b.pin, "request_id": rid})
+    check("paying the right person the right amount settles it",
+          val("SELECT status FROM money_requests WHERE id=%s" % rid) == "paid")
+
+    n = failed_count()
+    poor = User("01313000003", pw="poorer2026", pin="662244")
+    signup(poor, "Declined", "Probe", "1234567897", "declined@test.com")
+    login(poor)
+    seed_balance(poor.phone, 500)
+    poor.post("cash_out.php", {"agent_id": "AG1001", "cash_out_amount": "2000", "pin": poor.pin})
+    poor.post("gas_bills.php", {"organization_id": "112", "consumer_no": "KGD-2002", "amount": "900",
+                                "month": LAST_MONTH, "pin": poor.pin})
+    poor.post("payment.php", {"merchant_id": "M102", "amount": "800", "pin": poor.pin})
+    check("declined cash out, bill and payment are all on the ledger", failed_count() == n + 3,
+          (n, failed_count()))
+
+    yesterday = (TODAY - timedelta(days=1)).isoformat()
+    r = a.get("statement.php?format=csv&from=%s&to=%s"
+              % ((TODAY - timedelta(days=30)).isoformat(), yesterday))
+    closing = [row for row in csv.reader(r.text.splitlines()) if row[:1] == ["Closing balance"]]
+    check("a statement that ends yesterday closes on yesterday's balance, not today's",
+          closing == [["Closing balance", "0.00"]], closing)
+
+    c.post("sendmoney.php", {"receiver_phone": a.phone, "amount": "25000", "pin": c.pin})
+    c.post("sendmoney.php", {"receiver_phone": a.phone, "amount": "9000", "pin": c.pin})
+    r = c.get("statement.php?format=csv")
+    check("declined attempts are left out of the statement", ",failed" not in r.text)
+
+    r1 = a.get("statement.php?from=zzz&to=yyy")
+    r2 = a.get("history.php?from=not-a-date&to=2026-13-45")
+    check("nonsense dates fall back to a sensible period",
+          r1.status_code == 200 and r2.status_code == 200 and "1970" not in r1.text)
+
+    saver = User("01313000004", pw="saver2026", pin="771155")
+    signup(saver, "Saving", "Probe", "1234567898", "saver@test.com")
+    login(saver)
+    seed_balance(saver.phone, 10000, limit=5000)
+    saver.post("savings.php", {"action": "create", "title": "Eid", "target_amount": "8000"})
+    gid = val("SELECT id FROM savings_goals WHERE phone='%s'" % saver.phone)
+    saver.post("savings.php", {"action": "deposit", "goal_id": gid, "amount": "4500", "pin": saver.pin})
+    r = saver.post("sendmoney.php", {"receiver_phone": a.phone, "amount": "1000", "pin": saver.pin})
+    check("money moved into savings does not use up the daily sending limit",
+          "receipt.php" in r.url, r.url)
+
+    def questions():
+        return int(val("SELECT VARIABLE_VALUE FROM information_schema.GLOBAL_STATUS "
+                       "WHERE VARIABLE_NAME='QUESTIONS'"))
+    q0 = questions(); a.get("statement.php?from=2000-01-01&to=2000-01-31"); empty = questions() - q0
+    q0 = questions(); a.get("statement.php"); full = questions() - q0
+    rows = int(val("SELECT COUNT(*) FROM transactions WHERE (transaction_from='%s' OR transaction_to='%s') "
+                   "AND status='success'" % (a.phone, a.phone)))
+    check("a statement costs the same number of queries whether it has 0 or %d rows" % rows,
+          full - empty <= 1, (empty, full))
+
+    out = subprocess.run(_args([DB_NAME, "-e",
+                                "UPDATE agent_details SET cash_in_amount=-1 WHERE agent_id='AG1001'"]),
+                         capture_output=True, text=True)
+    check("the database itself refuses a negative agent float", out.returncode != 0)
+
+    # three people at the same counter, the same bill, the same fee, all at once
+    def race(jobs):
+        gate = threading.Barrier(len(jobs))
+        def go(u, page, data):
+            gate.wait()
+            u.s.post(BASE + "/" + page, data=data)
+        ts = [threading.Thread(target=go, args=j) for j in jobs]
+        [t.start() for t in ts]
+        [t.join() for t in ts]
+
+    run_sql("UPDATE agent_details SET cash_in_amount=1000 WHERE agent_id='AG1003'")
+    race([(u, "cash_out.php", u.form("cash_out.php", {"agent_id": "AG1003", "cash_out_amount": "800",
+                                                        "pin": u.pin})) for u in (a, b, c)])
+    check("three cash outs at once cannot take more than the agent holds",
+          val("SELECT cash_in_amount FROM agent_details WHERE agent_id='AG1003'") == "200.00",
+          val("SELECT cash_in_amount FROM agent_details WHERE agent_id='AG1003'"))
+
+    race([(u, "water_bills.php", u.form("water_bills.php", {
+        "organization_id": "224", "consumer_no": "KWASA-7007", "amount": "600",
+        "month": LAST_MONTH, "pin": u.pin})) for u in (a, b, c)])
+    check("three people paying one bill at once pay it once",
+          val("SELECT COUNT(*) FROM bill_payments WHERE consumer_no='KWASA-7007'") == "1")
+
+    # a race does not always lose, so run it a few times
+    for sid in ("NIC-7781", "NIC-7782", "NIC-7783"):
+        race([(u, "education_fee.php", u.form("education_fee.php", {
+            "institute_id": "558", "student_id": sid, "student_name": "sadia islam",
+            "semester": SEMESTER, "amount": "1000", "pin": u.pin})) for u in (a, b, c)])
+    check("three people paying one semester fee at once pay it once",
+          val("SELECT COUNT(*) FROM education_fee WHERE student_id LIKE 'NIC-778%'") == "3")
+    check("and nobody lost money to the ones that were refused",
+          int(val("SELECT COUNT(*) FROM transactions WHERE status='success' "
+                  "AND note LIKE '%NIC-778%'")) == 3)
+
+    if "Apache" in fresh.get(BASE + "/login.php").headers.get("Server", ""):
+        r = fresh.get(BASE + "/takalagbe.sql")
+        check("the schema file cannot be downloaded", r.status_code == 404, r.status_code)
+        r = fresh.get(BASE + "/config/config.php")
+        check("the config folder is not reachable", r.status_code == 404, r.status_code)
+        r = fresh.get(BASE + "/no-such-page.php")
+        check("an unknown address gets the app's own 404",
+              r.status_code == 404 and "Nothing here" in r.text, r.status_code)
+    else:
+        print("  skip file access checks: .htaccess needs Apache")
+
+    a.get("logout.php")
+    check("opening logout.php as a link does not sign you out",
+          a.s.get(BASE + "/account.php", allow_redirects=False).status_code == 200)
+    csrf, _ = a.tokens("account.php")
+    a.s.post(BASE + "/logout.php", data={"csrf": csrf})
+    check("the sign out button does",
+          a.s.get(BASE + "/account.php", allow_redirects=False).status_code == 302)
+
+    r = saver.get("analytics.php")
+    check("insights do not count money moved into savings as spending",
+          "Savings" not in re.sub(r"<[^>]+>", " ", r.text.split("By category")[1].split("Who you send")[0]))
+
+    # the pages have to work with scripting switched off
+    money_pages = ["sendmoney.php", "add_money.php", "cash_in.php", "cash_out.php", "mobilerecharge.php",
+                   "payment.php", "electricity_bills.php", "education_fee.php", "checkbalance.php"]
+    no_pin = [p for p in money_pages
+              if not re.search(r'<input class="pin" type="password" id="\w+" name="pin"', b.get(p).text)
+              or 'type="hidden" name="pin"' in b.get(p).text]
+    check("every money form posts its PIN from a real field, not one filled in by script", not no_pin, no_pin)
+
+    dialogs = {"requests.php": ["askMoney", "splitBill"], "savings.php": ["newGoal"], "favourites.php": ["addFav"]}
+    missing = [(p, d) for p, ids in dialogs.items() for d in ids
+               if 'href="#%s"' % d not in b.get(p).text or '<dialog id="%s"' % d not in b.get(p).text]
+    check("every dialog opens from a plain link to its id", not missing, missing)
+    check("no inline handler is needed to open anything",
+          not any("openModal(" in b.get(p).text for p in dialogs))
+
+    check("history rows are links to their receipts", 'href="receipt.php?id=' in b.get("history.php").text)
+    check("the support page does not list a real company's helpline", "16247" not in b.get("supports.php").text)
 
     # -------------------------------------------------------- result
     print("\n" + "=" * 62)

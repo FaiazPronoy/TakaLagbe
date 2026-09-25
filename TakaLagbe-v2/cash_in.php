@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = db();
         $pdo->beginTransaction();
         try {
+            scalar('SELECT cash_in_amount FROM agent_details WHERE agent_id = ? FOR UPDATE', [$agentId]);
             $trx = move_money([
                 'from'        => null,
                 'from_ref'    => $agentId,
@@ -51,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (MoneyError $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            record_refusal($e);
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }

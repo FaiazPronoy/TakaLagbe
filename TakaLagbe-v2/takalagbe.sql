@@ -238,6 +238,8 @@ CREATE TABLE `bill_payments` (
   KEY `idx_bill_payer` (`payer_phone`,`payment_date`),
   KEY `idx_bill_type`  (`billtype`),
   KEY `idx_bill_org`   (`organization_id`),
+  -- one payment per bill per month; the page checks first, this stops two at once
+  UNIQUE KEY `uq_bill_month` (`billtype`,`organization_id`,`consumer_no`,`month`),
   CONSTRAINT `fk_bill_payer` FOREIGN KEY (`payer_phone`)
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_bill_org` FOREIGN KEY (`organization_id`)
@@ -259,6 +261,7 @@ CREATE TABLE `education_fee` (
   PRIMARY KEY (`id`),
   KEY `idx_edu_payer` (`payer_phone`),
   KEY `idx_edu_inst`  (`institute_id`),
+  UNIQUE KEY `uq_edu_semester` (`institute_id`,`student_id`,`semester`),
   CONSTRAINT `fk_edu_payer` FOREIGN KEY (`payer_phone`)
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_edu_inst` FOREIGN KEY (`institute_id`)
@@ -304,7 +307,8 @@ CREATE TABLE `agent_details` (
   `cash_in_amount` DECIMAL(12,2) NOT NULL,
   `created_at`     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `idx_agent` (`agent_id`)
+  UNIQUE KEY `uq_agent` (`agent_id`),
+  CONSTRAINT `chk_float_non_negative` CHECK (`cash_in_amount` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===================================================== reference data ==

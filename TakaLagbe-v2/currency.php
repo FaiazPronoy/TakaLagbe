@@ -19,7 +19,7 @@ const RATES = [
 
 $from   = isset(RATES[get('from')]) || get('from') === 'BDT' ? get('from') : 'USD';
 $to     = isset(RATES[get('to')])   || get('to')   === 'BDT' ? get('to')   : 'BDT';
-$amount = is_numeric(get('amount')) ? (float) get('amount') : 100.0;
+$amount = is_numeric(get('amount')) && (float) get('amount') >= 0 ? (float) get('amount') : 100.0;
 
 $rateOf = static fn(string $c): float => $c === 'BDT' ? 1.0 : RATES[$c][1];
 $result = $amount * $rateOf($from) / $rateOf($to);

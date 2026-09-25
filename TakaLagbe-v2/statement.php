@@ -5,44 +5,46 @@ require_once __DIR__ . '/lib/view.php';
 $phone = require_login();
 $user  = current_user();
 
-$from = get('from') ?: date('Y-m-01');
-$to   = get('to')   ?: date('Y-m-d');
+$from = valid_date(get('from')) ? get('from') : date('Y-m-01');
+$to   = valid_date(get('to'))   ? get('to')   : date('Y-m-d');
+if ($from > $to) {
+    [$from, $to] = [$to, $from];
+}
 $type = get('type');
 
-$where  = "(transaction_from = ? OR transaction_to = ?)
-           AND DATE(transaction_time) BETWEEN ? AND ?";
+// a statement is what actually moved, so declined attempts stay in the history page
+$where  = "(t.transaction_from = ? OR t.transaction_to = ?) AND t.status = 'success'
+           AND DATE(t.transaction_time) BETWEEN ? AND ?";
 $params = [$phone, $phone, $from, $to];
 if ($type !== '') {
-    $where   .= ' AND transaction_type = ?';
+    $where   .= ' AND t.transaction_type = ?';
     $params[] = $type;
 }
 
-$rows = all("SELECT * FROM transactions WHERE $where
-             ORDER BY transaction_time ASC, id ASC", $params);
+$rows = all(TRX_WITH_NAMES . " WHERE $where
+             ORDER BY t.transaction_time ASC, t.id ASC", $params);
 
-$openingRow = one(
-    "SELECT sender_balance_after, receiver_balance_after, transaction_from
-       FROM transactions
-      WHERE (transaction_from = ? OR transaction_to = ?)
-        AND transaction_time < ? AND status = 'success'
-      ORDER BY transaction_time DESC, id DESC LIMIT 1",
-    [$phone, $phone, $from . ' 00:00:00']);
+/** The balance straight after the last transaction before $moment. */
+$balanceAt = static function (string $moment) use ($phone): float {
+    $r = one("SELECT sender_balance_after, receiver_balance_after, transaction_from
+                FROM transactions
+               WHERE (transaction_from = ? OR transaction_to = ?)
+                 AND transaction_time < ? AND status = 'success'
+               ORDER BY transaction_time DESC, id DESC LIMIT 1",
+             [$phone, $phone, $moment]);
+    if (!$r) {
+        return 0.0;
+    }
+    return (float) ($r['transaction_from'] === $phone ? $r['sender_balance_after']
+                                                      : $r['receiver_balance_after']);
+};
 
-$opening = 0.0;
-if ($openingRow) {
-    $opening = (float) ($openingRow['transaction_from'] === $phone
-        ? $openingRow['sender_balance_after']
-        : $openingRow['receiver_balance_after']);
-}
-
-$closing = balance_of($phone);
+$opening = $balanceAt($from . ' 00:00:00');
+$closing = $balanceAt(date('Y-m-d', strtotime($to . ' +1 day')) . ' 00:00:00');
 
 /* CSV */
 if (get('format') === 'csv') {
-    // the dates come from the form, so only use them if they look like dates
-    $safe = static fn(string $d): string =>
-        preg_match('/^\d{4}-\d{2}-\d{2}$/', $d) ? $d : date('Y-m-d');
-    $name = 'takalagbe-statement-' . $safe($from) . '-to-' . $safe($to) . '.csv';
+    $name = 'takalagbe-statement-' . $from . '-to-' . $to . '.csv';
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $name . '"');
 

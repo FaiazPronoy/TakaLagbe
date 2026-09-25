@@ -18,6 +18,7 @@ sort($semesters);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_fresh('education_fee');
     $instituteId = post('institute_id');
     $studentId   = post('student_id');
     $studentName = ucwords(strtolower(post('student_name')));
@@ -73,7 +74,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (MoneyError $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            record_refusal($e);
             $error = $e->getMessage();
+        } catch (PDOException $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            $error = ($e->errorInfo[1] ?? 0) === 1062
+                ? 'This semester fee has already been paid for that student ID.'
+                : 'The fee could not be paid. Please try again.';
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = 'The fee could not be paid. Please try again.';

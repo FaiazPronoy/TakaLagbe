@@ -1,12 +1,35 @@
 <?php
-/* Database and app settings. */
+/* Database and app settings.
+
+   A server keeps its own settings in config/local.php, which is never
+   committed: copy local.example.php and fill it in. The TKL_* environment
+   variables work too. With neither, this assumes a local XAMPP (root, no
+   password) and shows errors on screen. */
+
+$local = is_file(__DIR__ . '/local.php') ? require __DIR__ . '/local.php' : [];
+$setting = static function (string $key, $default) use ($local) {
+    if (array_key_exists($key, $local)) {
+        return $local[$key];
+    }
+    $env = getenv('TKL_' . $key);
+    return $env !== false ? $env : $default;
+};
 
 /* ---- database ---------------------------------------------------- */
-define('DB_HOST', getenv('TKL_DB_HOST') ?: 'localhost');
-define('DB_NAME', getenv('TKL_DB_NAME') ?: 'takalagbe');
-define('DB_USER', getenv('TKL_DB_USER') ?: 'root');
-define('DB_PASS', getenv('TKL_DB_PASS') !== false ? getenv('TKL_DB_PASS') : '');
-define('DB_PORT', getenv('TKL_DB_PORT') ?: '3306');
+define('DB_HOST', $setting('DB_HOST', 'localhost'));
+define('DB_NAME', $setting('DB_NAME', 'takalagbe'));
+define('DB_USER', $setting('DB_USER', 'root'));
+define('DB_PASS', $setting('DB_PASS', ''));
+define('DB_PORT', $setting('DB_PORT', '3306'));
+
+/* ---- the server -------------------------------------------------- */
+define('APP_DEBUG', (bool) $setting('DEBUG', $local === []));
+// the host names this copy answers to; empty means any, which is fine on a laptop
+define('APP_HOSTS', (array) $setting('HOSTS', []));
+
+ini_set('display_errors', APP_DEBUG ? '1' : '0');
+ini_set('log_errors', '1');
+error_reporting(E_ALL);
 
 /* ---- branding ---------------------------------------------------- */
 define('APP_NAME',     'TakaLagbe!');
@@ -41,22 +64,21 @@ define('VELOCITY_WINDOW_MIN', 5);      // ... allowed in this many minutes
 define('ROWS_PER_PAGE', 12);
 
 /* ---- transaction categories used by the analytics page ----------- */
-/* Category colours sit on the same navy-to-brass line as the rest of the
-   app, so the donut on the analytics page does not look like a different
-   product from the page around it. */
+/* Mid tones from the same navy and brass family as the rest of the app, light
+   enough to read on the dark theme and dark enough on the light one. */
 const TRX_CATEGORIES = [
-    'Transfer'  => '#1E3A63',
-    'Bills'     => '#A87A2B',
-    'Recharge'  => '#4C7396',
-    'Shopping'  => '#8C5A3C',
-    'Groceries' => '#C09A4E',
-    'Food'      => '#A9412C',
-    'Transport' => '#39567F',
-    'Health'    => '#2C6E4E',
-    'Books'     => '#6E5A7D',
-    'Education' => '#5A4A86',
-    'Savings'   => '#3F7F68',
-    'Cash'      => '#6B7385',
+    'Transfer'  => '#4A73B5',
+    'Bills'     => '#B8862B',
+    'Recharge'  => '#5B9BB5',
+    'Shopping'  => '#9A6A4A',
+    'Groceries' => '#C9A45C',
+    'Food'      => '#B5543C',
+    'Transport' => '#6C7FC4',
+    'Health'    => '#3F8F68',
+    'Books'     => '#8A6FA8',
+    'Education' => '#6A5AA8',
+    'Savings'   => '#4F9A82',
+    'Cash'      => '#7C869A',
     'Other'     => '#A6ADBB',
 ];
 

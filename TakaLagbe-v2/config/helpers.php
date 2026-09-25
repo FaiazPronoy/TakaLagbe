@@ -3,14 +3,52 @@
 
 require_once __DIR__ . '/db.php';
 
+/* the request */
+
+/** True when the visitor is on HTTPS, including behind a proxy that ends TLS for us. */
+function is_https(): bool
+{
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https'
+        || ($_SERVER['SERVER_PORT'] ?? '') === '443';
+}
+
+/* Refuses a Host header this copy does not serve, and a form posted from
+   another site. The CSRF token already stops the second; checking Origin
+   as well costs nothing. */
+function guard_request(): void
+{
+    if (PHP_SAPI === 'cli') {
+        return;
+    }
+    $host = strtolower(preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? ''));
+    if (APP_HOSTS && !in_array($host, APP_HOSTS, true)) {
+        http_response_code(400);
+        exit('Unknown host.');
+    }
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $origin !== '' && $origin !== 'null'
+        && strtolower((string) parse_url($origin, PHP_URL_HOST)) !== $host) {
+        http_response_code(403);
+        exit('That form was sent from another site.');
+    }
+}
+guard_request();
+
 /* session */
 function start_session(): void
 {
     if (session_status() !== PHP_SESSION_NONE) {
         return;
     }
-    // the session cookie should not be readable from JavaScript
-    session_set_cookie_params(['httponly' => true]);
+    // not readable from JavaScript, only sent over HTTPS when the site is on
+    // HTTPS, and left off cross-site POSTs
+    session_set_cookie_params([
+        'httponly' => true,
+        'secure'   => is_https(),
+        'samesite' => 'Lax',
+        'path'     => '/',
+    ]);
     session_start();
 }
 start_session();
@@ -305,6 +343,13 @@ function valid_phone($p): bool
 function valid_pin($p): bool
 {
     return (bool) preg_match('/^\d{6}$/', (string) $p);
+}
+
+/** A real calendar date in Y-m-d, the format a date input sends. */
+function valid_date($d): bool
+{
+    $dt = DateTime::createFromFormat('!Y-m-d', (string) $d);
+    return $dt !== false && $dt->format('Y-m-d') === $d;
 }
 
 function valid_amount($a): bool

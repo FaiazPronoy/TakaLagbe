@@ -8,6 +8,7 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
+    require_fresh('recharge');
     $target     = post('rechargePhoneNumber');
     $amount     = post('rechargeAmount');
     $connection = post('connection') === 'Postpaid' ? 'Postpaid' : 'Prepaid';
@@ -55,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (MoneyError $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            record_refusal($e);
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }

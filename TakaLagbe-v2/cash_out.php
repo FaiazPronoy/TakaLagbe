@@ -25,8 +25,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'The smallest cash out is ' . money(MIN_AMOUNT) . '.';
     } elseif ((float) $amount > CASH_OUT_MAX) {
         $error = 'You cannot cash out more than ' . money(CASH_OUT_MAX) . ' at a time.';
-    } elseif ((float) $agent['cash_in_amount'] < (float) $amount) {
-        $error = 'This agent does not have enough cash right now. Try another agent.';
     } elseif (!verify_pin($phone, $pin)) {
         $left  = pin_tries_left($phone);
         $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
@@ -34,6 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = db();
         $pdo->beginTransaction();
         try {
+            // lock the agent first, the same order cash_in.php uses, so two
+            // people cashing out at one agent cannot both be promised the same notes
+            $float = (float) scalar('SELECT cash_in_amount FROM agent_details
+                                      WHERE agent_id = ? FOR UPDATE', [$agentId], 0);
+            if ($float < (float) $amount) {
+                throw new MoneyError('This agent does not have enough cash right now. Try another agent.');
+            }
             $trx = move_money([
                 'from'     => $phone,
                 'to'       => null,
@@ -54,6 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (MoneyError $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            record_refusal($e);
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }

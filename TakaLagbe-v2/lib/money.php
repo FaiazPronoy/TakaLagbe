@@ -4,7 +4,11 @@
 require_once __DIR__ . '/../config/helpers.php';
 
 /** Thrown when a transfer is refused. The message is safe to show. */
-class MoneyError extends RuntimeException {}
+class MoneyError extends RuntimeException
+{
+    /** Set when the refusal still has to be written to the ledger. */
+    public ?array $attempt = null;
+}
 
 /** TKL + 9 hex characters, e.g. TKL8F2A9C31. Unique in the ledger. */
 function new_trx_id(): string
@@ -13,12 +17,12 @@ function new_trx_id(): string
     return 'TKL' . strtoupper(bin2hex(random_bytes(4))) . random_int(0, 9);
 }
 
-/** How much this user has already sent out today. */
+/** How much this user has already sent out today. Savings stay in the wallet, so they do not count. */
 function spent_today(string $phone): float
 {
     return (float) scalar(
         "SELECT COALESCE(SUM(amount + fee), 0) FROM transactions
-         WHERE transaction_from = ? AND status = 'success'
+         WHERE transaction_from = ? AND status = 'success' AND transaction_type <> 'Savings'
            AND DATE(transaction_time) = CURDATE()",
         [$phone], 0
     );
@@ -33,7 +37,7 @@ function recent_trx_count(string $phone): int
 {
     return (int) scalar(
         "SELECT COUNT(*) FROM transactions
-         WHERE transaction_from = ? AND status = 'success'
+         WHERE transaction_from = ? AND status = 'success' AND transaction_type <> 'Savings'
            AND transaction_time > (NOW() - INTERVAL ? MINUTE)",
         [$phone, VELOCITY_WINDOW_MIN], 0
     );
@@ -184,16 +188,27 @@ function move_money(array $o): array
         return $row;
 
     } catch (Throwable $err) {
+        if ($err instanceof MoneyError) {
+            $err->attempt = [$fromRef, $toRef, $type, $category, $amount, $fee];
+        }
         if ($ownTransaction && $pdo->inTransaction()) {
             $pdo->rollBack();
-            // only safe once the rollback is done, and only when the
-            // transaction was ours to roll back
             if ($err instanceof MoneyError) {
-                log_refusal($fromRef, $toRef, $type, $category,
-                            $amount, $fee, $err->getMessage());
+                record_refusal($err);
             }
         }
+        // otherwise the caller rolls back its own transaction, and anything
+        // written here would go with it, so the caller calls record_refusal()
         throw $err;
+    }
+}
+
+/** Writes a refused transfer to the ledger. Call it after the rollback. */
+function record_refusal(MoneyError $e): void
+{
+    if ($e->attempt !== null) {
+        log_refusal(...array_merge($e->attempt, [$e->getMessage()]));
+        $e->attempt = null;
     }
 }
 

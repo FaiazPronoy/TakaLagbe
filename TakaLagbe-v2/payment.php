@@ -51,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (MoneyError $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            record_refusal($e);
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }

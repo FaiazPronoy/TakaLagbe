@@ -32,6 +32,9 @@ if ($direction === 'in') {
     $where[]  = 't.transaction_from = ?';
     $params[] = $phone;
 }
+// a date that is not a real date is ignored rather than passed to MySQL
+$from = valid_date($from) ? $from : '';
+$to   = valid_date($to)   ? $to   : '';
 if ($from !== '') {
     $where[]  = 'DATE(t.transaction_time) >= ?';
     $params[] = $from;
@@ -60,7 +63,7 @@ $sumOut = (float) scalar(
     array_merge($params, [$phone]), 0);
 
 $rows = all(
-    "SELECT t.* FROM transactions t WHERE $clause
+    TRX_WITH_NAMES . " WHERE $clause
       ORDER BY t.transaction_time DESC, t.id DESC
       LIMIT " . ROWS_PER_PAGE . " OFFSET " . $offset,
     $params);

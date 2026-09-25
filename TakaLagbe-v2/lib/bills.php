@@ -5,10 +5,10 @@ require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/money.php';
 
 const BILL_TYPES = [
-    'electricity_bills' => ['Electricity bill', "\u{26A1}", 'Meter number',    'electricity.jpg'],
-    'gas_bills'         => ['Gas bill',         "\u{1F525}", 'Customer number', 'gas.jpg'],
-    'water_bills'       => ['Water bill',       "\u{1F4A7}", 'Customer number', 'water.jpg'],
-    'internet_bills'    => ['Internet bill',    "\u{1F310}", 'Customer number', 'wifi.jpg'],
+    'electricity_bills' => ['Electricity bill', 'bolt',    'Meter number'],
+    'gas_bills'         => ['Gas bill',         'flame',   'Customer number'],
+    'water_bills'       => ['Water bill',       'droplet', 'Customer number'],
+    'internet_bills'    => ['Internet bill',    'wifi',    'Customer number'],
 ];
 
 /** Months a bill can be paid for: this month and the eleven before it. */
@@ -31,7 +31,7 @@ function run_bill_page(string $billtype): void
         http_response_code(404);
         exit('Unknown bill type.');
     }
-    [$title, $icon, $consumerLabel, $billImage] = BILL_TYPES[$billtype];
+    [$title, $icon, $consumerLabel] = BILL_TYPES[$billtype];
 
     $phone = require_login();
     $bal   = balance_of($phone);
@@ -43,6 +43,7 @@ function run_bill_page(string $billtype): void
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         require_csrf();
+        require_fresh('bill');
         $orgId      = post('organization_id');
         $consumerNo = post('consumer_no');
         $amount     = post('amount');
@@ -102,7 +103,15 @@ function run_bill_page(string $billtype): void
 
             } catch (MoneyError $e) {
                 if ($pdo->inTransaction()) { $pdo->rollBack(); }
+                record_refusal($e);
                 $error = $e->getMessage();
+            } catch (PDOException $e) {
+                if ($pdo->inTransaction()) { $pdo->rollBack(); }
+                // the unique key caught a second payment for the same month
+                // that slipped past the check above at the same moment
+                $error = ($e->errorInfo[1] ?? 0) === 1062
+                    ? 'This bill was already paid for ' . $month . '.'
+                    : 'The bill could not be paid. Please try again.';
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) { $pdo->rollBack(); }
                 $error = 'The bill could not be paid. Please try again.';

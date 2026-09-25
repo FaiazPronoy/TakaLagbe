@@ -1,4 +1,6 @@
 <?php
+/* Spending insights. Savings moves are left out throughout: the money
+   never left the wallet, so counting it would call saving spending. */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/view.php';
 
@@ -12,7 +14,7 @@ $since  = date('Y-m-d', strtotime("-$days day"));
 $catRows = all(
     "SELECT category, SUM(amount + fee) total, COUNT(*) n
        FROM transactions
-      WHERE transaction_from = ? AND status = 'success'
+      WHERE transaction_from = ? AND status = 'success' AND transaction_type NOT IN ('Savings', 'Savings Release')
         AND DATE(transaction_time) >= ?
       GROUP BY category ORDER BY total DESC", [$phone, $since]);
 
@@ -29,7 +31,7 @@ $trendRows = all(
             SUM(CASE WHEN transaction_from = ? THEN amount + fee ELSE 0 END) outgoing,
             SUM(CASE WHEN transaction_to   = ? THEN amount ELSE 0 END) incoming
        FROM transactions
-      WHERE (transaction_from = ? OR transaction_to = ?) AND status = 'success'
+      WHERE (transaction_from = ? OR transaction_to = ?) AND status = 'success' AND transaction_type NOT IN ('Savings', 'Savings Release')
         AND transaction_time >= (CURDATE() - INTERVAL 5 MONTH)
       GROUP BY ym ORDER BY ym", [$phone, $phone, $phone, $phone]);
 
@@ -51,37 +53,38 @@ $trendMax = max(1.0, max(array_merge(array_column($trend, 'outgoing'),
 
 /* ---- who you send to most ------------------------------------------ */
 $topPeople = all(
-    "SELECT transaction_to who, SUM(amount) total, COUNT(*) n
-       FROM transactions
-      WHERE transaction_from = ? AND transaction_type = 'Send Money'
-        AND status = 'success' AND DATE(transaction_time) >= ?
-      GROUP BY transaction_to ORDER BY total DESC LIMIT 5", [$phone, $since]);
+    "SELECT t.transaction_to who, u.firstname, u.lastname, u.avatar_color, SUM(t.amount) total, COUNT(*) n
+       FROM transactions t LEFT JOIN user u ON u.phone = t.transaction_to
+      WHERE t.transaction_from = ? AND t.transaction_type = 'Send Money'
+        AND t.status = 'success' AND t.transaction_type NOT IN ('Savings', 'Savings Release') AND DATE(t.transaction_time) >= ?
+      GROUP BY t.transaction_to, u.firstname, u.lastname, u.avatar_color
+      ORDER BY total DESC LIMIT 5", [$phone, $since]);
 
 /* ---- habit numbers -------------------------------------------------- */
 $busiestDay = one(
     "SELECT DAYNAME(transaction_time) d, COUNT(*) n
        FROM transactions
-      WHERE transaction_from = ? AND status = 'success' AND DATE(transaction_time) >= ?
+      WHERE transaction_from = ? AND status = 'success' AND transaction_type NOT IN ('Savings', 'Savings Release') AND DATE(transaction_time) >= ?
       GROUP BY d ORDER BY n DESC LIMIT 1", [$phone, $since]);
 
 $avgSpend = (float) scalar(
     "SELECT COALESCE(AVG(amount + fee),0) FROM transactions
-      WHERE transaction_from = ? AND status = 'success' AND DATE(transaction_time) >= ?",
+      WHERE transaction_from = ? AND status = 'success' AND transaction_type NOT IN ('Savings', 'Savings Release') AND DATE(transaction_time) >= ?",
     [$phone, $since], 0);
 
 $biggest = one(
     "SELECT * FROM transactions
-      WHERE transaction_from = ? AND status = 'success' AND DATE(transaction_time) >= ?
+      WHERE transaction_from = ? AND status = 'success' AND transaction_type NOT IN ('Savings', 'Savings Release') AND DATE(transaction_time) >= ?
       ORDER BY amount DESC LIMIT 1", [$phone, $since]);
 
 $feesPaid = (float) scalar(
     "SELECT COALESCE(SUM(fee),0) FROM transactions
-      WHERE transaction_from = ? AND status = 'success' AND DATE(transaction_time) >= ?",
+      WHERE transaction_from = ? AND status = 'success' AND transaction_type NOT IN ('Savings', 'Savings Release') AND DATE(transaction_time) >= ?",
     [$phone, $since], 0);
 
 $cashbackEarned = (float) scalar(
     "SELECT COALESCE(SUM(cashback),0) FROM transactions
-      WHERE transaction_from = ? AND status = 'success' AND DATE(transaction_time) >= ?",
+      WHERE transaction_from = ? AND status = 'success' AND transaction_type NOT IN ('Savings', 'Savings Release') AND DATE(transaction_time) >= ?",
     [$phone, $since], 0);
 
 $failedCount = (int) scalar(

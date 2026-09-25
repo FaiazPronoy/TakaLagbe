@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/money.php';
+require_once __DIR__ . '/lib/view.php';
 
 $phone = require_login();
 $user  = current_user();
@@ -12,12 +13,12 @@ $limit    = (float) $user['daily_limit'];
 
 $monthIn = (float) scalar(
     "SELECT COALESCE(SUM(amount),0) FROM transactions
-      WHERE transaction_to = ? AND status = 'success'
+      WHERE transaction_to = ? AND status = 'success' AND transaction_type <> 'Savings Release'
         AND transaction_time >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", [$phone], 0);
 
 $monthOut = (float) scalar(
     "SELECT COALESCE(SUM(amount + fee),0) FROM transactions
-      WHERE transaction_from = ? AND status = 'success'
+      WHERE transaction_from = ? AND status = 'success' AND transaction_type <> 'Savings'
         AND transaction_time >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", [$phone], 0);
 
 $saved = (float) scalar(
@@ -30,9 +31,9 @@ $cashback = (float) scalar(
 
 /* --- recent activity -------------------------------------------------- */
 $recent = all(
-    "SELECT * FROM transactions
-      WHERE (transaction_from = ? OR transaction_to = ?) AND status = 'success'
-      ORDER BY transaction_time DESC, id DESC LIMIT 6", [$phone, $phone]);
+    TRX_WITH_NAMES . "
+      WHERE (t.transaction_from = ? OR t.transaction_to = ?) AND t.status = 'success'
+      ORDER BY t.transaction_time DESC, t.id DESC LIMIT 6", [$phone, $phone]);
 
 /* --- money people are waiting on ------------------------------------- */
 $requests = all(

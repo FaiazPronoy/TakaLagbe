@@ -156,6 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } catch (MoneyError $e) {
+        record_refusal($e);
         $error = $e->getMessage();
     } catch (Throwable $e) {
         $error = 'That did not work. Please try again.';

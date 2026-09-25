@@ -52,7 +52,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $left  = pin_tries_left($phone);
         $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
     } else {
+        $pdo = db();
+        $pdo->beginTransaction();
         try {
+            // a request only counts as paid when this is the payment it asked for
+            $req = null;
+            if ($reqId) {
+                $req = one("SELECT * FROM money_requests
+                             WHERE id = ? AND payer_phone = ? AND status = 'pending' FOR UPDATE",
+                           [$reqId, $phone]);
+                if ($req && ($req['requester_phone'] !== $receiver
+                             || (float) $req['amount'] !== round((float) $amount, 2))) {
+                    throw new MoneyError('That request is for ' . money($req['amount']) . ' to '
+                        . name_of($req['requester_phone']) . '. Change the number or amount back to pay it.');
+                }
+            }
+
             $trx = move_money([
                 'from'     => $phone,
                 'to'       => $receiver,
@@ -63,22 +78,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'fee_pct'  => FEE_SEND_MONEY_PCT,
             ]);
 
+            if ($req) {
+                q("UPDATE money_requests SET status = 'paid' WHERE id = ?", [$req['id']]);
+            }
             if ($saveFav) {
                 q('INSERT IGNORE INTO favourites (owner_phone, saved_phone, label)
                    VALUES (?,?,?)',
                   [$phone, $receiver, mb_substr(name_of($receiver), 0, 120)]);
             }
-            if ($reqId) {
-                q("UPDATE money_requests SET status = 'paid'
-                    WHERE id = ? AND payer_phone = ?", [$reqId, $phone]);
-            }
+            $pdo->commit();
 
             flash('ok', money($amount) . ' sent to ' . name_of($receiver) . '.');
             redirect('receipt.php?id=' . urlencode($trx['trx_id']));
 
         } catch (MoneyError $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
+            record_refusal($e);
             $error = $e->getMessage();
         } catch (Throwable $e) {
+            if ($pdo->inTransaction()) { $pdo->rollBack(); }
             $error = 'The transfer could not be completed. Nothing has left your account.';
         }
     }
