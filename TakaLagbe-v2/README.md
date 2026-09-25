@@ -4,29 +4,48 @@ A digital money transaction system: send money, pay bills, recharge, save,
 split bills and settle up, with a full back office for the operator.
 
 Built as the **CSE370 Database Systems** project at BRAC University.
-PHP 8 and MySQL, no framework, no Composer, no CDN. The whole thing runs
-from a plain XAMPP folder with the network unplugged.
+PHP 8 and MySQL, no framework, no Composer, no JavaScript library. The only
+thing fetched from outside is the two fonts; offline, the pages fall back to
+Georgia and the system sans.
 
 ---
 
 ## Running it
 
-1. Copy this folder into `C:\xampp\htdocs\`.
-2. Start **Apache** and **MySQL** from the XAMPP control panel.
-3. Open phpMyAdmin, go to **Import**, choose `takalagbe.sql` and run it.
-   The file creates the `takalagbe` database itself, so there is nothing to
-   set up first.
-4. Open <http://localhost/TakaLagbe-v2/>.
+1. Copy this folder into `C:\xampp\htdocs\` and start **Apache** and **MySQL**.
+2. Import `takalagbe.sql` in phpMyAdmin. It creates the `takalagbe` database.
+3. Fill it with demo data: `C:\xampp\php\php.exe tools\seed_demo.php --yes`
+4. Open <http://localhost/TakaLagbe-v2/> and sign in as `01711482093` /
+   `demo1234`. The transaction PIN is `482915`.
 
-If your MySQL user is not `root` with an empty password, change the four
-constants at the top of `config/config.php`.
+`RUN-TakaLagbe.bat` one folder up does all four. The admin console is at
+`admin_login.php`, `admin` / `admin123`.
 
-**Admin console:** <http://localhost/TakaLagbe-v2/admin_login.php> ·
-username `admin`, password `admin123`.
+With no `config/local.php` the app assumes XAMPP's `root` with no password
+and shows errors on screen.
 
-Sign up a normal customer through the app. You will be asked for a password
-and a separate six digit transaction PIN; the PIN is what protects every
-payment.
+### On a server
+
+Copy `config/local.example.php` to `config/local.php` and fill in the
+database, `DEBUG => false` and the host name. `local.php` is ignored by git.
+Settings can also come from `TKL_DB_HOST`, `TKL_DB_NAME` and so on.
+
+Hosts without a shell (InfinityFree) cannot run the seed script, so build one
+file to import instead:
+
+```
+php tools/seed_demo.php --yes
+php tools/build_hosting_sql.php hosting.sql
+```
+
+`hosting.sql` is the schema without `CREATE DATABASE`, followed by the demo
+rows. Import it into the database the host gave you.
+
+In production the app sends everyone to HTTPS (it trusts a proxy's
+`X-Forwarded-Proto`), marks the session cookie `Secure` and `SameSite=Lax`,
+refuses a `Host` it was not configured for and a form posted from another
+site, and `.htaccess` keeps `config/`, `lib/`, `tools/`, `tests/`, the views
+and the `.sql` file from being opened directly.
 
 ---
 
@@ -210,22 +229,26 @@ is the one to ask me about.
 
 ```
 takalagbe/
+├── .htaccess             HTTPS, headers, and what may not be opened directly
 ├── config/
 │   ├── config.php        every tunable number: limits, fees, cashback
+│   ├── local.example.php settings for a server, copied to local.php
 │   ├── db.php            the PDO connection and four query helpers
 │   └── helpers.php       session, auth guard, CSRF, flash, formatting, audit
 ├── lib/
 │   ├── money.php         the money engine, the only thing that writes balances
 │   ├── bills.php         one engine behind all four bill pages
 │   ├── qr.php            the QR encoder
-│   └── view.php          shared rendering for a transaction row and the charts
+│   ├── icons.php         the SVG icon set and the engraved rosette
+│   └── view.php          shared markup: rows, PIN field, empty states, charts
 ├── Assets/
-│   ├── css/app.css       the whole design system, light and dark
+│   ├── css/app.css       design tokens, then everything built from them
 │   └── js/app.js         plain JavaScript, no library
 ├── Front_end/
 │   ├── partials/         head, nav, foot, admin nav
 │   └── front_*.php       one view per page
-├── tests/e2e.py          82 end to end checks against a running server
+├── tools/                demo data, and the SQL file for shared hosting
+├── tests/                the HTTP suite and the browser checks
 ├── *.php                 one controller per page
 └── takalagbe.sql         the schema and the reference data
 ```
@@ -237,45 +260,42 @@ the root does the work, then includes its view from `Front_end/`.
 
 ## Tests
 
-`tests/e2e.py` drives the real application over HTTP the way a browser would,
-then checks the database behind it.
+Two suites. Both empty and refill tables, so give them their own database:
 
-The suite empties every table before it runs, so give it its own database
-rather than the one you have been using. The dump names the database itself,
-so swap the name on the way in:
-
-```bash
+```
 sed "s/`takalagbe`/`takalagbe_test`/g" takalagbe.sql | mysql -u root
+```
 
-php -S 127.0.0.1:8080 -t .                          # one terminal
-set TKL_DB_NAME=takalagbe_test
+and point a web server at this folder with `TKL_DB_NAME=takalagbe_test`.
+Use Apache (XAMPP's is fine) rather than `php -S`: on Windows the built in
+server answers one request at a time, so the race tests would pass without
+testing anything.
+
+**`tests/e2e.py`** (Python, `requests`) drives the app over HTTP and checks the
+database after each step, 111 checks: signup, every money flow and its
+arithmetic, charges and cashback, limits, savings, requests, split bills, the
+admin console, CSRF and replayed forms, SQL injection, escaping, PIN and
+sign in lockouts, other people's receipts, and three races run at the same
+moment (two transfers from one balance, three cash outs at one agent, three
+payments of one bill or fee).
+
+```
+set TKL_BASE=http://127.0.0.1:8090
 set TKL_DB=takalagbe_test
-python tests/e2e.py                                 # another
+python tests/e2e.py
 ```
 
-Both variables matter: `TKL_DB_NAME` is what the app connects to and `TKL_DB`
-is what the suite checks.
-
-The suite finds the MySQL client itself, so it works with XAMPP as well as with
-a system MariaDB. If it is not on your PATH, point it at the binary:
+**`tests/browser_checks.py`** (Playwright, using the Edge that comes with
+Windows) needs the test database filled by `seed_demo.php` first. It crawls
+every page a customer and an admin can reach and fails on any status other
+than 200 or any console error, measures the contrast of every piece of text
+against WCAG AA in both themes, tries the dialogs, keyboard and hold to send,
+runs the main flows with JavaScript switched off, checks for sideways
+scrolling at 390px, and saves screenshots to `tests/out/`.
 
 ```
-set TKL_MYSQL=C:\xampp\mysql\bin\mysql.exe
+pip install playwright
+python tests/browser_checks.py
 ```
-
-82 checks covering signup and sign in, every money flow and its arithmetic,
-the charges and the cashback, the caps and the daily limit, savings, requests,
-split bills, the admin console, and:
-
-- CSRF forgery is rejected
-- SQL injection in a form field and in the search box does nothing
-- a script tag in a note is escaped
-- five wrong PINs freeze the account
-- repeated bad sign ins lock the number
-- one user cannot open another user's receipt
-- two simultaneous transfers cannot overdraw an account
-- no balance is ever negative and every transaction id is unique
-- a trigger keeps a biller's total in step with its payment rows
-- awkward inputs: a very long name, note, goal title or admin username
 
 ---

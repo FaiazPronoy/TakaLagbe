@@ -22,7 +22,9 @@ function db(): PDO
             $pdo->exec("SET time_zone = '+06:00'");
         } catch (PDOException $e) {
             http_response_code(500);
-            exit('Database connection failed. Please check config/config.php.');
+            error_log('TakaLagbe database connection failed: ' . $e->getMessage());
+            exit(APP_DEBUG ? 'Database connection failed: ' . $e->getMessage()
+                           : 'The service is not available right now. Please try again shortly.');
         }
     }
     return $pdo;
