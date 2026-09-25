@@ -314,14 +314,16 @@ def main():
         wide = []
         for url in list(pages) + list(public):
             pp.goto(url)
-            if pp.evaluate("document.documentElement.scrollWidth > window.innerWidth"):
+            # a phone quietly zooms out to fit a page that is too wide, so compare
+            # with the 390 we asked for, not with whatever width it settled on
+            if pp.evaluate("document.documentElement.scrollWidth > 390"):
                 wide.append(urlparse(url).path)
         pa = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True)
         admin_in(pa.new_page())
         pap = pa.new_page()
         for url in admin_pages:
             pap.goto(url)
-            if pap.evaluate("document.documentElement.scrollWidth > window.innerWidth"):
+            if pap.evaluate("document.documentElement.scrollWidth > 390"):
                 wide.append(urlparse(url).path)
         check("no page scrolls sideways at 390px", not wide, sorted(set(wide)))
 
@@ -385,7 +387,7 @@ def main():
               val("SELECT COUNT(*) FROM user u JOIN account a USING(phone) WHERE u.phone='%s'" % new_phone) == "1")
         sign_in(fresh, new_phone, "raisa2026")
         check("the new user can sign in", fresh.url.endswith("account.php"))
-        check("and starts on an empty state, not a blank box", "Nothing here yet" in fresh.content())
+        check("and starts on an empty state, not a blank box", "No activity yet" in fresh.content())
 
         page.goto(BASE + "/favourites.php")
         page.click('a[href="#addFav"]')

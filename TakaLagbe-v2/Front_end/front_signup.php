@@ -18,6 +18,8 @@ $bad = static fn(string $k): string =>
           <span>Some details need another look. Each one is marked below.</span></div>
       <?php endif; ?>
 
+      <p class="note warn small"><?= icon('info') ?><span>This is a demo wallet. Please use made up details, not your real NID.</span></p>
+
       <form method="post" data-once novalidate>
         <?= csrf_field() ?>
 

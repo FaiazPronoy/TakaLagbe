@@ -21,14 +21,6 @@ $monthOut = (float) scalar(
       WHERE transaction_from = ? AND status = 'success' AND transaction_type <> 'Savings'
         AND transaction_time >= DATE_FORMAT(CURDATE(), '%Y-%m-01')", [$phone], 0);
 
-$saved = (float) scalar(
-    "SELECT COALESCE(SUM(saved_amount),0) FROM savings_goals
-      WHERE phone = ? AND status = 'active'", [$phone], 0);
-
-$cashback = (float) scalar(
-    "SELECT COALESCE(SUM(cashback),0) FROM transactions
-      WHERE transaction_from = ? AND status = 'success'", [$phone], 0);
-
 /* --- recent activity -------------------------------------------------- */
 $recent = all(
     TRX_WITH_NAMES . "
@@ -41,30 +33,6 @@ $requests = all(
        LEFT JOIN user u ON u.phone = r.requester_phone
       WHERE r.payer_phone = ? AND r.status = 'pending'
       ORDER BY r.created_at DESC LIMIT 3", [$phone]);
-
-/* --- seven day outgoing chart ---------------------------------------- */
-$rows = all(
-    "SELECT DATE(transaction_time) d, SUM(amount + fee) total
-       FROM transactions
-      WHERE transaction_from = ? AND status = 'success'
-        AND transaction_time >= (CURDATE() - INTERVAL 6 DAY)
-      GROUP BY DATE(transaction_time)", [$phone]);
-$byDay = [];
-foreach ($rows as $r) {
-    $byDay[$r['d']] = (float) $r['total'];
-}
-$chart = [];
-for ($i = 6; $i >= 0; $i--) {
-    $d = date('Y-m-d', strtotime("-$i day"));
-    $chart[] = ['label' => date('D', strtotime($d)), 'value' => $byDay[$d] ?? 0.0];
-}
-$chartMax = max(1.0, max(array_column($chart, 'value')));
-
-/* --- favourites for one tap sending ---------------------------------- */
-$favourites = all(
-    "SELECT f.saved_phone, f.label, u.firstname, u.lastname, u.avatar_color
-       FROM favourites f LEFT JOIN user u ON u.phone = f.saved_phone
-      WHERE f.owner_phone = ? ORDER BY f.created_at DESC LIMIT 6", [$phone]);
 
 $pageTitle = 'Home';
 $activeNav = 'home';

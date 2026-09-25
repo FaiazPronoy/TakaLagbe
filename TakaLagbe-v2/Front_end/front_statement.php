@@ -6,7 +6,7 @@ $csv = 'statement.php?format=csv&from=' . urlencode($from) . '&to=' . urlencode(
 <main id="main" class="page">
   <div class="wrap">
     <div class="no-print">
-      <?= page_head('Statement', 'The official-looking one. Print it, PDF it, or hand it to whoever is asking.',
+      <?= page_head('Statement', 'Your transactions for any period. Print it or save it as a PDF.',
             ['history.php', 'History'],
             '<a class="btn btn-quiet" href="' . e($csv) . '">' . icon('download') . 'CSV</a>'
           . '<button class="btn js-only" type="button" onclick="window.print()">' . icon('print') . 'Print or save as PDF</button>', badge: ['file', 8]) ?>

@@ -17,7 +17,7 @@ include __DIR__ . '/partials/nav.php';
         <?php if (valid_amount($amount)): ?>
           <p class="big-amt" style="font-size:var(--step-2)">Asking for <?= e(money($amount)) ?></p>
         <?php endif; ?>
-        <p class="small muted">Made right here by the app, pixel by pixel.</p>
+        <p class="small muted">Anyone on TakaLagbe can scan this to pay you.</p>
 
         <form method="get" class="no-print mt-4" style="text-align:left">
           <div class="field">

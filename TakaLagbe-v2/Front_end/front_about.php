@@ -12,7 +12,7 @@ $features = [
     ['bag',      'Shops',            'Each merchant sets its own cashback.'],
     ['target',   'Savings goals',    'Money set aside so it cannot be spent by accident.'],
     ['split',    'Requests, splits', 'Ask one person, or split a bill many ways.'],
-    ['qr',       'QR codes',         'Encoded by the app itself, byte by byte.'],
+    ['qr',       'QR codes',         'Show your code to get paid, or scan one to pay.'],
     ['chart',    'Insights',         'Categories, six month trend, habits.'],
     ['file',     'Statements',       'Printable, or a CSV that Excel reads correctly.'],
 ];
@@ -28,7 +28,7 @@ $security = [
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('About ' . APP_NAME, APP_TAGLINE . ' A mobile wallet built for CSE370, Database Systems, at BRAC University.',
+    <?= page_head('About ' . APP_NAME, 'One wallet for sending, paying, saving and splitting, made in Dhaka.',
                   ['account.php', 'Home'], '', 'Version ' . APP_VERSION, badge: ['info', 8]) ?>
 
     <section class="hero rise mb-6" style="--n:1" aria-label="In numbers">
@@ -53,9 +53,9 @@ $security = [
       <?php endforeach; ?>
     </div>
 
-    <div class="split">
+    <div>
       <section class="card reveal" aria-labelledby="safeTitle">
-        <div class="card-h"><h2 id="safeTitle">How the money is kept straight</h2></div>
+        <div class="card-h"><h2 id="safeTitle">How we keep your money safe</h2></div>
         <ol class="rows" style="list-style:none">
           <?php foreach ($security as $i => [$t, $b]): ?>
             <li class="entry" style="align-items:flex-start">
@@ -67,18 +67,6 @@ $security = [
         </ol>
       </section>
 
-      <section class="card reveal" style="--n:1" aria-labelledby="stackTitle">
-        <div class="card-h"><h2 id="stackTitle">How it is built</h2></div>
-        <dl class="grid m0" style="grid-template-columns:auto 1fr;gap:var(--s2) var(--s4)">
-          <dt class="muted">Language</dt><dd class="m0">PHP 8, no framework</dd>
-          <dt class="muted">Database</dt><dd class="m0">MySQL / MariaDB, InnoDB, 18 tables</dd>
-          <dt class="muted">Front end</dt><dd class="m0">Hand written CSS and plain JavaScript</dd>
-          <dt class="muted">Libraries</dt><dd class="m0">None</dd>
-          <dt class="muted">QR codes</dt><dd class="m0">An encoder written for this project</dd>
-        </dl>
-        <p class="small muted m0 mt-4">Money columns are DECIMAL, never FLOAT, so a fraction of a
-          taka is never lost to rounding. Nothing here moves real money.</p>
-      </section>
     </div>
   </div>
 </main>

@@ -34,10 +34,10 @@ $f = take_flash();
 
       <p class="center mt-4">New here? <a href="signup.php">Grab a wallet, it's free</a></p>
 
-      <div class="demo">
-        <strong>Just looking around?</strong> Sign in as <code>01711482093</code> with
-        <code>demo1234</code>. The transaction PIN is <code>482915</code>.
-        The back office is at <a href="admin_login.php">admin sign in</a>.
+      <div class="js-only demo-try">
+        <button class="btn btn-quiet btn-block" type="button" id="tryDemo"
+                data-phone="01711482093" data-password="demo1234"><?= icon('user') ?>Try the demo account</button>
+        <p class="small muted" id="demoPin" hidden>Filled in for you. When a payment asks for a PIN, use <strong>482915</strong>.</p>
       </div>
     </div>
   </main>

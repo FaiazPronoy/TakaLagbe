@@ -11,7 +11,7 @@ $filtered = $search !== '' || $type !== '' || $direction !== '' || $from !== '' 
 
     <form class="card rise mb-4" style="--n:1" method="get" role="search" aria-label="Filter transactions">
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));align-items:end">
-        <div class="field m0" style="grid-column:span 2">
+        <div class="field m0 span-2">
           <label for="q">Search</label>
           <input id="q" name="q" type="search" value="<?= e($search) ?>" placeholder="Name, number, note, reference">
         </div>

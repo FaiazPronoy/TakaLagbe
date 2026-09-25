@@ -2,156 +2,101 @@
 include __DIR__ . '/partials/head.php';
 include __DIR__ . '/partials/nav.php';
 
-$actions = [
-    ['sendmoney.php',      'send',     'Send money', 1],
-    ['add_money.php',      'wallet',   'Add money',  2],
-    ['cash_out.php',       'cash-out', 'Cash out',   8],
-    ['cash_in.php',        'cash-in',  'Cash in',    2],
-    ['mobilerecharge.php', 'phone',    'Recharge',   6],
-    ['paybill.php',        'receipt',  'Pay bills',  5],
-    ['payment.php',        'bag',      'Pay a shop', 7],
-    ['education_fee.php',  'cap',      'Tuition',    4],
-    ['qr.php',             'qr',       'My QR',      3],
-    ['statement.php',      'file',     'Statement',  8],
+// the four things people come to do, then everything else
+$main = [
+    ['sendmoney.php', 'send',     'Send money', 1],
+    ['add_money.php', 'wallet',   'Add money',  2],
+    ['cash_out.php',  'cash-out', 'Cash out',   8],
+    ['paybill.php',   'receipt',  'Pay bills',  5],
+];
+$more = [
+    ['mobilerecharge.php', 'phone',   'Recharge',   6],
+    ['payment.php',        'bag',     'Pay a shop', 7],
+    ['education_fee.php',  'cap',     'Tuition',    4],
+    ['cash_in.php',        'cash-in', 'Cash in',    2],
+    ['savings.php',        'target',  'Savings',    3],
+    ['requests.php',       'split',   'Split a bill', 4],
+    ['qr.php',             'qr',      'My QR',      1],
+    ['statement.php',      'file',    'Statement',  8],
 ];
 $usedPct = $limit > 0 ? min(100, round($todayOut / $limit * 100)) : 0;
 $hour    = (int) date('G');
-$hello   = match (true) {
-    $hour < 5   => 'Still up, ',
-    $hour < 12  => 'Shubho shokal, ',
-    $hour < 17  => 'Good afternoon, ',
-    $hour < 21  => 'Evening, ',
-    default     => 'Late night, ',
-};
+$hello   = $hour < 12 ? 'Good morning' : ($hour < 17 ? 'Good afternoon' : 'Good evening');
+$owed    = array_sum(array_map(static fn($r) => (float) $r['amount'], $requests));
 ?>
 <main id="main" class="page">
-  <div class="wrap">
+  <div class="wrap home">
 
     <div class="head rise">
       <div>
-        <span class="eyebrow"><?= e(date('l, j F')) ?></span>
-        <h1><?= e($hello . $user['firstname']) ?>!</h1>
+        <h1><?= e($hello) ?>, <?= e($user['firstname']) ?></h1>
         <p class="lede">টাকা লাগবে? পাঠাও, ভাগ করো, নয়তো জমিয়ে রাখো।</p>
       </div>
-      <div class="row">
-        <a class="btn btn-quiet" href="add_money.php"><?= icon('wallet') ?>Top up</a>
-        <a class="btn" href="sendmoney.php"><?= icon('send') ?>Send money</a>
-      </div>
     </div>
 
-    <div class="split">
-      <section class="hero rise" style="--n:1" aria-labelledby="balLabel">
-        <?= guilloche() ?>
-        <div class="between">
-          <span class="label" id="balLabel">In your wallet</span>
-          <button class="tool js-only" id="eyeBtn" type="button" aria-pressed="false" aria-label="Hide balance"
-                  style="color:var(--on-hero)">
-            <span class="i-eye" style="display:none"><?= icon('eye') ?></span>
-            <span class="i-eye-off"><?= icon('eye-off') ?></span>
-          </button>
-        </div>
-        <p class="figure" id="balanceFigure">
-          <span class="real"><span class="cur">৳</span><?= e(money($bal, false)) ?></span>
-          <span class="dots" hidden><span class="cur">৳</span>••••••</span>
-        </p>
-        <p class="who"><?= e($user['firstname'] . ' ' . $user['lastname']) ?> · <span class="mono"><?= e($phone) ?></span></p>
+    <section class="hero rise" style="--n:1" aria-labelledby="balLabel">
+      <?= guilloche() ?>
+      <div class="between">
+        <span class="label" id="balLabel">Available balance</span>
+        <button class="tool js-only" id="eyeBtn" type="button" aria-pressed="false" aria-label="Hide balance"
+                style="color:var(--on-hero)">
+          <span class="i-eye" style="display:none"><?= icon('eye') ?></span>
+          <span class="i-eye-off"><?= icon('eye-off') ?></span>
+        </button>
+      </div>
+      <p class="figure" id="balanceFigure">
+        <span class="real"><span class="cur">৳</span><?= e(money($bal, false)) ?></span>
+        <span class="dots" hidden><span class="cur">৳</span>••••••</span>
+      </p>
+      <p class="who"><?= e($user['firstname'] . ' ' . $user['lastname']) ?> · <span class="mono"><?= e($phone) ?></span></p>
 
-        <div class="mt-5">
-          <div class="between small mb-2">
-            <span style="color:var(--on-hero-2)">Sent today</span>
-            <span class="num"><?= e(money($todayOut, false)) ?> of <?= e(money($limit, false)) ?></span>
-          </div>
+      <div class="hero-foot">
+        <div><span class="k">In this month</span><span class="n">+ ৳<?= e(money($monthIn, false)) ?></span></div>
+        <div><span class="k">Out this month</span><span class="n">− ৳<?= e(money($monthOut, false)) ?></span></div>
+        <div class="grow">
+          <span class="k">Sent today · <?= e(money($todayOut, false)) ?> of <?= e(money($limit, false)) ?></span>
           <div class="meter" role="progressbar" aria-label="Daily limit used"
                aria-valuenow="<?= $usedPct ?>" aria-valuemin="0" aria-valuemax="100">
-            <span style="width:<?= $usedPct ?>%"></span>
-          </div>
+            <span style="width:<?= $usedPct ?>%"></span></div>
         </div>
-      </section>
-
-      <div class="grid" style="grid-template-columns:1fr 1fr">
-        <?php foreach ([['Came in', $monthIn, 'pos', 'arrow-in', 2], ['Went out', $monthOut, 'neg', 'arrow-out', 3],
-                        ['Stashed away', $saved, '', 'target', 4], ['Cashback', $cashback, '', 'gift', 5]] as $i => [$k, $v, $cls, $ico, $tone]): ?>
-          <div class="stat tone-<?= $tone ?> rise" style="--n:<?= $i + 2 ?>">
-            <span class="label"><?= icon($ico) ?><?= e($k) ?></span>
-            <span class="v <?= $cls ?>"><small>৳</small><?= e(money($v, false)) ?></span>
-            <span class="sub">this month</span>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    </div>
-
-    <?php if ($requests): ?>
-      <section class="card reveal mt-5 tone-5" style="border-left:4px solid var(--brass)">
-        <div class="card-h"><h2><?= icon('hand') ?>Someone's waiting on you</h2><a href="requests.php">See all</a></div>
-        <ul class="rows">
-          <?php foreach ($requests as $r):
-            $who = $r['firstname'] ? $r['firstname'] : $r['requester_phone']; ?>
-            <li class="entry">
-              <?= avatar($r['firstname'], $r['lastname'], $r['avatar_color'] ?? null) ?>
-              <span class="body">
-                <span class="t"><?= e($who) ?> wants <span class="num"><?= e(money($r['amount'])) ?></span></span>
-                <span class="s"><?= e($r['note'] ?: 'no note, just vibes') ?> · <?= e(time_ago($r['created_at'])) ?></span>
-              </span>
-              <a class="btn btn-sm" href="sendmoney.php?request=<?= (int) $r['id'] ?>"><?= icon('send') ?>Pay</a>
-            </li>
-          <?php endforeach; ?>
-        </ul>
-      </section>
-    <?php endif; ?>
-
-    <section class="mt-6" aria-labelledby="doTitle">
-      <h2 id="doTitle" class="reveal">What are we doing today?</h2>
-      <div class="actions">
-        <?php foreach ($actions as $i => [$href, $ico, $name, $tone]): ?>
-          <a class="action lift reveal tone-<?= $tone ?>" style="--n:<?= $i % 5 ?>" href="<?= $href ?>">
-            <span class="disc"><?= icon($ico) ?></span><?= e($name) ?>
-          </a>
-        <?php endforeach; ?>
       </div>
     </section>
 
-    <?php if ($favourites): ?>
-      <section class="card reveal mt-6 tone-5">
-        <div class="card-h"><h2><?= icon('star') ?>Your people</h2><a href="favourites.php">Edit</a></div>
-        <div class="row" style="gap:var(--s5);overflow-x:auto;padding:var(--s1) 0">
-          <?php foreach ($favourites as $f): ?>
-            <a href="sendmoney.php?to=<?= e($f['saved_phone']) ?>" class="center"
-               style="text-decoration:none;color:var(--ink);min-width:72px">
-              <?= avatar($f['firstname'], $f['lastname'], $f['avatar_color'], 'mx') ?>
-              <span class="small"><?= e($f['label'] ?: $f['firstname']) ?></span>
-            </a>
-          <?php endforeach; ?>
-        </div>
-      </section>
+    <nav class="big-actions rise" style="--n:2" aria-label="Main actions">
+      <?php foreach ($main as [$href, $ico, $name, $tone]): ?>
+        <a class="big-action lift tone-<?= $tone ?>" href="<?= $href ?>"><span class="disc"><?= icon($ico) ?></span><?= e($name) ?></a>
+      <?php endforeach; ?>
+    </nav>
+
+    <?php if ($requests): ?>
+      <a class="alert-strip rise" style="--n:3" href="requests.php">
+        <?= icon('hand') ?>
+        <span><strong><?= count($requests) === 1 ? e($requests[0]['firstname'] ?: $requests[0]['requester_phone']) . ' is'
+                        : count($requests) . ' people are' ?></strong> waiting for
+          <strong><?= e(money($owed)) ?></strong> from you</span>
+        <span class="go">Review <?= icon('arrow-out') ?></span>
+      </a>
     <?php endif; ?>
 
-    <div class="split mt-6">
-      <section class="card reveal tone-1">
-        <div class="card-h"><h2><?= icon('history') ?>What just happened</h2><a href="history.php">Everything</a></div>
-        <?php if (!$recent): ?>
-          <?= empty_state('wallet', 'Nothing here yet',
-                'Fresh wallet, who dis? Top up once and your money moves start showing up here.',
-                '<a class="btn" href="add_money.php">' . icon('wallet') . 'Top up</a>', 3, 2) ?>
-        <?php else: ?>
-          <ul class="rows"><?php foreach ($recent as $t) { echo trx_entry($t, $phone); } ?></ul>
-        <?php endif; ?>
-      </section>
-
-      <section class="card reveal tone-6" style="--n:1">
-        <div class="card-h"><h2><?= icon('chart') ?>Your week</h2><a href="analytics.php">Insights</a></div>
-        <p class="small muted">How much left your wallet each day. The gold bar is today.</p>
-        <div class="bars" role="img" aria-label="Spending over the last seven days">
-          <?php foreach ($chart as $i => $c): ?>
-            <div class="b<?= $i === 6 ? ' today' : '' ?>" title="<?= e($c['label'] . ': ' . money($c['value'])) ?>">
-              <i style="height:<?= round($c['value'] / $chartMax * 100) ?>%;--n:<?= $i ?>"></i>
-              <small><?= e($c['label']) ?></small>
-            </div>
+    <div class="home-grid">
+      <section class="card reveal" aria-labelledby="moreTitle">
+        <div class="card-h"><h2 id="moreTitle">More services</h2></div>
+        <div class="services">
+          <?php foreach ($more as $i => [$href, $ico, $name, $tone]): ?>
+            <a class="service tone-<?= $tone ?>" href="<?= $href ?>"><span class="disc"><?= icon($ico) ?></span><?= e($name) ?></a>
           <?php endforeach; ?>
         </div>
-        <div class="between small mt-3">
-          <span class="muted">Big spend day</span>
-          <span class="num"><?= e(money($chartMax > 1 ? $chartMax : 0)) ?></span>
-        </div>
+      </section>
+
+      <section class="card reveal" style="--n:1" aria-labelledby="actTitle">
+        <div class="card-h"><h2 id="actTitle">Recent activity</h2><a href="history.php">See all</a></div>
+        <?php if (!$recent): ?>
+          <?= empty_state('wallet', 'No activity yet',
+                'Add money to your wallet and your transactions will show up here.',
+                '<a class="btn" href="add_money.php">' . icon('wallet') . 'Add money</a>', 3, 2) ?>
+        <?php else: ?>
+          <ul class="rows"><?php foreach (array_slice($recent, 0, 5) as $t) { echo trx_entry($t, $phone); } ?></ul>
+        <?php endif; ?>
       </section>
     </div>
 

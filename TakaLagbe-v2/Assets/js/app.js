@@ -293,6 +293,17 @@
     });
   }
 
+  function demo() {
+    var b = $('#tryDemo');
+    if (!b) return;
+    b.addEventListener('click', function () {
+      $('#Phone').value = b.getAttribute('data-phone');
+      $('#Password').value = b.getAttribute('data-password');
+      $('#demoPin').hidden = false;
+      $('#Password').focus();
+    });
+  }
+
   /* sections rise in as they are scrolled to, a beat apart */
   function reveals() {
     var els = $$('.reveal');
@@ -307,6 +318,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     theme(); dialogs(); hold(); charges(); chips(); confirms(); once(); filters();
-    copies(); operators(); split(); balance(); toast(); peeks(); reveals();
+    copies(); operators(); split(); balance(); toast(); peeks(); demo(); reveals();
   });
 })();

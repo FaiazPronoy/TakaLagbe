@@ -27,10 +27,7 @@ $f = take_flash();
         <button class="btn btn-block" type="submit">Sign in</button>
       </form>
 
-      <div class="demo">
-        <strong>Demo admin:</strong> <code>admin</code> / <code>admin123</code>.
-        <a href="login.php">Back to the customer app</a>
-      </div>
+      <p class="center mt-4"><a href="login.php">Back to TakaLagbe</a></p>
     </div>
   </main>
 </div>

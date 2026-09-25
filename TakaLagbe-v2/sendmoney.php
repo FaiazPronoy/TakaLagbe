@@ -108,5 +108,5 @@ $favourites = all(
       WHERE f.owner_phone = ? ORDER BY f.created_at DESC LIMIT 8", [$phone]);
 
 $pageTitle = 'Send money';
-$activeNav = 'home';
+$activeNav = 'send';
 include('Front_end/front_sendmoney.php');

@@ -52,8 +52,7 @@ $chosen  = ['from' => $from, 'to' => $to];
           </tbody>
         </table>
       </div>
-      <p class="small muted m0 mt-3">Kept inside the app rather than fetched, so the page works offline.
-        They are set in currency.php and are not live market rates.</p>
+      <p class="small muted m0 mt-3">Rates are a guide only and can differ from what your bank charges.</p>
     </section>
   </div>
 </main>

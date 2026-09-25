@@ -49,7 +49,7 @@ include __DIR__ . '/partials/nav.php';
           <details><summary><?= e($q) ?></summary><p><?= e($a) ?></p></details>
         <?php endforeach; ?>
         <p class="small muted m0 mt-4" style="border-top:1px solid var(--line);padding-top:var(--s3)">
-          This is a university project, so there is no phone line. Messages sent here reach the admin console.</p>
+          We usually reply within a day. The answer lands in your notifications.</p>
       </section>
     </div>
   </div>

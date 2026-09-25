@@ -11,7 +11,7 @@ include __DIR__ . '/partials/nav.php';
     <div class="grid cols-3 mb-5">
       <div class="stat rise" style="--n:1"><span class="label"><?= icon('wallet') ?>Spendable</span>
         <span class="v"><small>৳</small><?= e(money($bal, false)) ?></span></div>
-      <div class="stat rise" style="--n:2"><span class="label"><?= icon('target') ?>Stashed</span>
+      <div class="stat rise" style="--n:2"><span class="label"><?= icon('target') ?>Saved</span>
         <span class="v pos"><small>৳</small><?= e(money($totalSaved, false)) ?></span></div>
       <div class="stat rise" style="--n:3"><span class="label"><?= icon('star') ?>Jars</span>
         <span class="v"><?= count($goals) ?> <small>of 8</small></span></div>
