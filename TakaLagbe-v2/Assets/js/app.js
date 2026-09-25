@@ -266,6 +266,33 @@
     if (b) b.addEventListener('click', function () { t.remove(); });
   }
 
+  /* an eye inside every password and PIN box, to check what was typed */
+  function peeks() {
+    var eye = '<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" '
+            + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+            + '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+    $$('input[type=password]').forEach(function (input) {
+      var wrap = document.createElement('span');
+      wrap.className = 'pw' + (input.classList.contains('pin') ? ' pin-wrap' : '');
+      input.parentNode.insertBefore(wrap, input);
+      wrap.appendChild(input);
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'peek';
+      b.innerHTML = eye;
+      b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', 'Show what you typed');
+      b.addEventListener('click', function () {
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        b.setAttribute('aria-pressed', show ? 'true' : 'false');
+        b.setAttribute('aria-label', show ? 'Hide it again' : 'Show what you typed');
+        input.focus();
+      });
+      wrap.appendChild(b);
+    });
+  }
+
   /* sections rise in as they are scrolled to, a beat apart */
   function reveals() {
     var els = $$('.reveal');
@@ -280,6 +307,6 @@
 
   document.addEventListener('DOMContentLoaded', function () {
     theme(); dialogs(); hold(); charges(); chips(); confirms(); once(); filters();
-    copies(); operators(); split(); balance(); toast(); reveals();
+    copies(); operators(); split(); balance(); toast(); peeks(); reveals();
   });
 })();

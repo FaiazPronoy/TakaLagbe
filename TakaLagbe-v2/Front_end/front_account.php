@@ -31,7 +31,7 @@ $hello   = match (true) {
       <div>
         <span class="eyebrow"><?= e(date('l, j F')) ?></span>
         <h1><?= e($hello . $user['firstname']) ?>!</h1>
-        <p class="lede">Taka lagbe? Send it, split it, or stash it for later.</p>
+        <p class="lede">টাকা লাগবে? পাঠাও, ভাগ করো, নয়তো জমিয়ে রাখো।</p>
       </div>
       <div class="row">
         <a class="btn btn-quiet" href="add_money.php"><?= icon('wallet') ?>Top up</a>
