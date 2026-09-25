@@ -2,56 +2,32 @@
 include __DIR__ . '/partials/head.php';
 include __DIR__ . '/partials/nav.php';
 ?>
-<main class="wrap-sm section">
+<main id="main" class="page">
+  <div class="wrap narrow">
+    <?= page_head('Check balance', 'Asks for the PIN first, so a borrowed phone shows nothing.', ['account.php', 'Home']) ?>
+    <?= error_note($error) ?>
 
-  <div class="between" style="margin-bottom:1rem">
-    <h1 class="mb0">Check balance</h1>
-    <a class="btn btn-ghost btn-sm" href="account.php">Back</a>
-  </div>
-
-  <?php if ($error): ?>
-    <div class="alert alert-error" style="margin-bottom:1rem"><span><?= e($error) ?></span></div>
-  <?php endif; ?>
-
-  <?php if ($balance !== null): ?>
-    <div class="card balance center">
-      <div class="label">Available balance</div>
-      <div class="amount"><?= e(money($balance)) ?></div>
-      <div class="meta" style="margin-top:.4rem">
-        <?= e($user['firstname'] . ' ' . $user['lastname']) ?> &middot; <?= e($phone) ?>
+    <?php if ($balance !== null): ?>
+      <section class="hero rise" aria-label="Your balance">
+        <?= guilloche() ?>
+        <span class="label">Available balance</span>
+        <p class="figure"><span class="cur">৳</span><?= e(money($balance, false)) ?></p>
+        <p class="who">Checked <?= date('j M Y, g:i a') ?></p>
+        <?php if ($inSavings > 0): ?>
+          <p class="who">Another <?= e(money($inSavings)) ?> is set aside in savings goals.</p>
+        <?php endif; ?>
+      </section>
+      <div class="row mt-4">
+        <a class="btn btn-quiet" href="account.php">Home</a>
+        <a class="btn" href="sendmoney.php"><?= icon('send') ?>Send money</a>
       </div>
-      <div class="meta tiny" style="margin-top:.6rem">
-        Checked on <?= date('d M Y \a\t g:i a') ?>
-      </div>
-    </div>
-    <?php if ($inSavings > 0): ?>
-      <div class="card" style="margin-top:1rem">
-        <div class="between mb0">
-          <span class="muted">Also held in savings goals</span>
-          <strong><?= e(money($inSavings)) ?></strong>
-        </div>
-      </div>
+    <?php else: ?>
+      <form method="post" class="card rise" style="--n:1" data-once>
+        <?= csrf_field() ?>
+        <?= pin_field() ?>
+        <button class="btn btn-block" type="submit">Show my balance</button>
+      </form>
     <?php endif; ?>
-    <div style="display:flex;gap:.5rem;margin-top:1rem">
-      <a class="btn btn-ghost btn-block" href="account.php">Home</a>
-      <a class="btn btn-primary btn-block" href="sendmoney.php">Send money</a>
-    </div>
-  <?php else: ?>
-    <form method="post" class="card" data-once>
-      <?= csrf_field() ?>
-      <p class="muted tiny center">Enter your transaction PIN to see your balance.</p>
-      <div class="field">
-        <div class="pin" data-pin="pinValue">
-          <?php for ($i = 0; $i < 6; $i++): ?>
-            <input type="password" inputmode="numeric" maxlength="1"
-                   aria-label="PIN digit <?= $i + 1 ?>">
-          <?php endfor; ?>
-        </div>
-        <input type="hidden" name="pin" id="pinValue" required pattern="\d{6}">
-      </div>
-      <button class="btn btn-primary btn-block" type="submit">Show my balance</button>
-    </form>
-  <?php endif; ?>
-
+  </div>
 </main>
 <?php include __DIR__ . '/partials/foot.php'; ?>

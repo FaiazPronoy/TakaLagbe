@@ -1,121 +1,116 @@
 <?php
 include __DIR__ . '/partials/head.php';
 include __DIR__ . '/partials/nav.php';
-
-$pinBoxes = static function (string $id): void { ?>
-  <div class="pin" data-pin="<?= e($id) ?>">
-    <?php for ($i = 0; $i < 6; $i++): ?>
-      <input type="password" inputmode="numeric" maxlength="1" aria-label="PIN digit <?= $i + 1 ?>">
-    <?php endfor; ?>
-  </div>
-  <input type="hidden" name="pin" id="<?= e($id) ?>" required pattern="\d{6}">
-<?php };
 ?>
-<main class="wrap section">
+<main id="main" class="page">
+  <div class="wrap">
+    <?= page_head('Savings', 'Money in a goal leaves your spendable balance, so it cannot be spent by accident.', null,
+                  '<a class="btn" href="#newGoal">' . icon('plus') . 'New goal</a>') ?>
+    <?= error_note($error) ?>
 
-  <div class="between" style="margin-bottom:1rem">
-    <h1 class="mb0">Savings goals</h1>
-    <button class="btn btn-primary btn-sm" onclick="openModal('newGoal')">New goal</button>
-  </div>
-
-  <?php if ($error): ?>
-    <div class="alert alert-error" style="margin-bottom:1rem"><span><?= e($error) ?></span></div>
-  <?php endif; ?>
-
-  <div class="row" style="margin-bottom:1.2rem">
-    <div class="col"><div class="stat"><div class="k">Spendable balance</div>
-      <div class="v"><?= e(money($bal, false)) ?></div></div></div>
-    <div class="col"><div class="stat"><div class="k">Put aside in goals</div>
-      <div class="v pos"><?= e(money($totalSaved, false)) ?></div></div></div>
-    <div class="col"><div class="stat"><div class="k">Open goals</div>
-      <div class="v"><?= count($goals) ?></div></div></div>
-  </div>
-
-  <?php if (!$goals): ?>
-    <div class="card empty">
-      <div class="big">&#127919;</div>
-      <h3>No goals yet</h3>
-      <p class="muted">Set a target, put a little aside each week, and watch it fill up.</p>
-      <button class="btn btn-primary" onclick="openModal('newGoal')">Create your first goal</button>
+    <div class="grid cols-3 mb-5">
+      <div class="stat rise" style="--n:1"><span class="label">Spendable</span>
+        <span class="v"><small>৳</small><?= e(money($bal, false)) ?></span></div>
+      <div class="stat rise" style="--n:2"><span class="label">Set aside</span>
+        <span class="v pos"><small>৳</small><?= e(money($totalSaved, false)) ?></span></div>
+      <div class="stat rise" style="--n:3"><span class="label">Open goals</span>
+        <span class="v"><?= count($goals) ?> <small>of 8</small></span></div>
     </div>
-  <?php else: ?>
-    <div class="grid grid-2">
-      <?php foreach ($goals as $g):
-        $pct  = min(100, (float) $g['target_amount'] > 0
-              ? round((float) $g['saved_amount'] / (float) $g['target_amount'] * 100) : 0);
-        $left = max(0, (float) $g['target_amount'] - (float) $g['saved_amount']);
-        $days = $g['deadline'] ? (int) floor((strtotime($g['deadline']) - time()) / 86400) : null;
-      ?>
-        <div class="card">
-          <div class="between" style="align-items:flex-start">
-            <div>
-              <h3 class="mb0"><?= e($g['title']) ?></h3>
-              <div class="tiny muted">
-                <?php if ($g['deadline']): ?>
-                  Due <?= e(date('d M Y', strtotime($g['deadline']))) ?>
-                  <?= $days !== null ? ' &middot; ' . ($days >= 0 ? "$days days left" : 'overdue') : '' ?>
-                <?php else: ?>
-                  No deadline
-                <?php endif; ?>
+
+    <?php if (!$goals): ?>
+      <div class="card reveal">
+        <?= empty_state('target', 'No goals yet',
+              'Name something you are saving for, like a laptop or Eid, set a target, and move a little in whenever you can.',
+              '<a class="btn" href="#newGoal">Create your first goal</a>') ?>
+      </div>
+    <?php else: ?>
+      <div class="grid cols-2">
+        <?php foreach ($goals as $i => $g):
+          $pct  = (float) $g['target_amount'] > 0
+                ? min(100, round((float) $g['saved_amount'] / (float) $g['target_amount'] * 100)) : 0;
+          $left = max(0, (float) $g['target_amount'] - (float) $g['saved_amount']);
+          $days = $g['deadline'] ? (int) floor((strtotime($g['deadline']) - strtotime('today')) / 86400) : null; ?>
+          <section class="card lift reveal" style="--n:<?= $i % 2 ?>" aria-labelledby="g<?= (int) $g['id'] ?>">
+            <div class="between" style="align-items:flex-start">
+              <div>
+                <h2 id="g<?= (int) $g['id'] ?>" style="font-size:var(--step-1);margin:0"><?= e($g['title']) ?></h2>
+                <span class="small muted">
+                  <?php if ($g['deadline']): ?>
+                    By <?= e(date('j M Y', strtotime($g['deadline']))) ?> ·
+                    <?= $days >= 0 ? $days . ' day' . ($days === 1 ? '' : 's') . ' left' : 'past the date' ?>
+                  <?php else: ?>No deadline<?php endif; ?>
+                </span>
               </div>
+              <span class="badge <?= $pct >= 100 ? 'ok' : '' ?>"><?= $pct ?>%</span>
             </div>
-            <span class="badge <?= $pct >= 100 ? 'badge-ok' : '' ?>"><?= $pct ?>%</span>
-          </div>
 
-          <div style="margin:.9rem 0 .4rem;display:flex;justify-content:space-between;
-                      font-weight:800;font-size:1.1rem">
-            <span><?= e(money($g['saved_amount'])) ?></span>
-            <span class="muted" style="font-weight:600;font-size:.9rem">
-              of <?= e(money($g['target_amount'])) ?></span>
-          </div>
-          <div class="bar"><span style="width:<?= $pct ?>%"></span></div>
-          <p class="tiny muted" style="margin-top:.5rem">
-            <?= $left > 0 ? e(money($left)) . ' to go' : 'Target reached, well done' ?>
-          </p>
+            <p style="margin:var(--s4) 0 var(--s2)">
+              <span class="num" style="font-size:1.35rem"><?= e(money($g['saved_amount'])) ?></span>
+              <span class="muted small">of <?= e(money($g['target_amount'])) ?></span>
+            </p>
+            <div class="meter" role="progressbar" aria-label="<?= e($g['title']) ?> progress"
+                 aria-valuenow="<?= $pct ?>" aria-valuemin="0" aria-valuemax="100"><span style="width:<?= $pct ?>%"></span></div>
+            <p class="small muted" style="margin:var(--s2) 0 var(--s3)">
+              <?= $left > 0 ? e(money($left)) . ' to go.' : 'Target reached. Close it to move the money back, or keep saving.' ?></p>
 
-          <div style="display:flex;gap:.4rem;flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm"
-                    onclick="prepGoal(<?= (int) $g['id'] ?>, 'deposit', <?= json_encode($g['title']) ?>)">
-              Add money
-            </button>
-            <button class="btn btn-ghost btn-sm"
-                    onclick="prepGoal(<?= (int) $g['id'] ?>, 'withdraw', <?= json_encode($g['title']) ?>)">
-              Take out
-            </button>
+            <details class="inline">
+              <summary class="btn btn-quiet btn-sm">Move money</summary>
+              <form method="post" class="panel" data-once>
+                <?= csrf_field() ?>
+                <?= once_field('savings_move') ?>
+                <input type="hidden" name="goal_id" value="<?= (int) $g['id'] ?>">
+                <fieldset>
+                  <legend class="sr-only">Direction</legend>
+                  <div class="choices">
+                    <label><input type="radio" name="action" value="deposit" checked> Put money in</label>
+                    <label><input type="radio" name="action" value="withdraw"> Take some out</label>
+                  </div>
+                </fieldset>
+                <div class="field">
+                  <label for="amt<?= (int) $g['id'] ?>">Amount</label>
+                  <div class="money"><span aria-hidden="true">৳</span>
+                    <input id="amt<?= (int) $g['id'] ?>" name="amount" type="number" step="0.01" inputmode="decimal"
+                           min="<?= MIN_AMOUNT ?>" required></div>
+                  <?= amount_chips('amt' . (int) $g['id'], [500, 1000, 2000]) ?>
+                </div>
+                <?= pin_field('pin' . (int) $g['id']) ?>
+                <button class="btn btn-block" type="submit">Confirm</button>
+              </form>
+            </details>
+
             <form method="post" style="display:inline"
-                  data-confirm="Close this goal? Everything saved goes back to your balance.">
+                  data-confirm="Close &quot;<?= e($g['title']) ?>&quot;? Everything in it goes back to your balance.">
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="close">
               <input type="hidden" name="goal_id" value="<?= (int) $g['id'] ?>">
-              <button class="btn btn-ghost btn-sm" type="submit">Close</button>
+              <button class="btn-link small" type="submit">Close this goal</button>
             </form>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    </div>
-  <?php endif; ?>
+          </section>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
 
-  <?php if ($archived): ?>
-    <div class="card" style="margin-top:1.4rem">
-      <div class="card-title">Finished goals</div>
-      <?php foreach ($archived as $g): ?>
-        <div class="entry">
-          <span class="ico"><?= $g['status'] === 'completed' ? '&#127942;' : '&#128465;' ?></span>
-          <span class="body">
-            <span class="t"><?= e($g['title']) ?></span>
-            <span class="s">Target <?= e(money($g['target_amount'])) ?>
-              &middot; <?= e(ucfirst($g['status'])) ?></span>
-          </span>
-        </div>
-      <?php endforeach; ?>
-    </div>
-  <?php endif; ?>
+    <?php if ($archived): ?>
+      <section class="card reveal mt-5">
+        <div class="card-h"><h2>Finished</h2></div>
+        <ul class="rows">
+          <?php foreach ($archived as $g): ?>
+            <li class="entry">
+              <span class="ico<?= $g['status'] === 'completed' ? ' in' : '' ?>"><?= icon($g['status'] === 'completed' ? 'check' : 'x') ?></span>
+              <span class="body"><span class="t"><?= e($g['title']) ?></span>
+                <span class="s">Target <?= e(money($g['target_amount'])) ?> · <?= $g['status'] === 'completed' ? 'reached' : 'closed early' ?></span></span>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      </section>
+    <?php endif; ?>
+  </div>
 </main>
 
-<!-- new goal modal -->
-<div class="modal" id="newGoal">
-  <div class="modal-box">
-    <h2>New savings goal</h2>
+<dialog id="newGoal" aria-labelledby="newGoalTitle">
+  <div class="sheet">
+    <a class="tool x" href="#" data-close aria-label="Close"><?= icon('x') ?></a>
+    <h2 id="newGoalTitle">A new goal</h2>
     <form method="post" data-once>
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="create">
@@ -124,70 +119,20 @@ $pinBoxes = static function (string $id): void { ?>
         <input id="title" name="title" required maxlength="60" placeholder="New laptop, Eid, emergency fund">
       </div>
       <div class="field">
-        <label for="target_amount">Target amount</label>
-        <div class="money-input">
-          <span><?= CURRENCY_SIGN ?></span>
-          <input id="target_amount" name="target_amount" type="number" step="0.01"
-                 min="<?= MIN_AMOUNT ?>" required placeholder="0.00">
-        </div>
+        <label for="target_amount">Target</label>
+        <div class="money"><span aria-hidden="true">৳</span>
+          <input id="target_amount" name="target_amount" type="number" step="0.01" inputmode="decimal"
+                 min="<?= MIN_AMOUNT ?>" required></div>
       </div>
       <div class="field">
-        <label for="deadline">Deadline <span class="muted tiny">(optional)</span></label>
+        <label for="deadline">By when? <span class="muted">(optional)</span></label>
         <input id="deadline" name="deadline" type="date" min="<?= date('Y-m-d') ?>">
       </div>
-      <div style="display:flex;gap:.5rem">
-        <button class="btn btn-ghost btn-block" type="button" onclick="closeModal('newGoal')">Cancel</button>
-        <button class="btn btn-primary btn-block" type="submit">Create goal</button>
+      <div class="row">
+        <a class="btn btn-quiet" href="#" data-close>Cancel</a>
+        <button class="btn push" type="submit">Create goal</button>
       </div>
     </form>
   </div>
-</div>
-
-<!-- move money modal -->
-<div class="modal" id="moveGoal">
-  <div class="modal-box">
-    <h2 id="moveTitle">Add money</h2>
-    <p class="muted tiny" id="moveSub"></p>
-    <form method="post" data-once>
-      <?= csrf_field() ?>
-      <?= once_field('savings_move') ?>
-      <input type="hidden" name="action" id="moveAction" value="deposit">
-      <input type="hidden" name="goal_id" id="moveGoalId">
-      <div class="field">
-        <label for="moveAmount">Amount</label>
-        <div class="money-input">
-          <span><?= CURRENCY_SIGN ?></span>
-          <input id="moveAmount" name="amount" type="number" step="0.01"
-                 min="<?= MIN_AMOUNT ?>" required placeholder="0.00">
-        </div>
-        <div class="chips">
-          <?php foreach ([200, 500, 1000, 2000] as $v): ?>
-            <button type="button" class="chip" data-chip-target="moveAmount" data-value="<?= $v ?>">
-              <?= CURRENCY_SIGN ?> <?= number_format($v) ?>
-            </button>
-          <?php endforeach; ?>
-        </div>
-      </div>
-      <div class="field">
-        <label>Transaction PIN</label>
-        <?php $pinBoxes('goalPin'); ?>
-      </div>
-      <div style="display:flex;gap:.5rem">
-        <button class="btn btn-ghost btn-block" type="button" onclick="closeModal('moveGoal')">Cancel</button>
-        <button class="btn btn-primary btn-block" type="submit">Confirm</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<script>
-function prepGoal(id, action, title) {
-  document.getElementById('moveGoalId').value = id;
-  document.getElementById('moveAction').value = action;
-  document.getElementById('moveTitle').textContent =
-    action === 'deposit' ? 'Add money to this goal' : 'Take money back out';
-  document.getElementById('moveSub').textContent = title;
-  openModal('moveGoal');
-}
-</script>
+</dialog>
 <?php include __DIR__ . '/partials/foot.php'; ?>

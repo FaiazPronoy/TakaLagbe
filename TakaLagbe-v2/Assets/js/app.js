@@ -1,328 +1,285 @@
-/* =====================================================================
-   TakaLagbe! front end behaviour. Plain JavaScript, no library.
-   Everything degrades gracefully: with JS off, every form still posts.
-   ===================================================================== */
+/* TakaLagbe! front end. Plain JavaScript, no library.
+   Everything here is extra: with scripting off every form still posts and
+   every dialog still opens, through a plain link to its #id. */
 (function () {
   'use strict';
 
-  /* dark mode */
   var root = document.documentElement;
-
-  window.toggleTheme = function () {
-    var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    try { localStorage.setItem('tkl-theme', next); } catch (e) {}
-    var b = document.getElementById('themeBtn');
-    if (b) b.textContent = next === 'dark' ? '☀️' : '🌙';
+  var $ = function (sel, el) { return (el || document).querySelector(sel); };
+  var $$ = function (sel, el) { return Array.prototype.slice.call((el || document).querySelectorAll(sel)); };
+  var taka = function (n) {
+    return '৳ ' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  /* mobile menu */
-  window.toggleNav = function () {
-    var n = document.getElementById('navLinks');
-    if (n) n.classList.toggle('open');
-  };
+  /* theme */
+  function theme() {
+    var btn = $('#themeBtn');
+    if (!btn) return;
+    var sync = function () {
+      var dark = root.getAttribute('data-theme') === 'dark';
+      btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+      btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+    };
+    sync();
+    btn.addEventListener('click', function () {
+      var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('tkl-theme', next); } catch (e) {}
+      sync();
+    });
+  }
 
-  /* balance hiding */
-  window.toggleBalance = function () {
-    var a = document.getElementById('balanceAmount');
-    if (!a) return;
-    var hidden = a.dataset.hidden === '1';
-    a.textContent = hidden ? a.dataset.real : '৳ ••••••';
-    a.dataset.hidden = hidden ? '0' : '1';
-    try { localStorage.setItem('tkl-hide-balance', hidden ? '0' : '1'); } catch (e) {}
-    var b = document.getElementById('eyeBtn');
-    if (b) b.textContent = hidden ? 'Hide' : 'Show';
-  };
+  /* dialogs: the link to #id opens the <dialog> as a real modal, which
+     keeps focus inside it and closes on Escape */
+  function dialogs() {
+    if (typeof HTMLDialogElement !== 'function') return;
+    var open = function (d, opener) {
+      if (!d.open) d.showModal();
+      d.opener = opener || null;
+      var f = $('input:not([type=hidden]),select,textarea', d);
+      if (f) f.focus();
+    };
+    $$('a[href^="#"]').forEach(function (a) {
+      var d = document.getElementById(a.getAttribute('href').slice(1));
+      if (!d || d.tagName !== 'DIALOG') return;
+      a.addEventListener('click', function (e) { e.preventDefault(); open(d, a); });
+    });
+    $$('dialog').forEach(function (d) {
+      $$('[data-close]', d).forEach(function (c) {
+        c.addEventListener('click', function (e) { e.preventDefault(); d.close(); });
+      });
+      d.addEventListener('click', function (e) { if (e.target === d) d.close(); });
+      // a modal dialog already keeps the page behind it inert; this also stops
+      // Tab wandering off into the browser's own toolbar
+      d.addEventListener('keydown', function (e) {
+        if (e.key !== 'Tab') return;
+        var f = $$('a[href],button:not([disabled]),input:not([type=hidden]),select,textarea', d)
+          .filter(function (x) { return x.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      });
+      d.addEventListener('close', function () {
+        if (location.hash === '#' + d.id) history.replaceState(null, '', location.pathname + location.search);
+        if (d.opener) d.opener.focus();
+      });
+    });
+    // arrived with #id in the address, for example after a form error
+    var h = location.hash && document.getElementById(location.hash.slice(1));
+    if (h && h.tagName === 'DIALOG') {
+      history.replaceState(null, '', location.pathname + location.search);
+      open(h);
+    }
+  }
 
-  /* amount chips */
-  function wireChips() {
-    document.querySelectorAll('[data-chip-target]').forEach(function (chip) {
+  /* hold to send. A pointer has to hold; Enter or a keyboard click
+     (detail 0) submits straight away, as does the button with no script */
+  function hold() {
+    $$('.hold').forEach(function (btn) {
+      var need = parseInt(btn.getAttribute('data-hold-ms') || '800', 10);
+      var fill = $('.fill', btn), txt = $('.txt', btn), label = txt ? txt.textContent : '';
+      var timer = null, done = false;
+      var form = btn.form;
+
+      function stop() {
+        clearInterval(timer); timer = null;
+        if (done) return;
+        if (fill) fill.style.width = '0';
+        if (txt) txt.textContent = label;
+      }
+      function start(e) {
+        if (done || btn.disabled || (e.button !== undefined && e.button !== 0)) return;
+        e.preventDefault();
+        if (form && !form.reportValidity()) return;
+        var t0 = Date.now();
+        timer = setInterval(function () {
+          var p = Math.min(100, (Date.now() - t0) / need * 100);
+          if (fill) fill.style.width = p + '%';
+          if (p >= 100) {
+            done = true; clearInterval(timer);
+            if (txt) txt.textContent = 'Sending…';
+            if (form) form.requestSubmit ? form.requestSubmit() : form.submit();
+          }
+        }, 25);
+      }
+      btn.addEventListener('pointerdown', start);
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { btn.addEventListener(ev, stop); });
+      btn.addEventListener('click', function (e) { if (e.detail > 0 && !done) e.preventDefault(); });
+    });
+  }
+
+  /* what a payment will cost, worked out as the amount is typed */
+  function charges() {
+    $$('[data-charge]').forEach(function (input) {
+      var out = document.getElementById(input.getAttribute('data-charge'));
+      if (!out) return;
+      function draw() {
+        var a = parseFloat(input.value);
+        if (!(a > 0)) { out.innerHTML = ''; return; }
+        var pct = parseFloat(input.getAttribute('data-fee-pct') || '0');
+        var flat = parseFloat(input.getAttribute('data-fee-flat') || '0');
+        var cb = parseFloat(input.getAttribute('data-cashback-pct') || '0');
+        var bal = parseFloat(input.getAttribute('data-balance') || '0');
+        var fee = Math.round((a * pct / 100 + flat) * 100) / 100;
+        var back = Math.round(a * cb) / 100;
+        var after = bal - a - fee + back;
+        var rows = [['Amount', taka(a)]];
+        if (fee) rows.push(['Charge', taka(fee)]);
+        if (back) rows.push(['Cashback', '+ ' + taka(back)]);
+        rows.push(['Balance after', taka(after)]);
+        out.innerHTML = rows.map(function (r) {
+          return '<div><span>' + r[0] + '</span><b>' + r[1] + '</b></div>';
+        }).join('') + (after < 0 ? '<span class="err">That is more than you have.</span>' : '');
+      }
+      input.addEventListener('input', draw);
+      draw();
+    });
+    // a merchant's cashback rate follows the merchant chosen
+    $$('[data-cashback-from]').forEach(function (sel) {
+      var input = document.getElementById(sel.getAttribute('data-cashback-from'));
+      sel.addEventListener('change', function () {
+        var o = sel.options[sel.selectedIndex];
+        input.setAttribute('data-cashback-pct', o.getAttribute('data-cb') || '0');
+        input.dispatchEvent(new Event('input'));
+      });
+      if (sel.value) sel.dispatchEvent(new Event('change'));
+    });
+  }
+
+  function chips() {
+    $$('[data-fill]').forEach(function (chip) {
       chip.addEventListener('click', function () {
-        var input = document.getElementById(chip.dataset.chipTarget);
+        var input = document.getElementById(chip.getAttribute('data-fill'));
         if (!input) return;
-        input.value = chip.dataset.value;
+        input.value = chip.getAttribute('data-value');
         input.dispatchEvent(new Event('input', { bubbles: true }));
-        chip.parentNode.querySelectorAll('.chip').forEach(function (c) {
-          c.classList.remove('on');
-        });
-        chip.classList.add('on');
+        $$('[data-fill]', chip.parentNode).forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+        chip.setAttribute('aria-pressed', 'true');
+        input.focus();
       });
     });
   }
 
-  /* live charge preview */
-  function wireCharge() {
-    document.querySelectorAll('[data-charge]').forEach(function (input) {
-      var out = document.getElementById(input.dataset.charge);
-      if (!out) return;
-      var pct  = parseFloat(input.dataset.feePct  || '0');
-      var flat = parseFloat(input.dataset.feeFlat || '0');
-      var cb   = parseFloat(input.dataset.cashbackPct || '0');
-      var bal  = parseFloat(input.dataset.balance || '0');
+  function confirms() {
+    $$('form[data-confirm]').forEach(function (f) {
+      f.addEventListener('submit', function (e) {
+        if (!window.confirm(f.getAttribute('data-confirm'))) e.preventDefault();
+      });
+    });
+  }
 
-      function draw() {
-        var a = parseFloat(input.value || '0');
-        if (!a || a <= 0) { out.innerHTML = ''; return; }
-        var fee = a * pct / 100 + flat;
-        var back = a * cb / 100;
-        var total = a + fee;
-        var left = bal - total + back;
-        var html = '<div class="between tiny"><span class="muted">Amount</span>'
-                 + '<b>৳ ' + a.toFixed(2) + '</b></div>';
-        if (fee > 0) {
-          html += '<div class="between tiny"><span class="muted">Charge</span>'
-                + '<b>৳ ' + fee.toFixed(2) + '</b></div>';
-        }
-        if (back > 0) {
-          html += '<div class="between tiny"><span class="muted">Cashback</span>'
-                + '<b class="pos">+ ৳ ' + back.toFixed(2) + '</b></div>';
-        }
-        html += '<hr class="dashed" style="margin:.5rem 0">'
-             +  '<div class="between tiny"><span class="muted">Total to pay</span>'
-             +  '<b>৳ ' + total.toFixed(2) + '</b></div>'
-             +  '<div class="between tiny"><span class="muted">Balance after</span><b class="'
-             +  (left < 0 ? 'neg' : '') + '">৳ ' + left.toFixed(2) + '</b></div>';
-        if (left < 0) {
-          html += '<div class="err">This is more than your available balance.</div>';
-        }
-        out.innerHTML = html;
-      }
+  /* stop a second click sending the same form while the first is on its way */
+  function once() {
+    $$('form[data-once]').forEach(function (f) {
+      f.addEventListener('submit', function () {
+        var b = $('button[type=submit]', f);
+        if (b) setTimeout(function () { b.disabled = true; }, 0);
+      });
+    });
+  }
+
+  function filters() {
+    $$('[data-filter]').forEach(function (input) {
+      var scope = document.getElementById(input.getAttribute('data-filter'));
+      var none = document.getElementById(input.getAttribute('data-filter') + '-none');
+      input.addEventListener('input', function () {
+        var q = input.value.toLowerCase().trim(), shown = 0;
+        $$('[data-row]', scope).forEach(function (r) {
+          var hit = r.textContent.toLowerCase().indexOf(q) !== -1;
+          r.hidden = !hit;
+          if (hit) shown++;
+        });
+        if (none) none.hidden = shown > 0;
+      });
+    });
+  }
+
+  function copies() {
+    $$('[data-copy]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var label = b.getAttribute('aria-label') || '';
+        navigator.clipboard && navigator.clipboard.writeText(b.getAttribute('data-copy')).then(function () {
+          b.setAttribute('aria-label', 'Copied');
+          b.classList.add('on');
+          setTimeout(function () { b.setAttribute('aria-label', label); b.classList.remove('on'); }, 1400);
+        });
+      });
+    });
+  }
+
+  function operators() {
+    var map = { '017': 'Grameenphone', '013': 'Grameenphone', '019': 'Banglalink', '014': 'Banglalink',
+                '018': 'Robi', '016': 'Airtel', '015': 'Teletalk' };
+    $$('[data-operator]').forEach(function (input) {
+      var out = document.getElementById(input.getAttribute('data-operator'));
+      var draw = function () { out.textContent = map[input.value.slice(0, 3)] ? 'Operator: ' + map[input.value.slice(0, 3)] : ''; };
       input.addEventListener('input', draw);
       draw();
     });
   }
 
-  /* long press to send money */
-  function wireHold() {
-    document.querySelectorAll('.hold').forEach(function (btn) {
-      var need = parseInt(btn.dataset.holdMs || '900', 10);
-      var fill = btn.querySelector('.fill');
-      var txt  = btn.querySelector('.txt');
-      var label = txt ? txt.textContent : '';
-      var timer = null, start = 0, done = false;
-
-      function stop() {
-        clearInterval(timer); timer = null;
-        if (!done && fill) fill.style.width = '0%';
-        if (!done && txt) txt.textContent = label;
-      }
-      function begin(ev) {
-        if (done || btn.disabled) return;
-        ev.preventDefault();
-        var form = btn.form || btn.closest('form');
-        if (form && typeof form.reportValidity === 'function' && !form.reportValidity()) return;
-        start = Date.now();
-        timer = setInterval(function () {
-          var pct = Math.min(100, (Date.now() - start) / need * 100);
-          if (fill) fill.style.width = pct + '%';
-          if (txt) txt.textContent = 'Hold… ' + Math.round(pct) + '%';
-          if (pct >= 100) {
-            done = true; clearInterval(timer);
-            if (txt) txt.textContent = 'Sending…';
-            btn.disabled = true;
-            if (form) { if (btn.name) addHidden(form, btn.name, btn.value); form.submit(); }
-          }
-        }, 30);
-      }
-      function addHidden(form, n, v) {
-        var i = document.createElement('input');
-        i.type = 'hidden'; i.name = n; i.value = v; form.appendChild(i);
-      }
-      btn.addEventListener('mousedown', begin);
-      btn.addEventListener('touchstart', begin, { passive: false });
-      ['mouseup', 'mouseleave', 'touchend', 'touchcancel'].forEach(function (ev) {
-        btn.addEventListener(ev, stop);
-      });
-      btn.addEventListener('click', function (e) { e.preventDefault(); });
-    });
-  }
-
-  /* PIN boxes */
-  function wirePin() {
-    document.querySelectorAll('[data-pin]').forEach(function (box) {
-      var hidden = document.getElementById(box.dataset.pin);
-      var cells = box.querySelectorAll('input');
-
-      function sync() {
-        var v = '';
-        cells.forEach(function (c) { v += c.value; });
-        if (hidden) hidden.value = v;
-      }
-      cells.forEach(function (cell, i) {
-        cell.addEventListener('input', function () {
-          cell.value = cell.value.replace(/\D/g, '').slice(-1);
-          if (cell.value && cells[i + 1]) cells[i + 1].focus();
-          sync();
-        });
-        cell.addEventListener('keydown', function (e) {
-          if (e.key === 'Backspace' && !cell.value && cells[i - 1]) cells[i - 1].focus();
-        });
-        cell.addEventListener('paste', function (e) {
-          e.preventDefault();
-          var digits = (e.clipboardData.getData('text') || '').replace(/\D/g, '');
-          cells.forEach(function (c, j) { c.value = digits[j] || ''; });
-          sync();
-          if (cells[Math.min(digits.length, cells.length - 1)]) {
-            cells[Math.min(digits.length, cells.length - 1)].focus();
-          }
-        });
-      });
-    });
-  }
-
-  /* password strength */
-  function wireStrength() {
-    document.querySelectorAll('[data-strength]').forEach(function (input) {
-      var meter = document.getElementById(input.dataset.strength);
-      if (!meter) return;
-      var bar = meter.querySelector('span');
-      input.addEventListener('input', function () {
-        var v = input.value, s = 0;
-        if (v.length >= 6) s++;
-        if (v.length >= 10) s++;
-        if (/[A-Z]/.test(v) && /[a-z]/.test(v)) s++;
-        if (/\d/.test(v)) s++;
-        if (/[^A-Za-z0-9]/.test(v)) s++;
-        var pct = [0, 20, 40, 60, 80, 100][s];
-        var col = ['#DCE6F0', '#E03131', '#F08C00', '#F5C518', '#12B886', '#0B7A5A'][s];
-        bar.style.width = pct + '%';
-        bar.style.background = col;
-      });
-    });
-  }
-
-  /* confirm dialogs */
-  function wireConfirm() {
-    document.querySelectorAll('[data-confirm]').forEach(function (el) {
-      el.addEventListener('submit', function (e) {
-        if (!window.confirm(el.dataset.confirm)) e.preventDefault();
-      });
-      if (el.tagName === 'A' || el.tagName === 'BUTTON') {
-        el.addEventListener('click', function (e) {
-          if (!window.confirm(el.dataset.confirm)) e.preventDefault();
-        });
-      }
-    });
-  }
-
-  /* live table filter */
-  function wireFilter() {
-    document.querySelectorAll('[data-filter]').forEach(function (input) {
-      var scope = document.getElementById(input.dataset.filter);
-      if (!scope) return;
-      input.addEventListener('input', function () {
-        var needle = input.value.toLowerCase().trim();
-        var shown = 0;
-        scope.querySelectorAll('[data-row]').forEach(function (row) {
-          var hit = row.textContent.toLowerCase().indexOf(needle) !== -1;
-          row.style.display = hit ? '' : 'none';
-          if (hit) shown++;
-        });
-        var none = document.getElementById(input.dataset.filter + '-none');
-        if (none) none.style.display = shown ? 'none' : '';
-      });
-    });
-  }
-
-  /* modals */
-  window.openModal = function (id) {
-    var m = document.getElementById(id);
-    if (m) { m.classList.add('open'); var f = m.querySelector('input,select,textarea');
-             if (f) setTimeout(function () { f.focus(); }, 40); }
-  };
-  window.closeModal = function (id) {
-    var m = document.getElementById(id);
-    if (m) m.classList.remove('open');
-  };
-  function wireModals() {
-    document.querySelectorAll('.modal').forEach(function (m) {
-      m.addEventListener('click', function (e) { if (e.target === m) m.classList.remove('open'); });
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        document.querySelectorAll('.modal.open').forEach(function (m) { m.classList.remove('open'); });
-      }
-    });
-  }
-
-  /* copy to clipboard */
-  window.copyText = function (text, btn) {
-    var done = function () {
-      if (!btn) return;
-      var old = btn.textContent;
-      btn.textContent = 'Copied';
-      setTimeout(function () { btn.textContent = old; }, 1400);
+  /* split a bill: show each share before the requests go out */
+  function split() {
+    var total = $('[data-split-total]'), people = $('[data-split-people]'), out = $('#splitPreview');
+    if (!total || !people || !out) return;
+    var draw = function () {
+      var t = parseFloat(total.value), n = people.value.split(/[\s,;]+/).filter(Boolean).length;
+      out.textContent = t > 0 && n
+        ? 'Split ' + (n + 1) + ' ways, ' + taka(Math.round(t / (n + 1) * 100) / 100) + ' each, you included.'
+        : 'Add the total and at least one number to see each share.';
     };
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(text).then(done, function () {});
-    } else {
-      var t = document.createElement('textarea');
-      t.value = text; document.body.appendChild(t); t.select();
-      try { document.execCommand('copy'); done(); } catch (e) {}
-      document.body.removeChild(t);
-    }
-  };
+    total.addEventListener('input', draw);
+    people.addEventListener('input', draw);
+    draw();
+  }
 
-  /* operator detection */
-  function wireOperator() {
-    document.querySelectorAll('[data-operator]').forEach(function (input) {
-      var out = document.getElementById(input.dataset.operator);
-      var map = { '017': 'Grameenphone', '013': 'Grameenphone', '019': 'Banglalink',
-                  '014': 'Banglalink', '018': 'Robi', '016': 'Airtel', '015': 'Teletalk' };
-      input.addEventListener('input', function () {
-        var name = map[input.value.slice(0, 3)] || '';
-        if (out) {
-          out.textContent = name ? 'Operator: ' + name : '';
-          var sel = document.getElementById('operatorField');
-          if (sel && name) sel.value = name;
-        }
-      });
+  /* hide the balance on a shared screen, and remember the choice */
+  function balance() {
+    var btn = $('#eyeBtn'), fig = $('#balanceFigure');
+    if (!btn || !fig) return;
+    var set = function (hide) {
+      fig.hidden = false;
+      fig.classList.toggle('masked', hide);
+      $('.real', fig).hidden = hide;
+      $('.dots', fig).hidden = !hide;
+      btn.setAttribute('aria-pressed', hide ? 'true' : 'false');
+      btn.setAttribute('aria-label', hide ? 'Show balance' : 'Hide balance');
+      $('.i-eye', btn).style.display = hide ? '' : 'none';
+      $('.i-eye-off', btn).style.display = hide ? 'none' : '';
+    };
+    var hidden = false;
+    try { hidden = localStorage.getItem('tkl-hide-balance') === '1'; } catch (e) {}
+    set(hidden);
+    btn.addEventListener('click', function () {
+      hidden = !hidden;
+      set(hidden);
+      try { localStorage.setItem('tkl-hide-balance', hidden ? '1' : '0'); } catch (e) {}
     });
   }
 
-  /* dismiss the flash toast */
-  function wireToast() {
-    var t = document.getElementById('flashToast');
+  function toast() {
+    var t = $('#toast');
     if (!t) return;
-    setTimeout(function () {
-      t.style.transition = 'opacity .4s';
-      t.style.opacity = '0';
-      setTimeout(function () { t.remove(); }, 400);
-    }, 5000);
-    t.addEventListener('click', function () { t.remove(); });
+    setTimeout(function () { t.remove(); }, 6000);
+    var b = $('button', t);
+    if (b) b.addEventListener('click', function () { t.remove(); });
   }
 
-  /* stop a double submit on every form */
-  function wireOnce() {
-    document.querySelectorAll('form[data-once]').forEach(function (f) {
-      f.addEventListener('submit', function () {
-        var b = f.querySelector('button[type=submit],input[type=submit]');
-        if (b && !b.classList.contains('hold')) {
-          setTimeout(function () { b.disabled = true; b.textContent = 'Please wait…'; }, 10);
-        }
+  /* sections rise in as they are scrolled to, a beat apart */
+  function reveals() {
+    var els = $$('.reveal');
+    if (!('IntersectionObserver' in window)) { els.forEach(function (el) { el.classList.add('in'); }); return; }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); }
       });
-    });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    els.forEach(function (el) { io.observe(el); });
   }
 
-  /* live clock */
-  function wireClock() {
-    var el = document.getElementById('clock');
-    if (!el) return;
-    function tick() {
-      el.textContent = new Date().toLocaleTimeString('en-GB',
-        { hour: '2-digit', minute: '2-digit' });
-    }
-    tick(); setInterval(tick, 20000);
-  }
-
-  /* bootstrap */
   document.addEventListener('DOMContentLoaded', function () {
-    wireChips(); wireCharge(); wireHold(); wirePin(); wireStrength();
-    wireConfirm(); wireFilter(); wireModals(); wireOperator();
-    wireToast(); wireOnce(); wireClock();
-
-    try {
-      if (localStorage.getItem('tkl-hide-balance') === '1') window.toggleBalance();
-    } catch (e) {}
+    theme(); dialogs(); hold(); charges(); chips(); confirms(); once(); filters();
+    copies(); operators(); split(); balance(); toast(); reveals();
   });
 })();

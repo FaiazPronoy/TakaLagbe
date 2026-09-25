@@ -2,54 +2,48 @@
 include __DIR__ . '/partials/head.php';
 include __DIR__ . '/partials/nav.php';
 ?>
-<main class="wrap section">
+<main id="main" class="page">
+  <div class="wrap">
+    <?= page_head('Pay a bill', 'Utilities and tuition, paid from your balance with a receipt for each one.',
+                  ['account.php', 'Home']) ?>
 
-  <div class="between" style="margin-bottom:1rem">
-    <h1 class="mb0">Pay bills</h1>
-    <a class="btn btn-ghost btn-sm" href="account.php">Back</a>
-  </div>
+    <div class="grid cols-3 mb-5">
+      <div class="stat rise" style="--n:1"><span class="label">Paid this month</span>
+        <span class="v"><small>৳</small><?= e(money($thisMonth, false)) ?></span></div>
+      <div class="stat rise" style="--n:2"><span class="label">Paid all time</span>
+        <span class="v"><small>৳</small><?= e(money($totalPaid, false)) ?></span></div>
+      <div class="stat rise" style="--n:3"><span class="label">Charge per bill</span>
+        <span class="v"><small>৳</small><?= e(money(FEE_BILL_FLAT, false)) ?></span></div>
+    </div>
 
-  <div class="row" style="margin-bottom:1.2rem">
-    <div class="col"><div class="stat"><div class="k">Bills this month</div>
-      <div class="v"><?= e(money($thisMonth, false)) ?></div></div></div>
-    <div class="col"><div class="stat"><div class="k">Bills paid all time</div>
-      <div class="v"><?= e(money($totalPaid, false)) ?></div></div></div>
-    <div class="col"><div class="stat"><div class="k">Convenience charge</div>
-      <div class="v"><?= e(money(FEE_BILL_FLAT, false)) ?></div></div></div>
-  </div>
-
-  <div class="tiles">
-    <?php foreach (BILL_TYPES as $key => [$title, $icon, $label]): ?>
-      <a class="tile" href="<?= e($key) ?>.php">
-        <span class="ico"><?= $icon ?></span>
-        <span class="name"><?= e(str_replace(' bill', '', $title)) ?></span>
-      </a>
-    <?php endforeach; ?>
-    <a class="tile" href="education_fee.php">
-      <span class="ico">&#127891;</span><span class="name">Education</span>
-    </a>
-  </div>
-
-  <div class="card" style="margin-top:1.4rem">
-    <div class="card-title">Recently paid</div>
-    <?php if (!$recent): ?>
-      <div class="empty"><div class="big">&#129534;</div>
-        <p class="mb0">No bills paid yet.</p></div>
-    <?php else: ?>
-      <?php foreach ($recent as $r):
-        $meta = BILL_TYPES[$r['billtype']] ?? ['Bill', "\u{1F4A1}", 'Number']; ?>
-        <a class="entry" href="<?= e($r['billtype']) ?>.php" style="color:inherit">
-          <span class="ico"><?= $meta[1] ?></span>
-          <span class="body">
-            <span class="t"><?= e($r['organization_name']) ?></span>
-            <span class="s"><?= e($meta[2]) ?> <?= e($r['consumer_no']) ?>
-              &middot; <?= e($r['month']) ?> &middot; <?= e(time_ago($r['payment_date'])) ?></span>
-          </span>
-          <span class="amt"><?= e(money($r['amount'])) ?></span>
-        </a>
+    <div class="actions">
+      <?php $i = 0; foreach (BILL_TYPES as $key => [$title, $ico]): ?>
+        <a class="action lift reveal" style="--n:<?= $i++ ?>" href="<?= e($key) ?>.php">
+          <span class="disc"><?= icon($ico) ?></span><?= e(str_replace(' bill', '', $title)) ?></a>
       <?php endforeach; ?>
-    <?php endif; ?>
-  </div>
+      <a class="action lift reveal" style="--n:4" href="education_fee.php">
+        <span class="disc"><?= icon('cap') ?></span>Tuition fee</a>
+    </div>
 
+    <section class="card reveal mt-6">
+      <div class="card-h"><h2>Recently paid</h2></div>
+      <?php if (!$recent): ?>
+        <?= empty_state('receipt', 'No bills paid yet',
+              'Pick a utility above. After the first one, the account number is remembered here so next month takes a few taps.') ?>
+      <?php else: ?>
+        <ul class="rows">
+          <?php foreach ($recent as $r):
+            $meta = BILL_TYPES[$r['billtype']] ?? ['Bill', 'receipt', 'Number']; ?>
+            <li><a class="entry" href="receipt.php?id=<?= e($r['trx_id']) ?>">
+              <span class="ico"><?= icon($meta[1]) ?></span>
+              <span class="body"><span class="t"><?= e($r['organization_name']) ?></span>
+                <span class="s"><?= e($r['consumer_no']) ?> · <?= e($r['month']) ?> · paid <?= e(time_ago($r['payment_date'])) ?></span></span>
+              <span class="amt"><?= e(money($r['amount'])) ?></span>
+            </a></li>
+          <?php endforeach; ?>
+        </ul>
+      <?php endif; ?>
+    </section>
+  </div>
 </main>
 <?php include __DIR__ . '/partials/foot.php'; ?>

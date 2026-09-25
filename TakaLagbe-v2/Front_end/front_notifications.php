@@ -2,65 +2,56 @@
 include __DIR__ . '/partials/head.php';
 include __DIR__ . '/partials/nav.php';
 
-$icons = ['in' => "\u{1F4B0}", 'out' => "\u{1F4B8}", 'gift' => "\u{1F381}",
-          'lock' => "\u{1F512}", 'request' => "\u{1F91D}", 'bell' => "\u{1F514}"];
+$icons = ['in' => 'arrow-in', 'out' => 'arrow-out', 'gift' => 'gift', 'lock' => 'lock',
+          'request' => 'hand', 'bell' => 'bell'];
+$actions = '';
+if ($unread) {
+    $actions .= '<form method="post">' . csrf_field() . '<input type="hidden" name="action" value="read_all">'
+              . '<button class="btn btn-quiet" type="submit">' . icon('check') . 'Mark all read</button></form>';
+}
+$actions .= '<form method="post" data-confirm="Delete every notification you have already read?">' . csrf_field()
+          . '<input type="hidden" name="action" value="clear">'
+          . '<button class="btn btn-quiet" type="submit">' . icon('trash') . 'Clear read</button></form>';
 ?>
-<main class="wrap-sm section">
+<main id="main" class="page">
+  <div class="wrap narrow">
+    <?= page_head('Notifications', '', null, $actions) ?>
 
-  <div class="between" style="margin-bottom:1rem">
-    <h1 class="mb0">Notifications</h1>
-    <div style="display:flex;gap:.4rem">
-      <?php if ($unread): ?>
-        <form method="post"><?= csrf_field() ?>
-          <input type="hidden" name="action" value="read_all">
-          <button class="btn btn-ghost btn-sm" type="submit">Mark all read</button>
-        </form>
+    <nav class="tabs rise" style="--n:1" aria-label="Filter">
+      <a href="?show=all"<?= $filter === 'all' ? ' aria-current="page"' : '' ?>>All</a>
+      <a href="?show=unread"<?= $filter === 'unread' ? ' aria-current="page"' : '' ?>>Unread
+        <?php if ($unread): ?><span class="badge warn"><?= $unread ?></span><?php endif; ?></a>
+    </nav>
+
+    <section class="card reveal" aria-label="Notifications">
+      <?php if (!$rows): ?>
+        <?= $filter === 'unread'
+            ? empty_state('check', 'All caught up', 'Nothing unread. New transfers, requests and security alerts will appear here.')
+            : empty_state('bell', 'Nothing yet', 'When money arrives, a bill is paid or someone asks you for money, you will be told here.') ?>
+      <?php else: ?>
+        <ul class="rows">
+          <?php foreach ($rows as $n): ?>
+            <li class="entry" style="align-items:flex-start">
+              <span class="ico<?= $n['icon'] === 'in' ? ' in' : ($n['icon'] === 'out' ? ' out' : '') ?>"><?= icon($icons[$n['icon']] ?? 'bell') ?></span>
+              <span class="body">
+                <span class="t" style="white-space:normal"><?= e($n['title']) ?>
+                  <?php if (!$n['read_status']): ?><span class="badge warn">new</span><?php endif; ?></span>
+                <span class="s wrap-ok"><?= e($n['body']) ?></span>
+                <span class="s"><?= e(time_ago($n['created_at'])) ?></span>
+              </span>
+              <?php if (!$n['read_status']): ?>
+                <form method="post">
+                  <?= csrf_field() ?>
+                  <input type="hidden" name="action" value="read_one">
+                  <input type="hidden" name="id" value="<?= (int) $n['id'] ?>">
+                  <button class="tool" type="submit" aria-label="Mark as read"><?= icon('check') ?></button>
+                </form>
+              <?php endif; ?>
+            </li>
+          <?php endforeach; ?>
+        </ul>
       <?php endif; ?>
-      <form method="post" data-confirm="Delete every notification you have already read?">
-        <?= csrf_field() ?>
-        <input type="hidden" name="action" value="clear">
-        <button class="btn btn-ghost btn-sm" type="submit">Clear read</button>
-      </form>
-    </div>
+    </section>
   </div>
-
-  <div class="tabs">
-    <a href="?show=all"    class="<?= $filter === 'all'    ? 'on' : '' ?>">All</a>
-    <a href="?show=unread" class="<?= $filter === 'unread' ? 'on' : '' ?>">
-      Unread <?php if ($unread): ?><span class="badge badge-pending"><?= $unread ?></span><?php endif; ?>
-    </a>
-  </div>
-
-  <div class="card">
-    <?php if (!$rows): ?>
-      <div class="empty">
-        <div class="big">&#128276;</div>
-        <p class="mb0"><?= $filter === 'unread' ? 'Nothing unread.' : 'No notifications yet.' ?></p>
-      </div>
-    <?php else: foreach ($rows as $n): ?>
-      <div class="entry" style="<?= $n['read_status'] ? '' : 'background:var(--brand-soft);
-           margin:0 -1.25rem;padding-left:1.25rem;padding-right:1.25rem' ?>">
-        <span class="ico"><?= $icons[$n['icon']] ?? $icons['bell'] ?></span>
-        <span class="body">
-          <span class="t"><?= e($n['title']) ?>
-            <?php if (!$n['read_status']): ?>
-              <span class="badge badge-pending">new</span>
-            <?php endif; ?>
-          </span>
-          <span class="s" style="white-space:normal"><?= e($n['body']) ?></span>
-          <span class="tiny muted"><?= e(time_ago($n['created_at'])) ?></span>
-        </span>
-        <?php if (!$n['read_status']): ?>
-          <form method="post">
-            <?= csrf_field() ?>
-            <input type="hidden" name="action" value="read_one">
-            <input type="hidden" name="id" value="<?= (int) $n['id'] ?>">
-            <button class="btn btn-ghost btn-sm" type="submit" title="Mark as read">&#10003;</button>
-          </form>
-        <?php endif; ?>
-      </div>
-    <?php endforeach; endif; ?>
-  </div>
-
 </main>
 <?php include __DIR__ . '/partials/foot.php'; ?>

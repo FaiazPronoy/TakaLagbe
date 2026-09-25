@@ -1,77 +1,58 @@
 <?php include __DIR__ . '/partials/admin_nav.php'; ?>
-<main class="wrap section">
+<main id="main" class="page">
+  <div class="wrap">
+    <?= page_head('Support desk', $counts['open'] . ' open, ' . $counts['solved'] . ' solved. A reply goes to the customer\'s notifications.',
+                  null, '', 'Back office') ?>
+    <?= error_note($error) ?>
 
-  <div class="between" style="margin-bottom:1rem">
-    <h1 class="mb0">Support desk</h1>
-    <span class="tiny muted"><?= $counts['open'] ?> open &middot; <?= $counts['solved'] ?> solved</span>
-  </div>
-
-  <?php if ($error): ?>
-    <div class="alert alert-error" style="margin-bottom:1rem"><span><?= e($error) ?></span></div>
-  <?php endif; ?>
-
-  <div class="tabs">
-    <a href="?show=open"   class="<?= $filter === 'open'   ? 'on' : '' ?>">Open
-      <?php if ($counts['open']): ?><span class="badge badge-pending"><?= $counts['open'] ?></span><?php endif; ?></a>
-    <a href="?show=solved" class="<?= $filter === 'solved' ? 'on' : '' ?>">Solved</a>
-    <a href="?show=all"    class="<?= $filter === 'all'    ? 'on' : '' ?>">All</a>
-  </div>
-
-  <?php if (!$tickets): ?>
-    <div class="card empty">
-      <div class="big">&#127881;</div>
-      <p class="mb0">Nothing here. The queue is clear.</p>
-    </div>
-  <?php else: ?>
-    <div class="grid grid-2">
-      <?php foreach ($tickets as $t): ?>
-        <div class="card">
-          <div class="between" style="align-items:flex-start">
-            <div>
-              <strong>#<?= (int) $t['id'] ?> &middot; <?= e($t['user_name']) ?></strong>
-              <div class="tiny muted">
-                <?= e($t['user_email']) ?>
-                <?= $t['user_phone'] ? ' &middot; ' . e($t['user_phone']) : '' ?>
-              </div>
-              <div class="tiny muted"><?= e(short_date($t['timestamp'])) ?></div>
-            </div>
-            <span class="badge <?= $t['issue_solved'] ? 'badge-ok' : 'badge-pending' ?>">
-              <?= $t['issue_solved'] ? 'solved' : 'open' ?></span>
-          </div>
-
-          <p style="margin:.8rem 0;white-space:pre-wrap"><?= e($t['message']) ?></p>
-
-          <?php if (!$t['issue_solved']): ?>
-            <form method="post" data-once>
-              <?= csrf_field() ?>
-              <input type="hidden" name="action" value="reply">
-              <input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
-              <div class="field">
-                <textarea name="reply" required minlength="3" maxlength="200" style="min-height:70px"
-                          placeholder="Write a short reply. It goes straight to their notifications."></textarea>
-              </div>
-              <div style="display:flex;gap:.5rem">
-                <button class="btn btn-primary btn-block" type="submit">Reply and close</button>
-              </div>
-            </form>
-            <form method="post" style="margin-top:.5rem">
-              <?= csrf_field() ?>
-              <input type="hidden" name="action" value="solve">
-              <input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
-              <button class="btn btn-ghost btn-sm btn-block" type="submit">Close without replying</button>
-            </form>
-          <?php else: ?>
-            <form method="post">
-              <?= csrf_field() ?>
-              <input type="hidden" name="action" value="reopen">
-              <input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
-              <button class="btn btn-ghost btn-sm" type="submit">Reopen</button>
-            </form>
-          <?php endif; ?>
-        </div>
+    <nav class="tabs rise" style="--n:1" aria-label="Filter tickets">
+      <?php foreach (['open' => 'Open', 'solved' => 'Solved', 'all' => 'All'] as $k => $l): ?>
+        <a href="?show=<?= $k ?>"<?= $filter === $k ? ' aria-current="page"' : '' ?>><?= $l ?>
+          <?php if ($k === 'open' && $counts['open']): ?><span class="badge warn"><?= $counts['open'] ?></span><?php endif; ?></a>
       <?php endforeach; ?>
-    </div>
-  <?php endif; ?>
+    </nav>
 
+    <?php if (!$tickets): ?>
+      <div class="card reveal"><?= empty_state('check', 'The queue is clear',
+          $filter === 'open' ? 'No customer is waiting on a reply.' : 'Nothing in this list yet.') ?></div>
+    <?php else: ?>
+      <div class="grid cols-2">
+        <?php foreach ($tickets as $i => $t): ?>
+          <article class="card reveal" style="--n:<?= $i % 2 ?>" aria-labelledby="t<?= (int) $t['id'] ?>">
+            <div class="between" style="align-items:flex-start">
+              <div>
+                <h2 id="t<?= (int) $t['id'] ?>" style="font-size:var(--step-1);margin:0">#<?= (int) $t['id'] ?> · <?= e($t['user_name']) ?></h2>
+                <span class="small muted"><?= e($t['user_email']) ?><?= $t['user_phone'] ? ' · ' . e($t['user_phone']) : '' ?>
+                  · <?= e(short_date($t['timestamp'])) ?></span>
+              </div>
+              <span class="badge <?= $t['issue_solved'] ? 'ok' : 'warn' ?>"><?= $t['issue_solved'] ? 'solved' : 'open' ?></span>
+            </div>
+            <p style="margin:var(--s4) 0;white-space:pre-wrap"><?= e($t['message']) ?></p>
+
+            <?php if (!$t['issue_solved']): ?>
+              <form method="post" data-once>
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="reply">
+                <input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
+                <div class="field"><label for="reply<?= (int) $t['id'] ?>">Reply</label>
+                  <textarea id="reply<?= (int) $t['id'] ?>" name="reply" required minlength="3" maxlength="200" style="min-height:80px"></textarea></div>
+                <div class="row">
+                  <button class="btn" type="submit">Reply and close</button>
+                  <button class="btn btn-quiet" type="submit" name="action" value="solve" formnovalidate>Close without reply</button>
+                </div>
+              </form>
+            <?php else: ?>
+              <form method="post">
+                <?= csrf_field() ?>
+                <input type="hidden" name="action" value="reopen">
+                <input type="hidden" name="id" value="<?= (int) $t['id'] ?>">
+                <button class="btn btn-quiet btn-sm" type="submit">Reopen</button>
+              </form>
+            <?php endif; ?>
+          </article>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
 </main>
 <?php include __DIR__ . '/partials/foot.php'; ?>

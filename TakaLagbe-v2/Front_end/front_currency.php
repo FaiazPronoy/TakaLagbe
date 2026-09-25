@@ -2,85 +2,59 @@
 include __DIR__ . '/partials/head.php';
 include __DIR__ . '/partials/nav.php';
 
-$options = ['BDT' => ['Bangladeshi Taka', 1.0, "\u{1F1E7}\u{1F1E9}"]] + RATES;
+$options = ['BDT' => ['Bangladeshi Taka', 1.0]] + RATES;
+$chosen  = ['from' => $from, 'to' => $to];
 ?>
-<main class="wrap-sm section">
+<main id="main" class="page">
+  <div class="wrap narrow">
+    <?= page_head('Currency converter', 'Indicative rates kept in the app, for a rough idea before you send or spend abroad.',
+                  ['account.php', 'Home']) ?>
 
-  <div class="between" style="margin-bottom:1rem">
-    <h1 class="mb0">Currency converter</h1>
-    <a class="btn btn-ghost btn-sm" href="account.php">Back</a>
-  </div>
-
-  <form class="card" method="get">
-    <div class="field">
-      <label for="amount">Amount</label>
-      <input id="amount" name="amount" type="number" step="0.01" min="0"
-             value="<?= e($amount) ?>" required>
-    </div>
-
-    <div class="row">
-      <div class="col field">
-        <label for="from">From</label>
-        <select id="from" name="from">
-          <?php foreach ($options as $code => $o): ?>
-            <option value="<?= $code ?>" <?= $from === $code ? 'selected' : '' ?>>
-              <?= $o[2] ?> <?= $code ?> &middot; <?= e($o[0]) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
+    <form class="card rise" style="--n:1" method="get">
+      <div class="field">
+        <label for="amount">Amount</label>
+        <input id="amount" name="amount" type="number" step="0.01" min="0" inputmode="decimal" value="<?= e($amount) ?>" required class="mono">
       </div>
-      <div class="col field">
-        <label for="to">To</label>
-        <select id="to" name="to">
-          <?php foreach ($options as $code => $o): ?>
-            <option value="<?= $code ?>" <?= $to === $code ? 'selected' : '' ?>>
-              <?= $o[2] ?> <?= $code ?> &middot; <?= e($o[0]) ?>
-            </option>
-          <?php endforeach; ?>
-        </select>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:.5rem">
-      <button class="btn btn-primary btn-block" type="submit">Convert</button>
-      <a class="btn btn-ghost" href="?amount=<?= e($amount) ?>&amp;from=<?= e($to) ?>&amp;to=<?= e($from) ?>"
-         title="Swap">&#8646;</a>
-    </div>
-  </form>
-
-  <div class="card center" style="margin-top:1rem">
-    <div class="muted tiny">
-      <?= e(number_format($amount, 2)) ?> <?= e($from) ?> equals
-    </div>
-    <div style="font-size:2rem;font-weight:800;letter-spacing:-.02em;color:var(--brand-dark)">
-      <?= e(number_format($result, 2)) ?> <?= e($to) ?>
-    </div>
-    <div class="tiny muted" style="margin-top:.4rem">
-      1 <?= e($from) ?> = <?= e(number_format($single, 4)) ?> <?= e($to) ?>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:1rem">
-    <div class="card-title">Rate table, one unit in taka</div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Currency</th><th class="num">In BDT</th></tr></thead>
-        <tbody>
-        <?php foreach (RATES as $code => $r): ?>
-          <tr>
-            <td><?= $r[2] ?> <strong><?= $code ?></strong>
-              <span class="muted tiny">&middot; <?= e($r[0]) ?></span></td>
-            <td class="num"><?= e(number_format($r[1], 2)) ?></td>
-          </tr>
+      <div class="grid cols-2">
+        <?php foreach (['from' => 'From', 'to' => 'To'] as $k => $l): ?>
+          <div class="field">
+            <label for="<?= $k ?>"><?= $l ?></label>
+            <select id="<?= $k ?>" name="<?= $k ?>">
+              <?php foreach ($options as $code => $o): ?>
+                <option value="<?= $code ?>" <?= $chosen[$k] === $code ? 'selected' : '' ?>><?= $code ?> · <?= e($o[0]) ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
         <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-    <p class="tiny muted mb0" style="margin-top:.6rem">
-      These are indicative rates kept inside the application, so the page works
-      without an internet connection. Update them in currency.php when they move.
-    </p>
-  </div>
+      </div>
+      <div class="row">
+        <button class="btn" type="submit">Convert</button>
+        <a class="btn btn-quiet" href="?amount=<?= e($amount) ?>&amp;from=<?= e($to) ?>&amp;to=<?= e($from) ?>"><?= icon('exchange') ?>Swap</a>
+      </div>
+    </form>
 
+    <section class="card center reveal mt-4" aria-live="polite">
+      <span class="label"><?= e(number_format($amount, 2)) ?> <?= e($from) ?> is about</span>
+      <p class="big-amt" style="margin:var(--s2) 0"><?= e(number_format($result, 2)) ?> <?= e($to) ?></p>
+      <span class="small muted mono">1 <?= e($from) ?> = <?= e(number_format($single, 4)) ?> <?= e($to) ?></span>
+    </section>
+
+    <section class="card reveal mt-4">
+      <div class="card-h"><h2>One unit in taka</h2></div>
+      <div class="table">
+        <table>
+          <thead><tr><th scope="col">Currency</th><th scope="col" class="num">BDT</th></tr></thead>
+          <tbody>
+          <?php foreach (RATES as $code => $r): ?>
+            <tr><td><strong><?= $code ?></strong> <span class="muted small"><?= e($r[0]) ?></span></td>
+              <td class="num"><?= e(number_format($r[1], 2)) ?></td></tr>
+          <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+      <p class="small muted m0 mt-3">Kept inside the app rather than fetched, so the page works offline.
+        They are set in currency.php and are not live market rates.</p>
+    </section>
+  </div>
 </main>
 <?php include __DIR__ . '/partials/foot.php'; ?>

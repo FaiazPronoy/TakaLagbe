@@ -1,155 +1,115 @@
 <?php
 include __DIR__ . '/partials/head.php';
 include __DIR__ . '/partials/nav.php';
-?>
-<main class="wrap section">
 
-  <div class="between" style="margin-bottom:1rem">
-    <h1 class="mb0">Insights</h1>
-    <div class="chips">
-      <?php foreach (['30' => 'Last 30 days', '90' => 'Last 3 months', '365' => 'Last year'] as $k => $lbl): ?>
-        <a class="chip <?= $range === $k ? 'on' : '' ?>" href="?range=<?= $k ?>"
-           style="text-decoration:none"><?= $lbl ?></a>
+$ranges = ['30' => '30 days', '90' => '3 months', '365' => '12 months'];
+$tabs = '';
+foreach ($ranges as $k => $lbl) {
+    $tabs .= '<a class="chip' . ($range === $k ? ' on' : '') . '" href="?range=' . $k . '"'
+           . ($range === $k ? ' aria-current="page"' : '') . '>' . $lbl . '</a>';
+}
+?>
+<main id="main" class="page">
+  <div class="wrap">
+    <?= page_head('Insights', 'Where your money went over the last ' . $ranges[$range] . '.', null,
+                  '<nav class="chips m0" aria-label="Period">' . $tabs . '</nav>') ?>
+
+    <div class="grid cols-4 mb-5">
+      <?php foreach ([['Spent', $spendTotal, 'neg'], ['A day, on average', $dailyAvg, ''],
+                      ['A payment, on average', $avgSpend, ''], ['Charges paid', $feesPaid, '']] as $i => [$k, $v, $c]): ?>
+        <div class="stat rise" style="--n:<?= $i + 1 ?>"><span class="label"><?= e($k) ?></span>
+          <span class="v <?= $c ?>"><small>৳</small><?= e(money($v, false)) ?></span></div>
       <?php endforeach; ?>
     </div>
-  </div>
 
-  <!-- headline -->
-  <div class="row" style="margin-bottom:1.2rem">
-    <div class="col"><div class="stat"><div class="k">Total spent</div>
-      <div class="v neg"><?= e(money($spendTotal, false)) ?></div></div></div>
-    <div class="col"><div class="stat"><div class="k">Average per day</div>
-      <div class="v"><?= e(money($dailyAvg, false)) ?></div></div></div>
-    <div class="col"><div class="stat"><div class="k">Average per transaction</div>
-      <div class="v"><?= e(money($avgSpend, false)) ?></div></div></div>
-    <div class="col"><div class="stat"><div class="k">Charges paid</div>
-      <div class="v"><?= e(money($feesPaid, false)) ?></div></div></div>
-  </div>
-
-  <div class="row">
-    <!-- category donut -->
-    <div class="col" style="flex:1 1 300px">
-      <div class="card">
-        <div class="card-title">Where the money went</div>
-        <?php if (!$categories): ?>
-          <div class="empty"><div class="big">&#128202;</div>
-            <p class="mb0">Nothing spent in this period.</p></div>
-        <?php else: ?>
-          <?= donut_slices($categories) ?>
-          <div class="legend" style="margin-top:1rem">
-            <?php foreach ($categories as $c): ?>
-              <div>
-                <i style="background:<?= e($c['colour']) ?>"></i>
-                <span style="flex:1"><?= e($c['label']) ?>
-                  <span class="muted tiny">(<?= $c['count'] ?>)</span></span>
-                <strong><?= e(money($c['value'], false)) ?></strong>
-                <span class="muted tiny" style="min-width:44px;text-align:right">
-                  <?= $spendTotal > 0 ? round($c['value'] / $spendTotal * 100) : 0 ?>%
-                </span>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
-      </div>
-    </div>
-
-    <!-- month trend -->
-    <div class="col" style="flex:1.4 1 380px">
-      <div class="card">
-        <div class="card-title">Six month trend</div>
-        <div class="table-wrap">
+    <div class="split">
+      <section class="card reveal">
+        <div class="card-h"><h2>In and out, month by month</h2></div>
+        <div class="table">
           <table>
-            <thead><tr><th>Month</th><th class="num">In</th><th class="num">Out</th><th>Balance of flow</th></tr></thead>
+            <caption class="sr-only">Money in and out for the last six months</caption>
+            <thead><tr><th scope="col">Month</th><th scope="col" class="num">In</th><th scope="col" class="num">Out</th>
+              <th scope="col"><span class="sr-only">Compared</span></th><th scope="col" class="num">Net</th></tr></thead>
             <tbody>
-            <?php foreach ($trend as $t):
-              $net = $t['incoming'] - $t['outgoing']; ?>
+            <?php foreach ($trend as $t): $net = $t['incoming'] - $t['outgoing']; ?>
               <tr>
-                <td><strong><?= e($t['label']) ?></strong></td>
+                <td><?= e($t['label']) ?></td>
                 <td class="num pos"><?= e(money($t['incoming'], false)) ?></td>
                 <td class="num neg"><?= e(money($t['outgoing'], false)) ?></td>
-                <td style="min-width:150px">
-                  <div style="display:flex;gap:3px;align-items:center">
-                    <div class="bar" style="flex:1;height:7px">
-                      <span style="width:<?= round($t['incoming'] / $trendMax * 100) ?>%;
-                                   background:var(--accent)"></span>
-                    </div>
-                    <div class="bar" style="flex:1;height:7px">
-                      <span style="width:<?= round($t['outgoing'] / $trendMax * 100) ?>%;
-                                   background:var(--danger)"></span>
-                    </div>
+                <td style="width:30%">
+                  <div class="flow" aria-hidden="true">
+                    <span class="in" style="width:<?= round($t['incoming'] / $trendMax * 100) ?>%"></span>
+                    <span class="out" style="width:<?= round($t['outgoing'] / $trendMax * 100) ?>%"></span>
                   </div>
-                  <span class="tiny <?= $net >= 0 ? 'pos' : 'neg' ?>">
-                    <?= $net >= 0 ? '+' : '' ?><?= e(money($net, false)) ?>
-                  </span>
                 </td>
+                <td class="num <?= $net >= 0 ? 'pos' : 'neg' ?>"><?= $net >= 0 ? '+' : '−' ?><?= e(money(abs($net), false)) ?></td>
               </tr>
             <?php endforeach; ?>
             </tbody>
           </table>
         </div>
-        <p class="tiny muted mb0" style="margin-top:.6rem">
-          Green is money coming in, red is money going out.
-        </p>
-      </div>
-    </div>
-  </div>
+        <p class="small muted m0 mt-3">The upper bar is money in, the lower bar money out.</p>
+      </section>
 
-  <div class="row" style="margin-top:1.2rem">
-    <!-- top receivers -->
-    <div class="col">
-      <div class="card">
-        <div class="card-title">You send to these people most</div>
+      <section class="card reveal" style="--n:1">
+        <div class="card-h"><h2>By category</h2></div>
+        <?php if (!$categories): ?>
+          <?= empty_state('chart', 'Nothing spent yet',
+                'Payments, bills and transfers are sorted into categories here as soon as there are some in this period.') ?>
+        <?php else: ?>
+          <?= donut_slices($categories, 170, 24, 'Spending by category') ?>
+          <ul class="legend">
+            <?php foreach ($categories as $c): ?>
+              <li><i style="background:<?= e($c['colour']) ?>"></i><?= e($c['label']) ?>
+                <span class="muted small"><?= $spendTotal > 0 ? round($c['value'] / $spendTotal * 100) : 0 ?>%</span>
+                <span class="amt"><?= e(money($c['value'], false)) ?></span></li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      </section>
+    </div>
+
+    <div class="grid cols-2 mt-5">
+      <section class="card reveal">
+        <div class="card-h"><h2>Who you send to most</h2></div>
         <?php if (!$topPeople): ?>
-          <div class="empty"><p class="mb0">No transfers in this period.</p></div>
-        <?php else: foreach ($topPeople as $p): ?>
-          <div class="entry">
-            <span class="ico">&#128100;</span>
-            <span class="body">
-              <span class="t"><?= e(name_of($p['who'])) ?></span>
-              <span class="s"><?= e($p['who']) ?> &middot; <?= (int) $p['n'] ?> transfer(s)</span>
-            </span>
-            <span class="amt"><?= e(money($p['total'])) ?></span>
-          </div>
-        <?php endforeach; endif; ?>
-      </div>
-    </div>
+          <p class="muted small m0">No transfers in this period.</p>
+        <?php else: ?>
+          <ul class="rows">
+            <?php foreach ($topPeople as $p): ?>
+              <li class="entry">
+                <?= avatar($p['firstname'], $p['lastname'], $p['avatar_color']) ?>
+                <span class="body"><span class="t"><?= e($p['firstname'] ? $p['firstname'] . ' ' . $p['lastname'] : $p['who']) ?></span>
+                  <span class="s"><?= (int) $p['n'] ?> transfer<?= $p['n'] == 1 ? '' : 's' ?></span></span>
+                <span class="amt"><?= e(money($p['total'])) ?></span>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php endif; ?>
+      </section>
 
-    <!-- habit facts -->
-    <div class="col">
-      <div class="card">
-        <div class="card-title">Good to know</div>
-        <div class="entry">
-          <span class="ico">&#128197;</span>
-          <span class="body"><span class="t">Busiest day</span>
-            <span class="s">When you spend most often</span></span>
-          <span class="amt"><?= e($busiestDay['d'] ?? 'n/a') ?></span>
-        </div>
-        <div class="entry">
-          <span class="ico">&#128176;</span>
-          <span class="body"><span class="t">Largest single payment</span>
-            <span class="s"><?= e($biggest ? $biggest['transaction_type'] . ' on '
-                . date('d M Y', strtotime($biggest['transaction_time'])) : 'Nothing yet') ?></span></span>
-          <span class="amt"><?= e($biggest ? money($biggest['amount']) : '-') ?></span>
-        </div>
-        <div class="entry">
-          <span class="ico">&#127873;</span>
-          <span class="body"><span class="t">Cashback earned</span>
-            <span class="s">Money given back to you</span></span>
-          <span class="amt pos">+ <?= e(money($cashbackEarned)) ?></span>
-        </div>
-        <div class="entry">
-          <span class="ico">&#9888;</span>
-          <span class="body"><span class="t">Declined attempts</span>
-            <span class="s">Blocked by balance, limit or PIN checks</span></span>
-          <span class="amt"><?= $failedCount ?></span>
-        </div>
-        <a class="btn btn-ghost btn-block btn-sm" style="margin-top:.8rem"
+      <section class="card reveal" style="--n:1">
+        <div class="card-h"><h2>Worth knowing</h2></div>
+        <ul class="rows">
+          <li class="entry"><span class="ico"><?= icon('calendar') ?></span>
+            <span class="body"><span class="t">Busiest day</span><span class="s">When you pay for things most often</span></span>
+            <span><?= e($busiestDay['d'] ?? 'None yet') ?></span></li>
+          <li class="entry"><span class="ico"><?= icon('arrow-out') ?></span>
+            <span class="body"><span class="t">Largest single payment</span>
+              <span class="s"><?= e($biggest ? $biggest['transaction_type'] . ', ' . date('j M', strtotime($biggest['transaction_time'])) : 'None yet') ?></span></span>
+            <span class="amt"><?= $biggest ? e(money($biggest['amount'])) : '' ?></span></li>
+          <li class="entry"><span class="ico"><?= icon('gift') ?></span>
+            <span class="body"><span class="t">Cashback earned</span><span class="s">Paid back by recharges and shops</span></span>
+            <span class="amt pos">+ <?= e(money($cashbackEarned)) ?></span></li>
+          <li class="entry"><span class="ico"><?= icon('alert') ?></span>
+            <span class="body"><span class="t">Declined attempts</span><span class="s">Stopped by your balance or your daily limit</span></span>
+            <span class="amt"><?= $failedCount ?></span></li>
+        </ul>
+        <a class="btn btn-quiet btn-block" style="margin-top:var(--s4)"
            href="statement.php?from=<?= e(date('Y-m-d', strtotime("-$days day"))) ?>&amp;to=<?= date('Y-m-d') ?>">
-          Open the statement for this period
-        </a>
-      </div>
+          <?= icon('file') ?>Statement for this period</a>
+      </section>
     </div>
   </div>
-
 </main>
 <?php include __DIR__ . '/partials/foot.php'; ?>

@@ -1,61 +1,46 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign in &middot; <?= e(APP_NAME) ?></title>
-<link rel="stylesheet" href="Assets/css/app.css">
-<script>(function(){try{var t=localStorage.getItem('tkl-theme');
- if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}
- document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-</head>
-<body>
-<div class="auth">
-  <div class="auth-card">
+<?php
+$pageTitle = 'Sign in';
+include __DIR__ . '/partials/auth_top.php';
+$f = take_flash();
+?>
+    <div class="auth-box rise" style="--n:1">
+      <h2>Sign in</h2>
+      <p class="muted">Use the mobile number your account was opened with.</p>
 
-    <div class="auth-logo">
-      <div class="brand-mark">T</div>
-      <h1><?= e(APP_NAME) ?></h1>
-      <p><?= e(APP_TAGLINE) ?></p>
-    </div>
+      <?= error_note($error) ?>
+      <?php if ($f): ?>
+        <div class="note <?= $f[0] === 'error' ? 'bad' : 'ok' ?>" role="status">
+          <?= icon($f[0] === 'error' ? 'alert' : 'check') ?><span><?= e($f[1]) ?></span>
+        </div>
+      <?php endif; ?>
 
-    <?php if ($error): ?>
-      <div class="alert alert-error" style="margin-bottom:1rem"><span><?= e($error) ?></span></div>
-    <?php endif; ?>
-    <?php $f = take_flash(); if ($f): ?>
-      <div class="alert alert-<?= $f[0] === 'error' ? 'error' : ($f[0] === 'warn' ? 'warn' : 'ok') ?>"
-           style="margin-bottom:1rem"><span><?= e($f[1]) ?></span></div>
-    <?php endif; ?>
+      <form method="post" data-once>
+        <?= csrf_field() ?>
+        <div class="field">
+          <label for="Phone">Mobile number</label>
+          <input type="tel" id="Phone" name="Phone" inputmode="numeric" maxlength="11"
+                 pattern="01[3-9][0-9]{8}" placeholder="01XXXXXXXXX" required
+                 value="<?= e($phone) ?>" autocomplete="username">
+        </div>
+        <div class="field">
+          <div class="between">
+            <label for="Password">Password</label>
+            <a class="small" href="reset_password.php">Forgot it?</a>
+          </div>
+          <input type="password" id="Password" name="Password" required autocomplete="current-password">
+        </div>
+        <button class="btn btn-block" type="submit">Sign in</button>
+      </form>
 
-    <form method="post" data-once>
-      <?= csrf_field() ?>
-      <div class="field">
-        <label for="Phone">Mobile number</label>
-        <input type="tel" id="Phone" name="Phone" inputmode="numeric" maxlength="11"
-               pattern="01[3-9][0-9]{8}" placeholder="01XXXXXXXXX" required
-               value="<?= e($phone) ?>" autocomplete="username" autofocus>
+      <p class="center mt-4">New here? <a href="signup.php">Open an account</a></p>
+
+      <div class="demo">
+        <strong>Trying the demo?</strong> Sign in as <code>01711482093</code> with
+        <code>demo1234</code>. The transaction PIN is <code>482915</code>.
+        The back office is at <a href="admin_login.php">admin sign in</a>.
       </div>
-      <div class="field">
-        <label for="Password">Password</label>
-        <input type="password" id="Password" name="Password" required
-               autocomplete="current-password" placeholder="Your password">
-      </div>
-      <button class="btn btn-primary btn-block" type="submit">Sign in</button>
-    </form>
-
-    <div class="between" style="margin-top:1rem;font-size:.88rem">
-      <a href="reset_password.php">Forgot password?</a>
-      <a href="signup.php">Create an account</a>
     </div>
-
-    <hr class="dashed">
-    <p class="tiny muted center mb0">
-      Your password is stored as a bcrypt hash, never as plain text.<br>
-      After <?= LOGIN_MAX_ATTEMPTS ?> wrong tries a number is locked for
-      <?= LOGIN_LOCK_MINUTES ?> minutes.
-    </p>
-  </div>
+  </main>
 </div>
-<script src="Assets/js/app.js"></script>
 </body>
 </html>
