@@ -1,6 +1,6 @@
 <?php
 $pageTitle = 'Reset password';
-$artTitle  = 'Locked out? Prove it is you.';
+$artTitle  = 'Forgot it? Happens to everyone.';
 $artText   = 'Your number, NID and date of birth together are enough to set a new password. Your PIN stays as it was.';
 include __DIR__ . '/partials/auth_top.php';
 ?>
@@ -42,7 +42,7 @@ include __DIR__ . '/partials/auth_top.php';
             <input id="ConfirmPassword" name="ConfirmPassword" type="password" required minlength="6"
                    autocomplete="new-password">
           </div>
-          <button class="btn btn-block" type="submit">Set new password</button>
+          <button class="btn btn-block" type="submit"><?= icon('lock') ?>Set new password</button>
         </form>
       <?php endif; ?>
     </div>

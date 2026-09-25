@@ -37,7 +37,7 @@ $recent = all(
 
 /* --- money people are waiting on ------------------------------------- */
 $requests = all(
-    "SELECT r.*, u.firstname, u.lastname FROM money_requests r
+    "SELECT r.*, u.firstname, u.lastname, u.avatar_color FROM money_requests r
        LEFT JOIN user u ON u.phone = r.requester_phone
       WHERE r.payer_phone = ? AND r.status = 'pending'
       ORDER BY r.created_at DESC LIMIT 3", [$phone]);

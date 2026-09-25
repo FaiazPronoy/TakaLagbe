@@ -7,8 +7,8 @@ $chosen  = ['from' => $from, 'to' => $to];
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Currency converter', 'Indicative rates kept in the app, for a rough idea before you send or spend abroad.',
-                  ['account.php', 'Home']) ?>
+    <?= page_head('Currency converter', 'Rough rates for a quick idea. Planning that Kolkata or KL trip?',
+                  ['account.php', 'Home'], badge: ['globe', 2]) ?>
 
     <form class="card rise" style="--n:1" method="get">
       <div class="field">

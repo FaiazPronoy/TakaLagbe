@@ -4,7 +4,7 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('QR code', 'Show yours to be paid, or scan someone else\'s to pay them.', ['account.php', 'Home']) ?>
+    <?= page_head('QR code', 'Show yours to get paid. Scan theirs to pay. Easy.', ['account.php', 'Home'], badge: ['qr', 3]) ?>
 
     <div class="grid cols-2">
       <section class="card center rise" style="--n:1" aria-labelledby="myQr">
@@ -17,7 +17,7 @@ include __DIR__ . '/partials/nav.php';
         <?php if (valid_amount($amount)): ?>
           <p class="big-amt" style="font-size:var(--step-2)">Asking for <?= e(money($amount)) ?></p>
         <?php endif; ?>
-        <p class="small muted">Drawn by the app itself, no outside service involved.</p>
+        <p class="small muted">Made right here by the app, pixel by pixel.</p>
 
         <form method="get" class="no-print mt-4" style="text-align:left">
           <div class="field">
@@ -34,7 +34,7 @@ include __DIR__ . '/partials/nav.php';
       </section>
 
       <section class="card rise no-print" style="--n:2" id="scan" aria-labelledby="scanTitle">
-        <div class="card-h"><h2 id="scanTitle">Scan to pay</h2></div>
+        <div class="card-h"><h2 id="scanTitle"><?= icon('camera') ?>Scan to pay</h2></div>
         <p class="note" id="scanUnsupported" hidden><?= icon('info') ?>
           <span>This browser cannot read QR codes from the camera. Type the number on the send money page instead.</span></p>
         <video id="scanVideo" playsinline muted hidden style="width:100%;border-radius:var(--r2);background:var(--ink)"></video>

@@ -4,13 +4,13 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('Favourites', 'The people you send to most, one tap from the home screen.', ['account.php', 'Home'],
-                  '<a class="btn" href="#addFav">' . icon('plus') . 'Add someone</a>') ?>
+    <?= page_head('Favourites', 'Ammu, the flatmate, the friend who always forgets. One tap from home.', ['account.php', 'Home'],
+                  '<a class="btn" href="#addFav">' . icon('plus') . 'Add someone</a>', badge: ['star', 5]) ?>
     <?= error_note($error) ?>
 
     <?php if ($suggestions): ?>
       <section class="card tight rise mb-5" style="--n:1">
-        <span class="label">You send to these people often</span>
+        <span class="label">You send to these folks a lot. Add them?</span>
         <div class="chips">
           <?php foreach ($suggestions as $s): ?>
             <form method="post">
@@ -29,8 +29,8 @@ include __DIR__ . '/partials/nav.php';
     <?php if (!$favourites): ?>
       <div class="card reveal">
         <?= empty_state('star', 'No favourites yet',
-              'Save the numbers you send to most. They appear on your home screen, and sending to them takes one tap.',
-              '<a class="btn" href="#addFav">Add your first</a>') ?>
+              'Save the people you send to most and they show up right on your home screen.',
+              '<a class="btn" href="#addFav">' . icon('plus') . 'Add someone</a>', 3, 5) ?>
       </div>
     <?php else: ?>
       <div class="grid cols-3">
@@ -77,7 +77,7 @@ include __DIR__ . '/partials/nav.php';
 <dialog id="addFav" aria-labelledby="addFavTitle">
   <div class="sheet">
     <a class="tool x" href="#" data-close aria-label="Close"><?= icon('x') ?></a>
-    <h2 id="addFavTitle">Add a favourite</h2>
+    <h2 id="addFavTitle">Add someone</h2>
     <form method="post" data-once>
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="add">
@@ -87,7 +87,7 @@ include __DIR__ . '/partials/nav.php';
                maxlength="11" pattern="01[3-9][0-9]{8}" required placeholder="01XXXXXXXXX">
       </div>
       <div class="field">
-        <label for="label">Call them <span class="muted">(optional)</span></label>
+        <label for="label">What do you call them? <span class="muted">(optional)</span></label>
         <input id="label" name="label" maxlength="40" placeholder="Ammu, Rafid, landlord">
       </div>
       <div class="row">

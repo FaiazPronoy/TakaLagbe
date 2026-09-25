@@ -5,15 +5,15 @@ $filtered = $search !== '' || $type !== '' || $direction !== '' || $from !== '' 
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('History', 'Every transaction, including the ones that were declined and why.', null,
+    <?= page_head('History', 'Every taka in and out. Even the ones that bounced, and why.', null,
           '<a class="btn btn-quiet" href="statement.php?' . e($queryFor([])) . '">' . icon('file') . 'Statement</a>'
-        . '<a class="btn btn-quiet" href="statement.php?format=csv&amp;' . e($queryFor([])) . '">' . icon('download') . 'CSV</a>') ?>
+        . '<a class="btn btn-quiet" href="statement.php?format=csv&amp;' . e($queryFor([])) . '">' . icon('download') . 'CSV</a>', badge: ['history', 1]) ?>
 
     <form class="card rise mb-4" style="--n:1" method="get" role="search" aria-label="Filter transactions">
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));align-items:end">
         <div class="field m0" style="grid-column:span 2">
           <label for="q">Search</label>
-          <input id="q" name="q" type="search" value="<?= e($search) ?>" placeholder="Reference, number, note">
+          <input id="q" name="q" type="search" value="<?= e($search) ?>" placeholder="Name, number, note, reference">
         </div>
         <div class="field m0">
           <label for="type">Type</label>
@@ -48,7 +48,7 @@ $filtered = $search !== '' || $type !== '' || $direction !== '' || $from !== '' 
     </form>
 
     <div class="grid cols-4 mb-4">
-      <div class="stat reveal"><span class="label">Found</span><span class="v"><?= number_format($total) ?></span></div>
+      <div class="stat reveal"><span class="label"><?= icon('list') ?>Found</span><span class="v"><?= number_format($total) ?></span></div>
       <div class="stat reveal" style="--n:1"><span class="label">Money in</span>
         <span class="v pos"><small>৳</small><?= e(money($sumIn, false)) ?></span></div>
       <div class="stat reveal" style="--n:2"><span class="label">Money out</span>
@@ -60,9 +60,9 @@ $filtered = $search !== '' || $type !== '' || $direction !== '' || $from !== '' 
     <section class="card reveal" aria-label="Transactions">
       <?php if (!$rows): ?>
         <?= $filtered
-            ? empty_state('search', 'Nothing matches', 'Try a wider date range, or clear the filters to see everything.',
+            ? empty_state('search', 'Nothing matches that', 'Loosen the filters a bit, or clear them and see everything.',
                           '<a class="btn btn-quiet" href="history.php">Clear filters</a>')
-            : empty_state('history', 'No transactions yet', 'Money you send, receive, pay or save will all be listed here.',
+            : empty_state('history', 'Quiet in here', 'Send, pay or top up once and it shows up here.',
                           '<a class="btn" href="add_money.php">Add money</a>') ?>
       <?php else: ?>
         <div class="table">

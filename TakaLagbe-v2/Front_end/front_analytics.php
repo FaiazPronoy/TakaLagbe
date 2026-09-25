@@ -11,12 +11,12 @@ foreach ($ranges as $k => $lbl) {
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('Insights', 'Where your money went over the last ' . $ranges[$range] . '.', null,
-                  '<nav class="chips m0" aria-label="Period">' . $tabs . '</nav>') ?>
+    <?= page_head('Insights', 'Where did it all go? Here\'s your last ' . $ranges[$range] . '.', null,
+                  '<nav class="chips m0" aria-label="Period">' . $tabs . '</nav>', badge: ['chart', 6]) ?>
 
     <div class="grid cols-4 mb-5">
-      <?php foreach ([['Spent', $spendTotal, 'neg'], ['A day, on average', $dailyAvg, ''],
-                      ['A payment, on average', $avgSpend, ''], ['Charges paid', $feesPaid, '']] as $i => [$k, $v, $c]): ?>
+      <?php foreach ([['You spent', $spendTotal, 'neg'], ['Per day', $dailyAvg, ''],
+                      ['Per payment', $avgSpend, ''], ['Charges paid', $feesPaid, '']] as $i => [$k, $v, $c]): ?>
         <div class="stat rise" style="--n:<?= $i + 1 ?>"><span class="label"><?= e($k) ?></span>
           <span class="v <?= $c ?>"><small>৳</small><?= e(money($v, false)) ?></span></div>
       <?php endforeach; ?>
@@ -24,7 +24,7 @@ foreach ($ranges as $k => $lbl) {
 
     <div class="split">
       <section class="card reveal">
-        <div class="card-h"><h2>In and out, month by month</h2></div>
+        <div class="card-h"><h2><?= icon('exchange') ?>In vs out</h2></div>
         <div class="table">
           <table>
             <caption class="sr-only">Money in and out for the last six months</caption>
@@ -52,10 +52,10 @@ foreach ($ranges as $k => $lbl) {
       </section>
 
       <section class="card reveal" style="--n:1">
-        <div class="card-h"><h2>By category</h2></div>
+        <div class="card-h"><h2><?= icon('chart') ?>Where it went</h2></div>
         <?php if (!$categories): ?>
           <?= empty_state('chart', 'Nothing spent yet',
-                'Payments, bills and transfers are sorted into categories here as soon as there are some in this period.') ?>
+                'Either you are very disciplined or you haven\'t started. Spend something and it shows up here.') ?>
         <?php else: ?>
           <?= donut_slices($categories, 170, 24, 'Spending by category') ?>
           <ul class="legend">
@@ -71,9 +71,9 @@ foreach ($ranges as $k => $lbl) {
 
     <div class="grid cols-2 mt-5">
       <section class="card reveal">
-        <div class="card-h"><h2>Who you send to most</h2></div>
+        <div class="card-h"><h2><?= icon('users') ?>Your top people</h2></div>
         <?php if (!$topPeople): ?>
-          <p class="muted small m0">No transfers in this period.</p>
+          <p class="muted small m0">Nobody got money from you in this stretch.</p>
         <?php else: ?>
           <ul class="rows">
             <?php foreach ($topPeople as $p): ?>
@@ -89,20 +89,20 @@ foreach ($ranges as $k => $lbl) {
       </section>
 
       <section class="card reveal" style="--n:1">
-        <div class="card-h"><h2>Worth knowing</h2></div>
+        <div class="card-h"><h2><?= icon('star') ?>Fun facts</h2></div>
         <ul class="rows">
           <li class="entry"><span class="ico"><?= icon('calendar') ?></span>
-            <span class="body"><span class="t">Busiest day</span><span class="s">When you pay for things most often</span></span>
+            <span class="body"><span class="t">Busiest day</span><span class="s">When your wallet works hardest</span></span>
             <span><?= e($busiestDay['d'] ?? 'None yet') ?></span></li>
           <li class="entry"><span class="ico"><?= icon('arrow-out') ?></span>
             <span class="body"><span class="t">Largest single payment</span>
               <span class="s"><?= e($biggest ? $biggest['transaction_type'] . ', ' . date('j M', strtotime($biggest['transaction_time'])) : 'None yet') ?></span></span>
             <span class="amt"><?= $biggest ? e(money($biggest['amount'])) : '' ?></span></li>
           <li class="entry"><span class="ico"><?= icon('gift') ?></span>
-            <span class="body"><span class="t">Cashback earned</span><span class="s">Paid back by recharges and shops</span></span>
+            <span class="body"><span class="t">Cashback earned</span><span class="s">Free money from recharges and shops</span></span>
             <span class="amt pos">+ <?= e(money($cashbackEarned)) ?></span></li>
           <li class="entry"><span class="ico"><?= icon('alert') ?></span>
-            <span class="body"><span class="t">Declined attempts</span><span class="s">Stopped by your balance or your daily limit</span></span>
+            <span class="body"><span class="t">Declined attempts</span><span class="s">Times your balance or limit said no</span></span>
             <span class="amt"><?= $failedCount ?></span></li>
         </ul>
         <a class="btn btn-quiet btn-block" style="margin-top:var(--s4)"

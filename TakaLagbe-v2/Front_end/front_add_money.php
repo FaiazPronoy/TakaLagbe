@@ -4,7 +4,7 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Add money', 'Top up from a linked bank account or card. There is no charge.', ['account.php', 'Home']) ?>
+    <?= page_head('Add money', 'Pull money in from your bank or card. Free, always.', ['account.php', 'Home'], badge: ['wallet', 2]) ?>
     <?= error_note($error) ?>
 
     <form method="post" class="card rise" style="--n:1" data-once>
@@ -12,9 +12,9 @@ include __DIR__ . '/partials/nav.php';
       <?= once_field('add_money') ?>
 
       <div class="field">
-        <label for="bank">From</label>
+        <label for="bank">From where?</label>
         <select id="bank" name="bank" required>
-          <option value="">Choose a bank or card</option>
+          <option value="">Pick your bank or card</option>
           <?php foreach (BANKS as $b): ?>
             <option value="<?= e($b) ?>" <?= post('bank') === $b ? 'selected' : '' ?>><?= e($b) ?></option>
           <?php endforeach; ?>
@@ -22,7 +22,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
 
       <div class="field">
-        <label for="amount">Amount</label>
+        <label for="amount">How much?</label>
         <div class="money">
           <span aria-hidden="true">৳</span>
           <input id="amount" name="amount" type="number" step="0.01" inputmode="decimal" required
@@ -33,7 +33,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
 
       <?= pin_field() ?>
-      <button class="btn btn-block" type="submit">Add money</button>
+      <button class="btn btn-block" type="submit"><?= icon('wallet') ?>Top up my wallet</button>
     </form>
   </div>
 </main>

@@ -4,8 +4,8 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Tuition fee', 'Semester fees to registered institutes, free of charge. One student ID pays a semester once.',
-                  ['paybill.php', 'All bills']) ?>
+    <?= page_head('Tuition fee', 'Semester fees, no charge, no queue at the accounts office.',
+                  ['paybill.php', 'All bills'], badge: ['cap', 4]) ?>
     <?= error_note($error) ?>
 
     <form method="post" class="card rise" style="--n:1" data-once>
@@ -56,12 +56,12 @@ include __DIR__ . '/partials/nav.php';
 
       <div class="sum" id="feeSum" aria-live="polite"></div>
       <?= pin_field() ?>
-      <button class="btn btn-block" type="submit">Pay fee</button>
+      <button class="btn btn-block" type="submit"><?= icon('cap') ?>Pay the fee</button>
     </form>
 
     <?php if ($recent): ?>
       <section class="card reveal mt-5">
-        <div class="card-h"><h2>Fees you have paid</h2></div>
+        <div class="card-h"><h2><?= icon('history') ?>Fees you've paid</h2></div>
         <ul class="rows">
           <?php foreach ($recent as $r): ?>
             <li><a class="entry" href="receipt.php?id=<?= e($r['trx_id']) ?>">

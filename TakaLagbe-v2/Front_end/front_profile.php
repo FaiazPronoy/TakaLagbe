@@ -35,7 +35,7 @@ $nid = str_repeat('•', max(0, strlen($user['nid']) - 4)) . substr($user['nid']
 
     <div class="grid cols-2">
       <section class="card reveal" aria-labelledby="detTitle">
-        <div class="card-h"><h2 id="detTitle">Your details</h2></div>
+        <div class="card-h tone-1"><h2 id="detTitle"><?= icon('user') ?>You</h2></div>
         <form method="post" data-once>
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="details">
@@ -57,12 +57,12 @@ $nid = str_repeat('•', max(0, strlen($user['nid']) - 4)) . substr($user['nid']
               <?php endforeach; ?>
             </div>
           </fieldset>
-          <button class="btn" type="submit">Save details</button>
+          <button class="btn" type="submit"><?= icon('check') ?>Save</button>
         </form>
       </section>
 
       <section class="card reveal" style="--n:1" aria-labelledby="limTitle">
-        <div class="card-h"><h2 id="limTitle">Daily sending limit</h2></div>
+        <div class="card-h tone-5"><h2 id="limTitle"><?= icon('shield') ?>Daily limit</h2></div>
         <p class="small muted">Nothing more leaves the wallet once a day's total reaches this. Money moved into savings does not count.
           Today so far: <span class="num"><?= e(money(spent_today($phone))) ?></span>.</p>
         <form method="post" data-once>
@@ -76,12 +76,12 @@ $nid = str_repeat('•', max(0, strlen($user['nid']) - 4)) . substr($user['nid']
             <?= amount_chips('daily_limit', [5000, 10000, 25000, 50000]) ?>
           </div>
           <?= pin_field('limitPin') ?>
-          <button class="btn" type="submit">Save limit</button>
+          <button class="btn" type="submit"><?= icon('check') ?>Save limit</button>
         </form>
       </section>
 
       <section class="card reveal" aria-labelledby="pwTitle">
-        <div class="card-h"><h2 id="pwTitle">Password</h2></div>
+        <div class="card-h tone-4"><h2 id="pwTitle"><?= icon('lock') ?>Password</h2></div>
         <form method="post" data-once>
           <?= csrf_field() ?>
           <input type="hidden" name="action" value="password">
@@ -93,7 +93,7 @@ $nid = str_repeat('•', max(0, strlen($user['nid']) - 4)) . substr($user['nid']
             <div class="field"><label for="confirm_password">Type it again</label>
               <input id="confirm_password" name="confirm_password" type="password" required minlength="6" autocomplete="new-password"></div>
           </div>
-          <button class="btn" type="submit">Change password</button>
+          <button class="btn" type="submit"><?= icon('lock') ?>Change password</button>
         </form>
 
         <hr>
@@ -108,12 +108,12 @@ $nid = str_repeat('•', max(0, strlen($user['nid']) - 4)) . substr($user['nid']
                        maxlength="6" required autocomplete="off" class="mono"></div>
             <?php endforeach; ?>
           </div>
-          <button class="btn" type="submit">Change PIN</button>
+          <button class="btn" type="submit"><?= icon('lock') ?>Change PIN</button>
         </form>
       </section>
 
       <section class="card reveal" style="--n:1" aria-labelledby="actTitle">
-        <div class="card-h"><h2 id="actTitle">Recent sign ins</h2></div>
+        <div class="card-h tone-6"><h2 id="actTitle"><?= icon('history') ?>Recent sign ins</h2></div>
         <?php if (!$logins): ?>
           <p class="muted small">Nothing recorded yet.</p>
         <?php else: ?>

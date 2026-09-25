@@ -6,10 +6,10 @@ $csv = 'statement.php?format=csv&from=' . urlencode($from) . '&to=' . urlencode(
 <main id="main" class="page">
   <div class="wrap">
     <div class="no-print">
-      <?= page_head('Statement', 'Completed transactions for a period, with the balance after each one.',
+      <?= page_head('Statement', 'The official-looking one. Print it, PDF it, or hand it to whoever is asking.',
             ['history.php', 'History'],
             '<a class="btn btn-quiet" href="' . e($csv) . '">' . icon('download') . 'CSV</a>'
-          . '<button class="btn js-only" type="button" onclick="window.print()">' . icon('print') . 'Print or save as PDF</button>') ?>
+          . '<button class="btn js-only" type="button" onclick="window.print()">' . icon('print') . 'Print or save as PDF</button>', badge: ['file', 8]) ?>
 
       <form class="card rise mb-4" style="--n:1" method="get">
         <div class="row" style="align-items:flex-end">
@@ -43,7 +43,7 @@ $csv = 'statement.php?format=csv&from=' . urlencode($from) . '&to=' . urlencode(
       </div>
 
       <?php if (!$rows): ?>
-        <?= empty_state('file', 'Nothing in this period', 'Choose earlier dates above, or come back once money has moved.') ?>
+        <?= empty_state('file', 'Nothing in these dates', 'Try earlier dates, or come back after some money has moved.') ?>
       <?php else: ?>
         <div class="table">
           <table>

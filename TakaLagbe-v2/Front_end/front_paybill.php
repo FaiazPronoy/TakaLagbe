@@ -4,15 +4,15 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('Pay a bill', 'Utilities and tuition, paid from your balance with a receipt for each one.',
-                  ['account.php', 'Home']) ?>
+    <?= page_head('Pay a bill', 'Current, gas, water, wifi, tuition. Sorted in a minute, receipt included.',
+                  ['account.php', 'Home'], badge: ['receipt', 5]) ?>
 
     <div class="grid cols-3 mb-5">
-      <div class="stat rise" style="--n:1"><span class="label">Paid this month</span>
+      <div class="stat rise" style="--n:1"><span class="label"><?= icon('calendar') ?>This month</span>
         <span class="v"><small>৳</small><?= e(money($thisMonth, false)) ?></span></div>
-      <div class="stat rise" style="--n:2"><span class="label">Paid all time</span>
+      <div class="stat rise" style="--n:2"><span class="label"><?= icon('receipt') ?>All time</span>
         <span class="v"><small>৳</small><?= e(money($totalPaid, false)) ?></span></div>
-      <div class="stat rise" style="--n:3"><span class="label">Charge per bill</span>
+      <div class="stat rise" style="--n:3"><span class="label"><?= icon('info') ?>Charge per bill</span>
         <span class="v"><small>৳</small><?= e(money(FEE_BILL_FLAT, false)) ?></span></div>
     </div>
 
@@ -26,10 +26,10 @@ include __DIR__ . '/partials/nav.php';
     </div>
 
     <section class="card reveal mt-6">
-      <div class="card-h"><h2>Recently paid</h2></div>
+      <div class="card-h"><h2><?= icon('history') ?>Paid lately</h2></div>
       <?php if (!$recent): ?>
         <?= empty_state('receipt', 'No bills paid yet',
-              'Pick a utility above. After the first one, the account number is remembered here so next month takes a few taps.') ?>
+              'Pick one above. Pay it once and it lives here, so next month is a few taps.') ?>
       <?php else: ?>
         <ul class="rows">
           <?php foreach ($recent as $r):

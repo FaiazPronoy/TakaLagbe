@@ -4,8 +4,8 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Cash out', 'Collect notes from an agent. The charge is ' . FEE_CASH_OUT_PCT . ' percent, the usual market rate.',
-                  ['account.php', 'Home']) ?>
+    <?= page_head('Cash out', 'Get real notes from an agent. ' . FEE_CASH_OUT_PCT . '% charge, same as everyone else.',
+                  ['account.php', 'Home'], badge: ['cash-out', 8]) ?>
     <?= error_note($error) ?>
 
     <form method="post" class="card rise" style="--n:1" data-once>
@@ -13,9 +13,9 @@ include __DIR__ . '/partials/nav.php';
       <?= once_field('cash_out') ?>
 
       <div class="field">
-        <label for="agent_id">Agent point</label>
+        <label for="agent_id">Which agent are you at?</label>
         <select id="agent_id" name="agent_id" required>
-          <option value="">Choose the agent you are at</option>
+          <option value="">Pick the agent</option>
           <?php foreach ($agents as $a): ?>
             <option value="<?= e($a['agent_id']) ?>" <?= post('agent_id') === $a['agent_id'] ? 'selected' : '' ?>>
               <?= e($a['agent_id']) ?> · <?= e($a['phone_number']) ?> · holds <?= e(money($a['cash_in_amount'])) ?></option>
@@ -24,7 +24,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
 
       <div class="field">
-        <label for="cash_out_amount">Amount to collect</label>
+        <label for="cash_out_amount">How much cash?</label>
         <div class="money">
           <span aria-hidden="true">৳</span>
           <input id="cash_out_amount" name="cash_out_amount" type="number" step="0.01" inputmode="decimal" required
@@ -37,7 +37,7 @@ include __DIR__ . '/partials/nav.php';
 
       <div class="sum" id="cashSum" aria-live="polite"></div>
       <?= pin_field() ?>
-      <button class="btn btn-block" type="submit">Cash out</button>
+      <button class="btn btn-block" type="submit"><?= icon('cash-out') ?>Cash out</button>
     </form>
   </div>
 </main>

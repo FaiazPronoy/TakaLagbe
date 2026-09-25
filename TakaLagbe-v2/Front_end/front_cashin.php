@@ -4,7 +4,7 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Cash in', 'Hand the notes to an agent, then confirm here. Cash in is free.', ['account.php', 'Home']) ?>
+    <?= page_head('Cash in', 'Give the cash to an agent, then confirm here. No charge.', ['account.php', 'Home'], badge: ['cash-in', 2]) ?>
     <?= error_note($error) ?>
 
     <form method="post" class="card rise" style="--n:1" data-once>
@@ -12,9 +12,9 @@ include __DIR__ . '/partials/nav.php';
       <?= once_field('cash_in') ?>
 
       <div class="field">
-        <label for="agent_id">Agent point</label>
+        <label for="agent_id">Which agent are you at?</label>
         <select id="agent_id" name="agent_id" required>
-          <option value="">Choose the agent you are at</option>
+          <option value="">Pick the agent</option>
           <?php foreach ($agents as $a): ?>
             <option value="<?= e($a['agent_id']) ?>" <?= post('agent_id') === $a['agent_id'] ? 'selected' : '' ?>>
               <?= e($a['agent_id']) ?> · <?= e($a['phone_number']) ?></option>
@@ -34,7 +34,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
 
       <?= pin_field() ?>
-      <button class="btn btn-block" type="submit">Confirm cash in</button>
+      <button class="btn btn-block" type="submit"><?= icon('cash-in') ?>Cash it in</button>
     </form>
   </div>
 </main>

@@ -4,6 +4,17 @@
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/icons.php';
 
+/** The colour a kind of transaction wears everywhere: its tile, its row, its heading. */
+function trx_tone(string $type): int
+{
+    static $map = [
+        'Send Money' => 1, 'Add Money' => 2, 'Cash In' => 2, 'Cash Out' => 8,
+        'Mobile Recharge' => 6, 'Payment' => 7, 'Bill Pay' => 5, 'Education Fee' => 4,
+        'Savings' => 3, 'Savings Release' => 3,
+    ];
+    return $map[$type] ?? 8;
+}
+
 /** Icon for each transaction type. */
 function trx_icon(string $type): string
 {
@@ -58,7 +69,7 @@ function trx_entry(array $t, string $phone): string
     $delta  = $out ? (float) $t['amount'] + (float) $t['fee'] : (float) $t['amount'];
 
     return '<li><a class="entry" href="receipt.php?id=' . urlencode($t['trx_id']) . '">'
-         . '<span class="ico ' . ($out ? 'out' : 'in') . '">' . trx_icon($t['transaction_type']) . '</span>'
+         . '<span class="ico tone-' . trx_tone($t['transaction_type']) . '">' . trx_icon($t['transaction_type']) . '</span>'
          . '<span class="body"><span class="t">' . e($t['transaction_type']) . '</span>'
          . '<span class="s">' . e(trx_counterparty($t, $phone)) . ' · ' . e(time_ago($t['transaction_time']))
          . '</span></span>'
@@ -94,7 +105,7 @@ function pin_field(string $id = 'pin', string $label = 'Transaction PIN'): strin
          . '<input class="pin" type="password" id="' . $id . '" name="pin" inputmode="numeric"'
          . ' pattern="\d{6}" minlength="6" maxlength="6" required autocomplete="off"'
          . ' aria-describedby="' . $id . '-hint">'
-         . '<span class="hint center" id="' . $id . '-hint">The six digits you chose when you signed up.</span></div>';
+         . '<span class="hint center" id="' . $id . '-hint">Your secret 6 digits. Nobody from TakaLagbe will ever ask for it.</span></div>';
 }
 
 /** A refused form, said plainly at the top of it. */
@@ -107,15 +118,16 @@ function error_note(?string $error): string
 }
 
 /** What to show instead of an empty list: what it is for, and how to fill it. */
-function empty_state(string $iconName, string $title, string $text, string $action = '', int $level = 3): string
+function empty_state(string $iconName, string $title, string $text, string $action = '', int $level = 3,
+                     int $tone = 5): string
 {
-    return '<div class="empty">' . icon($iconName) . "<h$level>" . e($title) . "</h$level><p>" . e($text) . '</p>'
-         . $action . '</div>';
+    return '<div class="empty tone-' . $tone . '"><span class="badge-ico">' . icon($iconName) . '</span>'
+         . "<h$level>" . e($title) . "</h$level><p>" . e($text) . '</p>' . $action . '</div>';
 }
 
-/** The page title block. $back is [href, label]. */
+/** The page title block. $back is [href, label], $badge is [icon, tone]. */
 function page_head(string $title, string $lede = '', ?array $back = null, string $actions = '',
-                   string $eyebrow = ''): string
+                   string $eyebrow = '', ?array $badge = null): string
 {
     $html = '<div class="head rise"><div>';
     if ($back) {
@@ -124,7 +136,10 @@ function page_head(string $title, string $lede = '', ?array $back = null, string
     if ($eyebrow !== '') {
         $html .= '<span class="eyebrow">' . e($eyebrow) . '</span>';
     }
-    $html .= '<h1>' . e($title) . '</h1>';
+    $html .= $badge
+        ? '<div class="title tone-' . (int) $badge[1] . '"><span class="badge-ico">' . icon($badge[0])
+          . '</span><h1>' . e($title) . '</h1></div>'
+        : '<h1>' . e($title) . '</h1>';
     if ($lede !== '') {
         $html .= '<p class="lede">' . e($lede) . '</p>';
     }

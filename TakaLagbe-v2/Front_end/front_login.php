@@ -4,8 +4,8 @@ include __DIR__ . '/partials/auth_top.php';
 $f = take_flash();
 ?>
     <div class="auth-box rise" style="--n:1">
-      <h2>Sign in</h2>
-      <p class="muted">Use the mobile number your account was opened with.</p>
+      <h2>Welcome back!</h2>
+      <p class="muted">Pop in your number and password.</p>
 
       <?= error_note($error) ?>
       <?php if ($f): ?>
@@ -29,13 +29,13 @@ $f = take_flash();
           </div>
           <input type="password" id="Password" name="Password" required autocomplete="current-password">
         </div>
-        <button class="btn btn-block" type="submit">Sign in</button>
+        <button class="btn btn-block" type="submit"><?= icon('arrow-in') ?>Let me in</button>
       </form>
 
-      <p class="center mt-4">New here? <a href="signup.php">Open an account</a></p>
+      <p class="center mt-4">New here? <a href="signup.php">Grab a wallet, it's free</a></p>
 
       <div class="demo">
-        <strong>Trying the demo?</strong> Sign in as <code>01711482093</code> with
+        <strong>Just looking around?</strong> Sign in as <code>01711482093</code> with
         <code>demo1234</code>. The transaction PIN is <code>482915</code>.
         The back office is at <a href="admin_login.php">admin sign in</a>.
       </div>

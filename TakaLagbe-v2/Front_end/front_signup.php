@@ -1,7 +1,7 @@
 <?php
 $pageTitle = 'Open an account';
-$artTitle  = 'Open a wallet in a minute.';
-$artText   = 'Your mobile number becomes your account number. You will choose a password to sign in and a separate PIN for payments.';
+$artTitle  = 'Your wallet, in about a minute.';
+$artText   = 'Your phone number is your account number. Pick a password for signing in and a PIN for paying. That\'s it.';
 include __DIR__ . '/partials/auth_top.php';
 
 $err = static fn(string $k): string =>
@@ -10,8 +10,8 @@ $bad = static fn(string $k): string =>
     isset($errors[$k]) ? ' aria-invalid="true" aria-describedby="' . $k . '-err"' : '';
 ?>
     <div class="auth-box wide rise" style="--n:1">
-      <h2>Open an account</h2>
-      <p class="muted">You need to be 18 or older, with a Bangladeshi mobile number and NID.</p>
+      <h2>Let's get you set up</h2>
+      <p class="muted">You'll need to be 18+, with a Bangladeshi number and NID.</p>
 
       <?php if ($errors): ?>
         <div class="note bad" role="alert"><?= icon('alert') ?>
@@ -99,10 +99,10 @@ $bad = static fn(string $k): string =>
           </div>
         </div>
 
-        <button class="btn btn-block" type="submit">Open my account</button>
+        <button class="btn btn-block" type="submit"><?= icon('check') ?>Create my wallet</button>
       </form>
 
-      <p class="center mt-4">Already have one? <a href="login.php">Sign in</a></p>
+      <p class="center mt-4">Already one of us? <a href="login.php">Sign in</a></p>
     </div>
   </main>
 </div>

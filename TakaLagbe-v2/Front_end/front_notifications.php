@@ -15,7 +15,7 @@ $actions .= '<form method="post" data-confirm="Delete every notification you hav
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Notifications', '', null, $actions) ?>
+    <?= page_head('Notifications', '', null, $actions, badge: ['bell', 3]) ?>
 
     <nav class="tabs rise" style="--n:1" aria-label="Filter">
       <a href="?show=all"<?= $filter === 'all' ? ' aria-current="page"' : '' ?>>All</a>
@@ -26,8 +26,8 @@ $actions .= '<form method="post" data-confirm="Delete every notification you hav
     <section class="card reveal" aria-label="Notifications">
       <?php if (!$rows): ?>
         <?= $filter === 'unread'
-            ? empty_state('check', 'All caught up', 'Nothing unread. New transfers, requests and security alerts will appear here.')
-            : empty_state('bell', 'Nothing yet', 'When money arrives, a bill is paid or someone asks you for money, you will be told here.') ?>
+            ? empty_state('check', 'All caught up', 'Inbox zero energy. New stuff lands here the moment it happens.', '', 3, 2)
+            : empty_state('bell', 'Nothing yet', 'Money in, bills paid, someone asking for money: you hear about it here first.', '', 3, 3) ?>
       <?php else: ?>
         <ul class="rows">
           <?php foreach ($rows as $n): ?>

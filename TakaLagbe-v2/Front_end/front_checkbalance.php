@@ -4,7 +4,7 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Check balance', 'Asks for the PIN first, so a borrowed phone shows nothing.', ['account.php', 'Home']) ?>
+    <?= page_head('Check balance', 'PIN first, so whoever borrowed your phone sees nothing.', ['account.php', 'Home'], badge: ['eye', 1]) ?>
     <?= error_note($error) ?>
 
     <?php if ($balance !== null): ?>
@@ -25,7 +25,7 @@ include __DIR__ . '/partials/nav.php';
       <form method="post" class="card rise" style="--n:1" data-once>
         <?= csrf_field() ?>
         <?= pin_field() ?>
-        <button class="btn btn-block" type="submit">Show my balance</button>
+        <button class="btn btn-block" type="submit"><?= icon('eye') ?>Show me</button>
       </form>
     <?php endif; ?>
   </div>

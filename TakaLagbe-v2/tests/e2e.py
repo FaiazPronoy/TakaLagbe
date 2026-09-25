@@ -716,7 +716,8 @@ def main():
 
     r = saver.get("analytics.php")
     check("insights do not count money moved into savings as spending",
-          "Savings" not in re.sub(r"<[^>]+>", " ", r.text.split("By category")[1].split("Who you send")[0]))
+          '<ul class="legend">' in r.text
+          and "Savings" not in r.text.split('<ul class="legend">')[1].split("</ul>")[0])
 
     # the pages have to work with scripting switched off
     money_pages = ["sendmoney.php", "add_money.php", "cash_in.php", "cash_out.php", "mobilerecharge.php",

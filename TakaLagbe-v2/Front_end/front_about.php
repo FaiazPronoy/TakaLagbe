@@ -29,7 +29,7 @@ $security = [
 <main id="main" class="page">
   <div class="wrap">
     <?= page_head('About ' . APP_NAME, APP_TAGLINE . ' A mobile wallet built for CSE370, Database Systems, at BRAC University.',
-                  ['account.php', 'Home'], '', 'Version ' . APP_VERSION) ?>
+                  ['account.php', 'Home'], '', 'Version ' . APP_VERSION, badge: ['info', 8]) ?>
 
     <section class="hero rise mb-6" style="--n:1" aria-label="In numbers">
       <?= guilloche() ?>

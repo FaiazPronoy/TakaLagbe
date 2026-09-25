@@ -4,24 +4,24 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('Savings', 'Money in a goal leaves your spendable balance, so it cannot be spent by accident.', null,
-                  '<a class="btn" href="#newGoal">' . icon('plus') . 'New goal</a>') ?>
+    <?= page_head('Savings', 'Put money in a jar and it stays out of reach, so the laptop fund survives Eid shopping.', null,
+                  '<a class="btn" href="#newGoal">' . icon('plus') . 'New jar</a>', badge: ['target', 3]) ?>
     <?= error_note($error) ?>
 
     <div class="grid cols-3 mb-5">
-      <div class="stat rise" style="--n:1"><span class="label">Spendable</span>
+      <div class="stat rise" style="--n:1"><span class="label"><?= icon('wallet') ?>Spendable</span>
         <span class="v"><small>৳</small><?= e(money($bal, false)) ?></span></div>
-      <div class="stat rise" style="--n:2"><span class="label">Set aside</span>
+      <div class="stat rise" style="--n:2"><span class="label"><?= icon('target') ?>Stashed</span>
         <span class="v pos"><small>৳</small><?= e(money($totalSaved, false)) ?></span></div>
-      <div class="stat rise" style="--n:3"><span class="label">Open goals</span>
+      <div class="stat rise" style="--n:3"><span class="label"><?= icon('star') ?>Jars</span>
         <span class="v"><?= count($goals) ?> <small>of 8</small></span></div>
     </div>
 
     <?php if (!$goals): ?>
       <div class="card reveal">
-        <?= empty_state('target', 'No goals yet',
-              'Name something you are saving for, like a laptop or Eid, set a target, and move a little in whenever you can.',
-              '<a class="btn" href="#newGoal">Create your first goal</a>') ?>
+        <?= empty_state('target', 'No jars yet',
+              'New laptop? Cox\'s Bazar trip? Name it, set a target, and drop in a little whenever you can.',
+              '<a class="btn" href="#newGoal">' . icon('plus') . 'Start my first jar</a>', 3, 3) ?>
       </div>
     <?php else: ?>
       <div class="grid cols-2">
@@ -51,10 +51,10 @@ include __DIR__ . '/partials/nav.php';
             <div class="meter" role="progressbar" aria-label="<?= e($g['title']) ?> progress"
                  aria-valuenow="<?= $pct ?>" aria-valuemin="0" aria-valuemax="100"><span style="width:<?= $pct ?>%"></span></div>
             <p class="small muted" style="margin:var(--s2) 0 var(--s3)">
-              <?= $left > 0 ? e(money($left)) . ' to go.' : 'Target reached. Close it to move the money back, or keep saving.' ?></p>
+              <?= $left > 0 ? e(money($left)) . ' to go.' : 'You did it! Close the jar to spend it, or keep going.' ?></p>
 
             <details class="inline">
-              <summary class="btn btn-quiet btn-sm">Move money</summary>
+              <summary class="btn btn-quiet btn-sm"><?= icon('exchange') ?>Add or take out</summary>
               <form method="post" class="panel" data-once>
                 <?= csrf_field() ?>
                 <?= once_field('savings_move') ?>
@@ -62,7 +62,7 @@ include __DIR__ . '/partials/nav.php';
                 <fieldset>
                   <legend class="sr-only">Direction</legend>
                   <div class="choices">
-                    <label><input type="radio" name="action" value="deposit" checked> Put money in</label>
+                    <label><input type="radio" name="action" value="deposit" checked> Drop some in</label>
                     <label><input type="radio" name="action" value="withdraw"> Take some out</label>
                   </div>
                 </fieldset>
@@ -83,7 +83,7 @@ include __DIR__ . '/partials/nav.php';
               <?= csrf_field() ?>
               <input type="hidden" name="action" value="close">
               <input type="hidden" name="goal_id" value="<?= (int) $g['id'] ?>">
-              <button class="btn-link small" type="submit">Close this goal</button>
+              <button class="btn-link small" type="submit">Close this jar</button>
             </form>
           </section>
         <?php endforeach; ?>
@@ -92,7 +92,7 @@ include __DIR__ . '/partials/nav.php';
 
     <?php if ($archived): ?>
       <section class="card reveal mt-5">
-        <div class="card-h"><h2>Finished</h2></div>
+        <div class="card-h"><h2><?= icon('check') ?>Done and dusted</h2></div>
         <ul class="rows">
           <?php foreach ($archived as $g): ?>
             <li class="entry">
@@ -110,16 +110,16 @@ include __DIR__ . '/partials/nav.php';
 <dialog id="newGoal" aria-labelledby="newGoalTitle">
   <div class="sheet">
     <a class="tool x" href="#" data-close aria-label="Close"><?= icon('x') ?></a>
-    <h2 id="newGoalTitle">A new goal</h2>
+    <h2 id="newGoalTitle">A new savings jar</h2>
     <form method="post" data-once>
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="create">
       <div class="field">
-        <label for="title">What are you saving for?</label>
-        <input id="title" name="title" required maxlength="60" placeholder="New laptop, Eid, emergency fund">
+        <label for="title">What's it for?</label>
+        <input id="title" name="title" required maxlength="60" placeholder="New laptop, Sajek trip, emergency fund">
       </div>
       <div class="field">
-        <label for="target_amount">Target</label>
+        <label for="target_amount">How much do you need?</label>
         <div class="money"><span aria-hidden="true">৳</span>
           <input id="target_amount" name="target_amount" type="number" step="0.01" inputmode="decimal"
                  min="<?= MIN_AMOUNT ?>" required></div>
@@ -130,7 +130,7 @@ include __DIR__ . '/partials/nav.php';
       </div>
       <div class="row">
         <a class="btn btn-quiet" href="#" data-close>Cancel</a>
-        <button class="btn push" type="submit">Create goal</button>
+        <button class="btn push" type="submit"><?= icon('plus') ?>Make the jar</button>
       </div>
     </form>
   </div>

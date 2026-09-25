@@ -119,8 +119,13 @@ CONTRAST_JS = r"""
     for (let e = el; e; e = e.parentElement) {
       const cs = getComputedStyle(e);
       if (cs.backgroundImage.includes('gradient')) {
+        // a see-through stop (a glow laid over the card) is painted on top of
+        // the solid stops underneath it, so test it mixed with each of them
         const stops = [...cs.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map(m => parse(m[0]));
-        return stops.map(s => stack.reduceRight((acc, layer) => over(layer, acc), s));
+        const solid = stops.filter(s => s.a >= 1), glass = stops.filter(s => s.a < 1);
+        const under = solid.length ? solid : [{r: 255, g: 255, b: 255, a: 1}];
+        const all = under.concat(...glass.map(g => under.map(u => over(g, u))));
+        return all.map(s => stack.reduceRight((acc, layer) => over(layer, acc), s));
       }
       const c = parse(cs.backgroundColor);
       if (c && c.a > 0) {
@@ -417,10 +422,14 @@ def main():
                 ctx = browser.new_context(viewport=vp, reduced_motion="reduce", color_scheme=theme,
                                           device_scale_factor=1 if label == "desktop" else 2)
                 ctx.add_init_script("try { localStorage.setItem('tkl-theme', '%s') } catch (e) {}" % theme)
+                out_page = ctx.new_page()          # the sign in page, before signing in
+                out_page.goto(BASE + "/login.php")
+                out_page.screenshot(path=os.path.join(OUT, "login-%s-%s.png" % (label, theme)), full_page=True)
+                n += 1
                 sign_in(ctx.new_page())
                 admin_in(ctx.new_page())
                 sp = ctx.new_page()
-                for s in shots:
+                for s in shots[1:]:
                     sp.goto(BASE + "/" + s)
                     sp.wait_for_load_state("networkidle")
                     name = re.sub(r"\W+", "_", s.split("?")[0].replace(".php", ""))

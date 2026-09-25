@@ -4,8 +4,8 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Pay a shop', 'Each merchant gives its own cashback, and it lands in the same transaction.',
-                  ['account.php', 'Home']) ?>
+    <?= page_head('Pay a shop', 'Pay at the counter or online. Some shops throw in cashback.',
+                  ['account.php', 'Home'], badge: ['bag', 7]) ?>
     <?= error_note($error) ?>
 
     <form method="post" class="card rise" style="--n:1" data-once>
@@ -13,9 +13,9 @@ include __DIR__ . '/partials/nav.php';
       <?= once_field('payment') ?>
 
       <div class="field">
-        <label for="merchant_id">Merchant</label>
+        <label for="merchant_id">Where are you paying?</label>
         <select id="merchant_id" name="merchant_id" required data-cashback-from="amount">
-          <option value="">Choose where you are paying</option>
+          <option value="">Pick the shop</option>
           <?php foreach ($merchants as $m):
             $cb = rtrim(rtrim(number_format((float) $m['cashback_pct'], 2), '0'), '.'); ?>
             <option value="<?= e($m['merchant_id']) ?>" data-cb="<?= e($m['cashback_pct']) ?>"
@@ -38,13 +38,13 @@ include __DIR__ . '/partials/nav.php';
       </div>
 
       <div class="field">
-        <label for="reference">Order or table number <span class="muted">(optional)</span></label>
+        <label for="reference">Order or table no. <span class="muted">(optional)</span></label>
         <input id="reference" name="reference" maxlength="60" value="<?= e(post('reference')) ?>">
       </div>
 
       <div class="sum" id="paySum" aria-live="polite"></div>
       <?= pin_field() ?>
-      <button class="btn btn-block" type="submit">Pay</button>
+      <button class="btn btn-block" type="submit"><?= icon('bag') ?>Pay the shop</button>
     </form>
   </div>
 </main>

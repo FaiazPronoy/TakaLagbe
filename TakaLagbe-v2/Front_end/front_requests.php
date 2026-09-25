@@ -5,25 +5,25 @@ $badge = ['pending' => 'warn', 'paid' => 'ok', 'declined' => 'bad'];
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('Requests', 'Ask someone for money, or split a bill between friends. They pay from their own wallet.', null,
+    <?= page_head('Requests', 'Lent someone money for lunch? Ask for it back. Dinner with the gang? Split it.', null,
           '<a class="btn btn-quiet" href="#splitBill">' . icon('split') . 'Split a bill</a>'
-        . '<a class="btn" href="#askMoney">' . icon('hand') . 'Ask for money</a>') ?>
+        . '<a class="btn" href="#askMoney">' . icon('hand') . 'Ask for money</a>', badge: ['hand', 4]) ?>
     <?= error_note($error) ?>
 
     <div class="grid cols-3 mb-5">
-      <div class="stat rise" style="--n:1"><span class="label">Owed to you</span>
+      <div class="stat rise" style="--n:1"><span class="label"><?= icon('arrow-in') ?>They owe you</span>
         <span class="v pos"><small>৳</small><?= e(money($owedToMe, false)) ?></span></div>
-      <div class="stat rise" style="--n:2"><span class="label">You owe</span>
+      <div class="stat rise" style="--n:2"><span class="label"><?= icon('arrow-out') ?>You owe</span>
         <span class="v neg"><small>৳</small><?= e(money($iOwe, false)) ?></span></div>
-      <div class="stat rise" style="--n:3"><span class="label">Waiting on you</span>
+      <div class="stat rise" style="--n:3"><span class="label"><?= icon('bell') ?>Waiting on you</span>
         <span class="v"><?= count($incoming) ?></span></div>
     </div>
 
     <div class="grid cols-2">
       <section class="card reveal" aria-labelledby="inTitle">
-        <div class="card-h"><h2 id="inTitle">Asked of you</h2></div>
+        <div class="card-h"><h2 id="inTitle"><?= icon('arrow-out') ?>People asking you</h2></div>
         <?php if (!$incoming): ?>
-          <?= empty_state('check', 'You are all square', 'When someone asks you for money it shows up here, with Pay and Decline next to it.') ?>
+          <?= empty_state('check', 'All square!', 'Nobody is chasing you for money. Enjoy it while it lasts.', '', 3, 2) ?>
         <?php else: ?>
           <ul class="rows">
             <?php foreach ($incoming as $r):
@@ -50,10 +50,10 @@ $badge = ['pending' => 'warn', 'paid' => 'ok', 'declined' => 'bad'];
       </section>
 
       <section class="card reveal" style="--n:1" aria-labelledby="outTitle">
-        <div class="card-h"><h2 id="outTitle">You asked for</h2></div>
+        <div class="card-h"><h2 id="outTitle"><?= icon('arrow-in') ?>You asked them</h2></div>
         <?php if (!$outgoing): ?>
           <?= empty_state('hand', 'Nothing asked yet',
-                'Lent someone money for lunch? Ask for it back, and it shows here until they pay.',
+                'Paid for someone\'s fuchka? Ask for it back. It sits here until they pay up.',
                 '<a class="btn btn-quiet" href="#askMoney">Ask for money</a>') ?>
         <?php else: ?>
           <ul class="rows">
@@ -87,7 +87,7 @@ $badge = ['pending' => 'warn', 'paid' => 'ok', 'declined' => 'bad'];
 <dialog id="askMoney" aria-labelledby="askTitle">
   <div class="sheet">
     <a class="tool x" href="#" data-close aria-label="Close"><?= icon('x') ?></a>
-    <h2 id="askTitle">Ask for money</h2>
+    <h2 id="askTitle">Ask someone to pay up</h2>
     <form method="post" data-once>
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="request">
@@ -103,11 +103,11 @@ $badge = ['pending' => 'warn', 'paid' => 'ok', 'declined' => 'bad'];
       </div>
       <div class="field">
         <label for="reqNote">What for? <span class="muted">(optional)</span></label>
-        <input id="reqNote" name="note" maxlength="120" placeholder="Lunch, rickshaw fare, rent">
+        <input id="reqNote" name="note" maxlength="120" placeholder="Lunch, rickshaw fare, that concert ticket">
       </div>
       <div class="row">
         <a class="btn btn-quiet" href="#" data-close>Cancel</a>
-        <button class="btn push" type="submit">Send request</button>
+        <button class="btn push" type="submit"><?= icon('send') ?>Send request</button>
       </div>
     </form>
   </div>
@@ -117,17 +117,17 @@ $badge = ['pending' => 'warn', 'paid' => 'ok', 'declined' => 'bad'];
   <div class="sheet">
     <a class="tool x" href="#" data-close aria-label="Close"><?= icon('x') ?></a>
     <h2 id="splitTitle">Split a bill</h2>
-    <p class="muted small">Everyone pays the same share, you included. Each person gets their own request.</p>
+    <p class="muted small">Everyone pays the same, you included. Each person gets a request. No awkward maths.</p>
     <form method="post" data-once>
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="split">
       <div class="field">
-        <label for="total">The whole bill</label>
+        <label for="total">Total bill</label>
         <div class="money"><span aria-hidden="true">৳</span>
           <input id="total" name="total" type="number" step="0.01" inputmode="decimal" min="<?= MIN_AMOUNT ?>" required data-split-total></div>
       </div>
       <div class="field">
-        <label for="people">Who to split with</label>
+        <label for="people">Who was there?</label>
         <textarea id="people" name="people" required data-split-people aria-describedby="peopleHint"
                   placeholder="01712345678, 01898765432"></textarea>
         <span class="hint" id="peopleHint">Their numbers, one per line or separated by commas. Up to 10.</span>
@@ -139,7 +139,7 @@ $badge = ['pending' => 'warn', 'paid' => 'ok', 'declined' => 'bad'];
       </div>
       <div class="row">
         <a class="btn btn-quiet" href="#" data-close>Cancel</a>
-        <button class="btn push" type="submit">Send requests</button>
+        <button class="btn push" type="submit"><?= icon('split') ?>Split it</button>
       </div>
     </form>
   </div>

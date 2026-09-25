@@ -4,8 +4,8 @@ include __DIR__ . '/partials/nav.php';
 ?>
 <main id="main" class="page">
   <div class="wrap narrow">
-    <?= page_head('Mobile recharge', CASHBACK_RECHARGE_PCT . ' percent of every recharge comes back to your balance.',
-                  ['account.php', 'Home']) ?>
+    <?= page_head('Mobile recharge', 'Top up any number and get ' . CASHBACK_RECHARGE_PCT . '% back. Small, but it adds up.',
+                  ['account.php', 'Home'], badge: ['phone', 6]) ?>
     <?= error_note($error) ?>
 
     <form method="post" class="card rise" style="--n:1" data-once>
@@ -13,7 +13,7 @@ include __DIR__ . '/partials/nav.php';
       <?= once_field('recharge') ?>
 
       <div class="field">
-        <label for="rechargePhoneNumber">Number to recharge</label>
+        <label for="rechargePhoneNumber">Which number?</label>
         <input id="rechargePhoneNumber" name="rechargePhoneNumber" type="tel" inputmode="numeric" autocomplete="off"
                maxlength="11" pattern="01[3-9][0-9]{8}" required placeholder="01XXXXXXXXX"
                value="<?= e(post('rechargePhoneNumber') ?: $phone) ?>" data-operator="opName">
@@ -41,12 +41,12 @@ include __DIR__ . '/partials/nav.php';
 
       <div class="sum" id="rechargeSum" aria-live="polite"></div>
       <?= pin_field() ?>
-      <button class="btn btn-block" type="submit">Recharge</button>
+      <button class="btn btn-block" type="submit"><?= icon('phone') ?>Recharge now</button>
     </form>
 
     <?php if ($recent): ?>
       <section class="card reveal mt-5">
-        <div class="card-h"><h2>Recent recharges</h2></div>
+        <div class="card-h"><h2><?= icon('history') ?>Recharged lately</h2></div>
         <ul class="rows">
           <?php foreach ($recent as $r): ?>
             <li><a class="entry" href="receipt.php?id=<?= e($r['trx_id']) ?>">

@@ -23,7 +23,7 @@ $__here = static fn(string $key): string => $activeNav === $key ? ' aria-current
 
     <nav class="links" aria-label="Main">
       <?php foreach ($__links as $href => [$label, $key, $ico]): ?>
-        <a href="<?= $href ?>"<?= $__here($key) ?>><?= e($label) ?>
+        <a href="<?= $href ?>"<?= $__here($key) ?>><?= icon($ico) ?><?= e($label) ?>
           <?php if ($key === 'requests' && $__owed): ?><span class="badge warn"><?= $__owed ?></span><?php endif; ?>
         </a>
       <?php endforeach; ?>
