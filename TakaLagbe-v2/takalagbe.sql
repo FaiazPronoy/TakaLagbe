@@ -1,5 +1,5 @@
 -- =====================================================================
---  TakaLagbe! :  Digital Money Transaction System
+--  TakaLagbe!  :  Digital Money Transaction System
 --  Database schema  (MySQL / MariaDB)
 --
 --  Import:  mysql -u root takalagbe < takalagbe.sql
