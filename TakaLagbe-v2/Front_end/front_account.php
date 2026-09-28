@@ -34,33 +34,45 @@ $owed    = array_sum(array_map(static fn($r) => (float) $r['amount'], $requests)
       </div>
     </div>
 
-    <section class="hero rise" style="--n:1" aria-labelledby="balLabel">
-      <?= guilloche() ?>
-      <div class="between">
-        <span class="label" id="balLabel">Available balance</span>
-        <button class="tool js-only" id="eyeBtn" type="button" aria-pressed="false" aria-label="Hide balance"
-                style="color:var(--on-hero)">
-          <span class="i-eye" style="display:none"><?= icon('eye') ?></span>
-          <span class="i-eye-off"><?= icon('eye-off') ?></span>
-        </button>
-      </div>
-      <p class="figure" id="balanceFigure">
-        <span class="real"><span class="cur">৳</span><?= e(money($bal, false)) ?></span>
-        <span class="dots" hidden><span class="cur">৳</span>••••••</span>
-      </p>
-      <p class="who"><?= e($user['firstname'] . ' ' . $user['lastname']) ?> · <span class="mono"><?= e($phone) ?></span></p>
+    <div class="wallet rise" style="--n:1">
+      <section class="hero bankcard" aria-labelledby="balLabel">
+        <?= guilloche() ?>
+        <div class="card-top">
+          <span class="card-brand"><span class="mark" aria-hidden="true">৳</span><?= e(APP_NAME) ?></span>
+          <?= icon('wifi') ?>
+        </div>
+        <div class="card-chip" aria-hidden="true"></div>
+        <div class="between">
+          <span class="label" id="balLabel">Available balance</span>
+          <button class="tool js-only" id="eyeBtn" type="button" aria-pressed="false" aria-label="Hide balance"
+                  style="color:var(--on-hero)">
+            <span class="i-eye" style="display:none"><?= icon('eye') ?></span>
+            <span class="i-eye-off"><?= icon('eye-off') ?></span>
+          </button>
+        </div>
+        <p class="figure" id="balanceFigure">
+          <span class="real"><span class="cur">৳</span><?= e(money($bal, false)) ?></span>
+          <span class="dots" hidden><span class="cur">৳</span>••••••</span>
+        </p>
+        <div class="card-bottom">
+          <span class="card-no" aria-label="Wallet number <?= e($phone) ?>">•••• •••• <?= e(substr($phone, -4)) ?></span>
+          <span><?= e($user['firstname'] . ' ' . $user['lastname']) ?></span>
+        </div>
+      </section>
 
-      <div class="hero-foot">
-        <div><span class="k">In this month</span><span class="n">+ ৳<?= e(money($monthIn, false)) ?></span></div>
-        <div><span class="k">Out this month</span><span class="n">− ৳<?= e(money($monthOut, false)) ?></span></div>
-        <div class="grow">
+      <section class="wallet-side card" aria-label="This month">
+        <div class="two-up">
+          <div><span class="k">In this month</span><span class="n pos">+ ৳<?= e(money($monthIn, false)) ?></span></div>
+          <div><span class="k">Out this month</span><span class="n neg">− ৳<?= e(money($monthOut, false)) ?></span></div>
+        </div>
+        <div>
           <span class="k">Sent today · <?= e(money($todayOut, false)) ?> of <?= e(money($limit, false)) ?></span>
           <div class="meter" role="progressbar" aria-label="Daily limit used"
                aria-valuenow="<?= $usedPct ?>" aria-valuemin="0" aria-valuemax="100">
             <span style="width:<?= $usedPct ?>%"></span></div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
 
     <nav class="big-actions rise" style="--n:2" aria-label="Main actions">
       <?php foreach ($main as [$href, $ico, $name, $tone]): ?>

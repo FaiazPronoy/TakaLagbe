@@ -4,8 +4,8 @@ include __DIR__ . '/partials/auth_top.php';
 $f = take_flash();
 ?>
     <div class="auth-box rise" style="--n:1">
-      <h2>Welcome back!</h2>
-      <p class="muted">Pop in your number and password.</p>
+      <h2>Open your wallet</h2>
+      <p class="muted">Your number and password, that's all.</p>
 
       <?= error_note($error) ?>
       <?php if ($f): ?>

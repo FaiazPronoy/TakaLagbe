@@ -29,7 +29,7 @@ $bodyClass = $bodyClass ?? '';
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800&family=Poppins:wght@600;700&display=swap">
 <link rel="stylesheet" href="Assets/css/app.css?v=<?= e(APP_VERSION) ?>">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232563EB'/><text x='16' y='23' font-size='20' font-family='Georgia' font-weight='bold' fill='%23FACC15' text-anchor='middle'>৳</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%23FFB81C'/><circle cx='16' cy='16' r='12' fill='none' stroke='%23FFE39A' stroke-width='1.5'/><text x='16' y='22' font-size='16' font-family='Arial' font-weight='bold' fill='%230B6B4F' text-anchor='middle'>৳</text></svg>">
 <script src="Assets/js/app.js?v=<?= e(APP_VERSION) ?>" defer></script>
 </head>
 <body class="<?= e($bodyClass) ?>">

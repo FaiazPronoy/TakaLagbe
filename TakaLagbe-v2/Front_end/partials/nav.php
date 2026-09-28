@@ -1,5 +1,6 @@
 <?php
-/* The customer top bar, the phone tab bar, and the flash message.
+/* The customer top bar (the brand and the account tools), the dock at the
+   bottom that holds the main places, and the flash message.
    Expects $activeNav to name the current section. */
 $activeNav = $activeNav ?? '';
 $__user    = current_user();
@@ -8,26 +9,12 @@ $__owed    = $__user
     ? (int) scalar("SELECT COUNT(*) FROM money_requests WHERE payer_phone = ? AND status = 'pending'",
                    [$__user['phone']], 0)
     : 0;
-$__links = [
-    'account.php'   => ['Home',     'home',      'home'],
-    'history.php'   => ['History',  'history',   'history'],
-    'requests.php'  => ['Requests', 'requests',  'exchange'],
-    'savings.php'   => ['Savings',  'savings',   'target'],
-    'analytics.php' => ['Insights', 'analytics', 'chart'],
-];
 $__here = static fn(string $key): string => $activeNav === $key ? ' aria-current="page"' : '';
 ?>
 <header class="bar">
   <div class="bar-in">
     <a class="brand" href="account.php"><span class="mark">৳</span><?= e(APP_NAME) ?></a>
 
-    <nav class="links" aria-label="Main">
-      <?php foreach ($__links as $href => [$label, $key, $ico]): ?>
-        <a href="<?= $href ?>"<?= $__here($key) ?>><?= icon($ico) ?><?= e($label) ?>
-          <?php if ($key === 'requests' && $__owed): ?><span class="badge warn"><?= $__owed ?></span><?php endif; ?>
-        </a>
-      <?php endforeach; ?>
-    </nav>
 
     <div class="tools">
       <button class="tool theme-btn" id="themeBtn" type="button" aria-label="Switch theme" aria-pressed="false">
@@ -64,8 +51,10 @@ $__here = static fn(string $key): string => $activeNav === $key ? ' aria-current
 <nav class="tabs-m" aria-label="Main">
   <a href="account.php"<?= $__here('home') ?>><?= icon('home') ?>Home</a>
   <a href="history.php"<?= $__here('history') ?>><?= icon('history') ?>History</a>
+  <a href="savings.php" class="wide"<?= $__here('savings') ?>><?= icon('target') ?>Savings</a>
   <a href="sendmoney.php" class="tab-send"<?= $__here('send') ?>><span><?= icon('send') ?></span>Send</a>
-  <a href="requests.php"<?= $__here('requests') ?>><?= icon('exchange') ?>Requests</a>
+  <a href="requests.php"<?= $__here('requests') ?>><?= icon('exchange') ?>Requests<?php if ($__owed): ?><span class="count" aria-label="<?= $__owed ?> waiting"><?= $__owed ?></span><?php endif; ?></a>
+  <a href="analytics.php" class="wide"<?= $__here('analytics') ?>><?= icon('chart') ?>Insights</a>
   <a href="profile.php"<?= $__here('profile') ?>><?= icon('user') ?>Me</a>
 </nav>
 

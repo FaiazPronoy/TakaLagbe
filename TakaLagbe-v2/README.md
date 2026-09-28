@@ -256,6 +256,11 @@ takalagbe/
 Every page follows the same shape the original project used: a controller at
 the root does the work, then includes its view from `Front_end/`.
 
+The look is a wallet app's: bottle green and mango on warm cream, like a new
+taka note, with a taka coin for the logo. The balance sits on a bank card, and
+the main places live in a dock at the bottom on every screen size. Fonts are
+Poppins, Nunito and Hind Siliguri.
+
 ---
 
 ## Tests
