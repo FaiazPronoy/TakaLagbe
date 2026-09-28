@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             login_user($user);
             audit($phone, 'login', 'signed in');
-            flash('ok', 'Welcome back, ' . $user['firstname'] . '.');
+            flash('ok', 'Your wallet is open, ' . $user['firstname'] . '.');
             redirect('account.php');
         }
     }
