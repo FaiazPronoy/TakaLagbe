@@ -5,7 +5,7 @@ cd /d "%~dp0"
 set "XAMPP=C:\xampp"
 
 echo ==========================================
-echo   TAKALAGBE  -  CSE370
+echo   TAKALAGBE
 echo ==========================================
 echo.
 echo   Before this runs: open the XAMPP Control Panel

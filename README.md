@@ -2,10 +2,10 @@
 
 A mobile money wallet in PHP and MySQL: send money, pay bills and tuition,
 recharge, save towards goals, split bills, with a back office for the operator.
-Built for CSE370 Database Systems at BRAC University, then rebuilt.
+Built once, then rebuilt from the ground up.
 
 **Live demo:** _link goes here once it is deployed_ ·
-**Releases:** [v1.0, the coursework, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases)
+**Releases:** [v1.0, the first version, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases)
 
 ## Sign in to the demo
 
@@ -20,7 +20,7 @@ recharges and savings. No real money moves.
 
 ## v1 and v2
 
-| | v1.0 (Spring 2024 coursework) | v2.0 (the rebuild) |
+| | v1.0 (the first version, 2024) | v2.0 (the rebuild) |
 |---|---|---|
 | Passwords | stored and compared as plain text | bcrypt, plus a separate hashed six digit PIN for payments |
 | SQL | form input pasted into query strings; the sign in form was injectable | prepared statements everywhere |

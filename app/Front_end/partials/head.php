@@ -12,7 +12,7 @@ $bodyClass = $bodyClass ?? '';
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="TakaLagbe! is a mobile money wallet built as a CSE370 database project: send money, pay bills, save and split.">
+<meta name="description" content="TakaLagbe! is a mobile money wallet: send money, pay bills, save and split.">
 <title><?= e($pageTitle) ?> · <?= e(APP_NAME) ?></title>
 <script>
 /* before anything paints: the saved theme, and a class that says script is on */

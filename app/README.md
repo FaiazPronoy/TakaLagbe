@@ -3,7 +3,6 @@
 A digital money transaction system: send money, pay bills, recharge, save,
 split bills and settle up, with a full back office for the operator.
 
-Built as the **CSE370 Database Systems** project at BRAC University.
 PHP 8 and MySQL, no framework, no Composer, no JavaScript library. The only
 thing fetched from outside is the two fonts; offline, the pages fall back to
 Georgia and the system sans.

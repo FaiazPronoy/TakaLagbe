@@ -1,15 +1,15 @@
 /* TakaLagbe! stylesheet.
-   Bottle green and mango on warm cream, like a new taka note. Every colour, size and curve
+   Bottle green and mango on a fresh lime-cream page, like a new taka note in the sun. Every colour, size and curve
    is a token here at the top; nothing below uses a raw hex value.
    The dark theme only swaps the tokens. */
 
 :root{
   /* ground is the page, paper the cards on it, line the edge between them */
-  --ground:#FBF6EA;
+  --ground:#F4FAE6;
   --paper:#FFFFFF;
-  --sunken:#F6F0E0;
-  --line:#E8DFC8;
-  --line-strong:#C7B98F;
+  --sunken:#EEF6DA;
+  --line:#DCEBC4;
+  --line-strong:#A9C68A;
 
   --ink:#10261C;
   --ink-2:#3E5347;
@@ -46,7 +46,7 @@
   --t6-ink:#0D6A74; --t6-soft:#D0EFF2;
   --t7-ink:#A42E63; --t7-soft:#FADAE8;
   --t8-ink:#1E3A63; --t8-soft:#DCE4F1;
-  --glow-1:rgba(11,107,79,.14); --glow-2:rgba(255,184,28,.22); --glow-3:rgba(255,150,70,.10);
+  --glow-1:rgba(30,170,110,.26); --glow-2:rgba(255,184,28,.40); --glow-3:rgba(255,120,80,.22);
   --on-avatar:#FFFFFF;
   --on-avatar-light:#0F1B33;
   --qr-paper:#FFFFFF;
@@ -204,6 +204,8 @@ hr{border:0;border-top:1px solid var(--line);margin:var(--s5) 0}
 .head h1{margin:0}
 .eyebrow{display:block;font-size:.9rem;font-weight:800;color:var(--brass-ink);margin-bottom:var(--s2)}
 .head .lede{margin:var(--s2) auto 0;color:var(--ink-2);max-width:56ch;font-size:1.1rem}
+/* centred lines are balanced, so no word is left alone on the last one */
+.center,.center p,.head p,.empty p,.hint,.foot,.sum{text-wrap:balance}
 /* justified only where lines are long enough not to open gaps between words */
 @media (min-width:861px){ p{text-align:justify;hyphens:auto} }
 @media (max-width:860px){ p{text-align:center} .auth-art p{text-align:left} }
@@ -215,7 +217,9 @@ hr{border:0;border-top:1px solid var(--line);margin:var(--s5) 0}
 .back:hover{color:var(--ink)}
 
 /* top bar */
-.bar{position:sticky;top:0;z-index:50;background:var(--paper);border-bottom:1px solid var(--line)}
+.bar{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);
+  background:color-mix(in srgb,var(--paper) 78%,transparent);
+  -webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px)}
 .bar-in{max-width:var(--wrap);margin:0 auto;padding:0 var(--s4);height:68px;
   display:flex;align-items:center;gap:var(--s4)}
 .brand{display:flex;align-items:center;gap:var(--s2);color:var(--ink);text-decoration:none;
