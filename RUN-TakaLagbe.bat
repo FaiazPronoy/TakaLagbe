@@ -22,10 +22,10 @@ if not exist "%XAMPP%\htdocs\" (
 )
 
 echo [1/3] Copying into htdocs ...
-robocopy "TakaLagbe-v2" "%XAMPP%\htdocs\TakaLagbe-v2" /E /NFL /NDL /NJH /NJS /NP >nul
+robocopy "app" "%XAMPP%\htdocs\takalagbe" /E /NFL /NDL /NJH /NJS /NP >nul
 
 echo [2/3] Importing the database ...
-"%XAMPP%\mysql\bin\mysql.exe" -u root < "%XAMPP%\htdocs\TakaLagbe-v2\takalagbe.sql"
+"%XAMPP%\mysql\bin\mysql.exe" -u root < "%XAMPP%\htdocs\takalagbe\takalagbe.sql"
 if errorlevel 1 (
   echo.
   echo [X] Could not reach MySQL.
@@ -37,16 +37,16 @@ if errorlevel 1 (
 )
 
 echo [3/3] Filling it with demo data ...
-"%XAMPP%\php\php.exe" "%XAMPP%\htdocs\TakaLagbe-v2\tools\seed_demo.php" --yes
+"%XAMPP%\php\php.exe" "%XAMPP%\htdocs\takalagbe\tools\seed_demo.php" --yes
 
 echo.
 echo   Done. Opening the app.
 echo.
-echo   App     http://localhost/TakaLagbe-v2/
+echo   App     http://localhost/takalagbe/
 echo           01711482093 / demo1234, PIN 482915
-echo   Admin   http://localhost/TakaLagbe-v2/admin_login.php
+echo   Admin   http://localhost/takalagbe/admin_login.php
 echo           admin / admin123
 echo.
 
-start "" http://localhost/TakaLagbe-v2/
+start "" http://localhost/takalagbe/
 pause

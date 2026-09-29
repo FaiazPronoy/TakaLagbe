@@ -31,7 +31,7 @@ recharges and savings. No real money moves.
 | Tests | none | an HTTP suite that checks the database after each step, and browser checks (crawl, WCAG contrast in both themes, keyboard, no-JS, 390px) |
 
 The v1 source is in the v1.0 release. The code for v2 is in
-[`TakaLagbe-v2/`](TakaLagbe-v2/), and its README explains how the money is
+[`app/`](app/), and its README explains how the money is
 kept consistent, the data model, and how to run it and the tests.
 
 ## Bugs found and fixed while rebuilding

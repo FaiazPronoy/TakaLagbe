@@ -1,12 +1,12 @@
 # local settings and anything with a password in it
 .env
 *.env
-TakaLagbe-v2/config/local.php
+app/config/local.php
 
 # database dumps other than the schema
 *.sql
-!TakaLagbe-v2/takalagbe.sql
-!TakaLagbe-v2/demo_data.sql
+!app/takalagbe.sql
+!app/demo_data.sql
 
 # build copies and editor clutter
 *.zip
@@ -18,5 +18,5 @@ __pycache__/
 node_modules/
 
 # test output
-TakaLagbe-v2/tests/out/
+app/tests/out/
 

@@ -15,7 +15,7 @@ Georgia and the system sans.
 1. Copy this folder into `C:\xampp\htdocs\` and start **Apache** and **MySQL**.
 2. Import `takalagbe.sql` in phpMyAdmin. It creates the `takalagbe` database.
 3. Fill it with demo data: `C:\xampp\php\php.exe tools\seed_demo.php --yes`
-4. Open <http://localhost/TakaLagbe-v2/> and sign in as `01711482093` /
+4. Open <http://localhost/takalagbe/> and sign in as `01711482093` /
    `demo1234`. The transaction PIN is `482915`.
 
 `RUN-TakaLagbe.bat` one folder up does all four. The admin console is at
