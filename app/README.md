@@ -83,6 +83,10 @@ and the `.sql` file from being opened directly.
   as CSV with a UTF‑8 BOM so Excel reads Bangla correctly.
 - **Receipts** for every transaction, with a QR code that encodes the
   reference and amount for verification.
+- **Bangla first.** Every customer page reads in Bangla by default, with an
+  EN button to switch; the choice is remembered. Notifications and the notes
+  the app writes are stored once in English and shown in whichever language
+  the reader picked. The admin console is a staff tool and stays in English.
 - **Dark mode**, remembered per browser, and a layout that works down to a
   390 pixel phone.
 
@@ -257,9 +261,16 @@ Every page follows the same shape the original project used: a controller at
 the root does the work, then includes its view from `Front_end/`.
 
 The look is a wallet app's: bottle green and mango on warm cream, like a new
-taka note, with a taka coin for the logo. The balance sits on a bank card, and
-the main places live in a dock at the bottom on every screen size. Fonts are
-Poppins, Nunito and Hind Siliguri.
+taka note, with a taka coin for the logo. Home opens on a green band with the
+month's money in and out beside a dark bank card holding the balance, and the
+four main actions sit on a tray across its edge. The main places live in a
+dock at the bottom on every screen size. Fonts are Poppins and Nunito, with
+Hind Siliguri for Bangla.
+
+Bangla lives in `lib/lang_bn.php`, keyed by the English sentence. `__()` in
+`lib/lang.php` looks a sentence up and fills its `{gaps}`, so a page reads the
+same in the source as on screen, and anything not translated yet simply shows
+in English.
 
 ---
 
@@ -277,7 +288,7 @@ server answers one request at a time, so the race tests would pass without
 testing anything.
 
 **`tests/e2e.py`** (Python, `requests`) drives the app over HTTP and checks the
-database after each step, 111 checks: signup, every money flow and its
+database after each step, 108 checks: signup, every money flow and its
 arithmetic, charges and cashback, limits, savings, requests, split bills, the
 admin console, CSRF and replayed forms, SQL injection, escaping, PIN and
 sign in lockouts, other people's receipts, and three races run at the same
@@ -296,7 +307,9 @@ every page a customer and an admin can reach and fails on any status other
 than 200 or any console error, measures the contrast of every piece of text
 against WCAG AA in both themes, tries the dialogs, keyboard and hold to send,
 runs the main flows with JavaScript switched off, checks for sideways
-scrolling at 390px, and saves screenshots to `tests/out/`.
+scrolling at 390px, and saves screenshots to `tests/out/`. It runs in English,
+then goes through the customer pages again in Bangla and fails on any English
+sentence left on them.
 
 ```
 pip install playwright

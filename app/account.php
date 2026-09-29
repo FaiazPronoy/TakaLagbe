@@ -34,6 +34,6 @@ $requests = all(
       WHERE r.payer_phone = ? AND r.status = 'pending'
       ORDER BY r.created_at DESC LIMIT 3", [$phone]);
 
-$pageTitle = 'Home';
+$pageTitle = __('Home');
 $activeNav = 'home';
 include('Front_end/front_account.php');

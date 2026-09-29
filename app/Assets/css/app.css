@@ -336,12 +336,37 @@ html:has(.tabs-m){scroll-padding-bottom:120px}
 .hero .btn-quiet:hover{background:rgba(255,255,255,.18);border-color:var(--on-hero)}
 @keyframes drift{from{transform:scale(1) rotate(0)}to{transform:scale(1.18) rotate(8deg)}}
 
-/* on the home page the balance is a bank card, with the month beside it */
-.wallet{display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:var(--s5);align-items:center}
+/* on the home page the wallet opens as a green band across the top: hello,
+   the month in and out, and the bank card with the balance on it. The four
+   main actions sit on a white tray that overlaps its bottom edge. */
+.home.page{padding-top:0}
+.band{position:relative;overflow:hidden;isolation:isolate;color:var(--on-hero);
+  padding:var(--s6) 0 calc(var(--s8) + 10px);border-radius:0 0 36px 36px;
+  /* deep enough in both themes for the small type on it to stay readable */
+  background:linear-gradient(150deg,#0B6B4F,#085A42 50%,#053A2B)}
+.band>.rosette{position:absolute;z-index:-1;width:720px;height:720px;left:-220px;top:-300px;
+  color:var(--brass);opacity:.14;animation:drift 42s var(--ease) infinite alternate}
+.band-in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:var(--s6);align-items:center}
+.band-copy{display:grid;gap:var(--s3);justify-items:start;text-align:left}
+.band-kicker{margin:0;font-weight:800;font-size:1rem;color:#FFD66B;letter-spacing:.01em}
+.band h1{margin:0;font-size:clamp(2.2rem,1.6rem + 2.6vw,3.3rem);letter-spacing:-.025em;color:#fff}
+.band-line{margin:0;color:rgba(255,255,255,.94);font-size:1.08rem;text-align:left}
+.band-stats{display:flex;flex-wrap:wrap;gap:var(--s3);margin-top:var(--s2)}
+.band-stats>div{padding:10px 16px;border-radius:18px;background:rgba(0,0,0,.14);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);backdrop-filter:blur(6px)}
+.band .k{display:block;font-size:.82rem;font-weight:700;color:rgba(255,255,255,.92)}
+.band-stats .n{display:block;font-family:var(--font-display);font-weight:700;font-size:1.2rem;
+  font-variant-numeric:tabular-nums}
+.band-limit{width:min(100%,380px)}
+.band .meter{margin-top:6px;background:rgba(255,255,255,.18)}
+.band .meter>span{background:linear-gradient(90deg,#FFE39A,var(--brass))}
 .home .bankcard{aspect-ratio:1.586;width:100%;display:flex;flex-direction:column;justify-content:space-between;
   padding:22px 26px;border-radius:22px;
-  transform:perspective(1000px) rotateY(-7deg) rotateX(3deg);transition:transform var(--t3) var(--ease)}
-.home .bankcard:hover{transform:none}
+  background:radial-gradient(22rem 14rem at 100% 0%,rgba(255,184,28,.2),transparent 70%),
+    linear-gradient(135deg,#17392E,#0B2119 55%,#040E0A);
+  box-shadow:0 30px 60px -24px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.14);
+  transform:perspective(1000px) rotateY(-9deg) rotateX(4deg);transition:transform var(--t3) var(--ease)}
+.home .bankcard:hover{transform:perspective(1000px) rotateY(0) rotateX(0) translateY(-4px)}
 .card-top{display:flex;align-items:center;justify-content:space-between}
 .card-brand{display:flex;align-items:center;gap:var(--s2);font-family:var(--font-display);font-weight:700;font-size:1.05rem}
 .card-brand .mark{width:28px;height:28px;font-size:.9rem}
@@ -357,16 +382,14 @@ html:has(.tabs-m){scroll-padding-bottom:120px}
 .card-bottom{display:flex;justify-content:space-between;gap:var(--s3);font-size:.8rem;font-weight:700;
   letter-spacing:.14em;text-transform:uppercase;color:var(--on-hero-2)}
 .card-no{letter-spacing:.2em;font-variant-numeric:tabular-nums}
-.wallet-side{display:grid;gap:var(--s4)}
-.wallet-side .k{display:block;font-size:.85rem;font-weight:700;color:var(--ink-2)}
-.wallet-side .n{display:block;font-family:var(--font-display);font-weight:700;font-size:1.35rem;font-variant-numeric:tabular-nums}
-.wallet-side .n.pos{color:var(--pos)}
-.wallet-side .n.neg{color:var(--neg)}
-.wallet-side .two-up{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
-.wallet-side .meter{margin-top:var(--s2)}
 @media (max-width:860px){
-  .wallet{grid-template-columns:minmax(0,1fr)}
-  .home .bankcard{transform:none;max-width:440px;margin:0 auto}
+  .band{padding:var(--s5) 0 calc(var(--s7) + 20px);border-radius:0 0 28px 28px}
+  .band-in{grid-template-columns:minmax(0,1fr);gap:var(--s5)}
+  .band-copy{justify-items:center;text-align:center}
+  .band-line{text-align:center}
+  .band-stats{justify-content:center}
+  .band-limit{margin:0 auto}
+  .home .bankcard{transform:none;max-width:420px;margin:0 auto}
 }
 
 /* figures */
@@ -401,13 +424,18 @@ html:has(.tabs-m){scroll-padding-bottom:120px}
 .hero-foot .n{display:block;font-family:var(--font-display);font-weight:700;font-size:1.15rem}
 .hero-foot .grow{flex:1;min-width:200px}
 .hero-foot .meter{margin-top:var(--s2)}
-.big-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s3);margin:var(--s5) 0}
-.big-action{display:flex;flex-direction:column;align-items:center;gap:var(--s2);padding:var(--s4) var(--s2);
-  background:var(--paper);border:1px solid var(--line);border-radius:var(--r3);color:var(--ink);
-  text-decoration:none;font-weight:800;box-shadow:var(--sh1);text-align:center}
+.big-actions{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s2);
+  margin:calc(-1 * var(--s7)) 0 var(--s5);padding:var(--s3);background:var(--paper);border-radius:28px;
+  box-shadow:var(--sh3);border:1px solid var(--line)}
+.big-action{display:flex;flex-direction:column;align-items:center;gap:var(--s2);padding:var(--s3) var(--s2);
+  border-radius:22px;color:var(--ink);text-decoration:none;font-weight:800;text-align:center;
+  transition:background var(--t1) var(--ease)}
+.big-action:hover{background:var(--sunken)}
+.big-action:hover .disc{transform:translateY(-3px) rotate(-6deg)}
 .big-action:hover{color:var(--ink)}
 .big-action .disc,.service .disc{display:grid;place-items:center;background:var(--ts);color:var(--ti)}
-.big-action .disc{width:56px;height:56px;border-radius:18px}
+.big-action .disc{width:60px;height:60px;border-radius:50%;transition:transform var(--t2) var(--ease);
+  box-shadow:inset 0 -3px 0 rgba(0,0,0,.06)}
 .big-action .i{width:28px;height:28px}
 .alert-strip{display:flex;align-items:center;gap:var(--s3);padding:var(--s3) var(--s4);margin-bottom:var(--s5);
   border-radius:var(--r3);background:var(--warn-soft);color:var(--ink);text-decoration:none;border:1px solid var(--line)}
@@ -763,3 +791,23 @@ details.inline .panel{background:var(--sunken);border:1px solid var(--line);bord
 .mt-1{margin-top:var(--s1)}.mt-2{margin-top:var(--s2)}.mt-3{margin-top:var(--s3)}
 .mt-4{margin-top:var(--s4)}.mt-5{margin-top:var(--s5)}.mt-6{margin-top:var(--s6)}
 .mb-2{margin-bottom:var(--s2)}.mb-4{margin-bottom:var(--s4)}.mb-5{margin-bottom:var(--s5)}.mb-6{margin-bottom:var(--s6)}
+
+/* the language switch: a small pill that says where it goes */
+.lang-btn{display:inline-grid;place-items:center;min-width:44px;height:36px;padding:0 10px;
+  border-radius:var(--r-pill);border:1px solid var(--line);background:var(--paper);color:var(--ink);
+  font-weight:800;font-size:.85rem;text-decoration:none;width:auto}
+.lang-btn:hover{border-color:var(--brand);color:var(--brand)}
+.auth-lang{position:absolute;top:16px;right:16px;z-index:5}
+.auth-lang .lang-btn{background:#0B6B4F;border-color:rgba(255,255,255,.45);color:#fff}
+.auth-lang .lang-btn:hover{background:#084D39;color:#fff;border-color:#fff}
+:lang(bn) body{line-height:1.7}
+/* on a phone the top bar holds the brand plus four tools, so both give a little */
+@media (max-width:480px){
+  .bar-in{gap:var(--s2)}
+  .bar .brand{font-size:1.25rem}
+  .bar .brand .mark{width:34px;height:34px;font-size:1.05rem}
+  .tools{gap:2px}
+  .tool{width:36px;height:36px}
+  .bar .lang-btn{min-width:38px;height:32px;padding:0 8px;font-size:.8rem}
+  .menu summary{padding:3px}
+}

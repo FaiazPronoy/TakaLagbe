@@ -10,10 +10,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'read_all') {
         q('UPDATE notifications SET read_status = 1 WHERE user_phone = ?', [$phone]);
-        flash('ok', 'All notifications marked as read.');
+        flash('ok', __('All notifications marked as read.'));
     } elseif ($action === 'clear') {
         q('DELETE FROM notifications WHERE user_phone = ? AND read_status = 1', [$phone]);
-        flash('ok', 'Read notifications cleared.');
+        flash('ok', __('Read notifications cleared.'));
     } elseif ($action === 'read_one') {
         q('UPDATE notifications SET read_status = 1 WHERE user_phone = ? AND id = ?',
           [$phone, (int) post('id')]);
@@ -28,6 +28,6 @@ $rows   = all("SELECT * FROM notifications WHERE user_phone = ?$where
                ORDER BY created_at DESC, id DESC LIMIT 100", [$phone]);
 $unread = unread_count($phone);
 
-$pageTitle = 'Notifications';
+$pageTitle = __('Notifications');
 $activeNav = 'notifications';
 include('Front_end/front_notifications.php');

@@ -16,18 +16,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $operator   = operator_of($target);
 
     if (!valid_phone($target)) {
-        $error = 'Enter a valid 11 digit mobile number.';
+        $error = __('Enter a valid 11 digit mobile number.');
     } elseif ($operator === 'Unknown') {
-        $error = 'That number does not belong to a known operator.';
+        $error = __('That number does not belong to a known operator.');
     } elseif (!valid_amount($amount)) {
-        $error = 'Enter a valid amount.';
+        $error = __('Enter a valid amount.');
     } elseif ((float) $amount < MIN_AMOUNT) {
-        $error = 'The smallest recharge is ' . money(MIN_AMOUNT) . '.';
+        $error = __('The smallest recharge is {amount}.', ['amount' => money(MIN_AMOUNT)]);
     } elseif ((float) $amount > RECHARGE_MAX) {
-        $error = 'A recharge cannot be more than ' . money(RECHARGE_MAX) . '.';
+        $error = __('A recharge cannot be more than {amount}.', ['amount' => money(RECHARGE_MAX)]);
     } elseif (!verify_pin($phone, $pin)) {
         $left  = pin_tries_left($phone);
-        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+        $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
     } else {
         $pdo = db();
         $pdo->beginTransaction();
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            $error = 'The recharge could not be completed. Please try again.';
+            $error = __('The recharge could not be completed. Please try again.');
         }
     }
 }
@@ -68,6 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $recent = all('SELECT * FROM mobile_recharge WHERE payer_phone = ?
                ORDER BY created_at DESC LIMIT 5', [$phone]);
 
-$pageTitle = 'Mobile recharge';
+$pageTitle = __('Mobile recharge');
 $activeNav = 'home';
 include('Front_end/front_mobilerecharge.php');

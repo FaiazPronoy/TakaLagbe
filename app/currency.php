@@ -25,6 +25,6 @@ $rateOf = static fn(string $c): float => $c === 'BDT' ? 1.0 : RATES[$c][1];
 $result = $amount * $rateOf($from) / $rateOf($to);
 $single = $rateOf($from) / $rateOf($to);
 
-$pageTitle = 'Currency converter';
+$pageTitle = __('Currency converter');
 $activeNav = '';
 include('Front_end/front_currency.php');

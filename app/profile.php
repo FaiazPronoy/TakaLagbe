@@ -16,16 +16,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $colour = post('avatar_color');
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $error = 'Enter a valid email address.';
+            $error = __('Enter a valid email address.');
         } elseif (!preg_match('/^#[0-9A-Fa-f]{6}$/', $colour)) {
-            $error = 'Pick a colour from the list.';
+            $error = __('Pick a colour from the list.');
         } elseif (scalar('SELECT 1 FROM user WHERE email = ? AND phone <> ?', [$email, $phone])) {
-            $error = 'That email is already used by another account.';
+            $error = __('That email is already used by another account.');
         } else {
             q('UPDATE user SET email = ?, avatar_color = ? WHERE phone = ?',
               [$email, $colour, $phone]);
             audit($phone, 'profile_updated', 'details changed');
-            flash('ok', 'Profile updated.');
+            flash('ok', __('Profile updated.'));
             redirect('profile.php');
         }
     }
@@ -37,20 +37,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $confirm = post('confirm_password');
 
         if (!password_verify($current, $user['password_hash'])) {
-            $error = 'Your current password is not right.';
+            $error = __('Your current password is not right.');
         } elseif (strlen($new) < 6) {
-            $error = 'The new password must be at least 6 characters.';
+            $error = __('The new password must be at least 6 characters.');
         } elseif ($new !== $confirm) {
-            $error = 'The two new passwords do not match.';
+            $error = __('The two new passwords do not match.');
         } elseif (password_verify($new, $user['password_hash'])) {
-            $error = 'The new password has to be different from the old one.';
+            $error = __('The new password has to be different from the old one.');
         } else {
             q('UPDATE user SET password_hash = ? WHERE phone = ?',
               [password_hash($new, PASSWORD_BCRYPT), $phone]);
             notify($phone, 'Password changed',
                    'Your password was changed just now.', 'lock');
             audit($phone, 'password_changed', 'from ' . client_ip());
-            flash('ok', 'Password changed.');
+            flash('ok', __('Password changed.'));
             redirect('profile.php');
         }
     }
@@ -62,19 +62,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $confirm = post('confirm_pin');
 
         if (!password_verify($current, $user['pin_hash'])) {
-            $error = 'Your current PIN is not right.';
+            $error = __('Your current PIN is not right.');
         } elseif (!valid_pin($new)) {
-            $error = 'The new PIN must be exactly 6 digits.';
+            $error = __('The new PIN must be exactly 6 digits.');
         } elseif ($new !== $confirm) {
-            $error = 'The two new PINs do not match.';
+            $error = __('The two new PINs do not match.');
         } elseif (preg_match('/^(\d)\1{5}$/', $new) || in_array($new, ['123456', '654321'], true)) {
-            $error = 'Please choose a less obvious PIN.';
+            $error = __('Please choose a less obvious PIN.');
         } else {
             q('UPDATE user SET pin_hash = ? WHERE phone = ?',
               [password_hash($new, PASSWORD_BCRYPT), $phone]);
             notify($phone, 'PIN changed', 'Your transaction PIN was changed.', 'lock');
             audit($phone, 'pin_changed', 'from ' . client_ip());
-            flash('ok', 'Transaction PIN changed.');
+            flash('ok', __('Transaction PIN changed.'));
             redirect('profile.php');
         }
     }
@@ -85,13 +85,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pin   = post('pin');
 
         if (!is_numeric($limit) || (float) $limit < 1000 || (float) $limit > 100000) {
-            $error = 'Choose a limit between ' . money(1000) . ' and ' . money(100000) . '.';
+            $error = __('Choose a limit between {low} and {high}.', ['low' => money(1000), 'high' => money(100000)]);
         } elseif (!verify_pin($phone, $pin)) {
-            $error = 'Wrong transaction PIN.';
+            $error = __('Wrong transaction PIN.');
         } else {
             q('UPDATE user SET daily_limit = ? WHERE phone = ?', [(float) $limit, $phone]);
             audit($phone, 'limit_changed', 'daily limit set to ' . $limit);
-            flash('ok', 'Daily limit set to ' . money($limit) . '.');
+            flash('ok', __('Daily limit set to {amount}.', ['amount' => money($limit)]));
             redirect('profile.php');
         }
     }
@@ -115,6 +115,6 @@ $stats = [
     'member_since' => $user['created_at'],
 ];
 
-$pageTitle = 'Profile';
+$pageTitle = __('Profile');
 $activeNav = 'profile';
 include('Front_end/front_profile.php');

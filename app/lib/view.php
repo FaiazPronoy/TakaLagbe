@@ -70,11 +70,11 @@ function trx_entry(array $t, string $phone): string
 
     return '<li><a class="entry" href="receipt.php?id=' . urlencode($t['trx_id']) . '">'
          . '<span class="ico tone-' . trx_tone($t['transaction_type']) . '">' . trx_icon($t['transaction_type']) . '</span>'
-         . '<span class="body"><span class="t">' . e($t['transaction_type']) . '</span>'
+         . '<span class="body"><span class="t">' . e(__($t['transaction_type'])) . '</span>'
          . '<span class="s">' . e(trx_counterparty($t, $phone)) . ' · ' . e(time_ago($t['transaction_time']))
          . '</span></span>'
          . ($failed
-             ? '<span class="badge bad">declined</span>'
+             ? '<span class="badge bad">' . e(__('declined')) . '</span>'
              : '<span class="amt ' . ($out ? 'neg' : 'pos') . '">' . ($out ? '−' : '+') . ' '
                . money($delta) . '</span>')
          . '</a></li>';
@@ -99,13 +99,14 @@ function avatar(?string $first, ?string $last, ?string $colour, string $class = 
 }
 
 /** The six digit PIN, as one ordinary field so it posts without any script. */
-function pin_field(string $id = 'pin', string $label = 'Transaction PIN'): string
+function pin_field(string $id = 'pin', string $label = ''): string
 {
+    $label = $label !== '' ? $label : __('Transaction PIN');
     return '<div class="field"><label for="' . $id . '">' . e($label) . '</label>'
          . '<input class="pin" type="password" id="' . $id . '" name="pin" inputmode="numeric"'
          . ' pattern="\d{6}" minlength="6" maxlength="6" required autocomplete="off"'
          . ' aria-describedby="' . $id . '-hint">'
-         . '<span class="hint center" id="' . $id . '-hint">Your secret 6 digits. Nobody from TakaLagbe will ever ask for it.</span></div>';
+         . '<span class="hint center" id="' . $id . '-hint">' . e(__('Your secret 6 digits. Nobody from TakaLagbe will ever ask for it.')) . '</span></div>';
 }
 
 /** A refused form, said plainly at the top of it. */

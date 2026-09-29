@@ -12,6 +12,6 @@ $stats = [
     'billers'      => (int) scalar('SELECT COUNT(*) FROM organizations', [], 0),
 ];
 
-$pageTitle = 'About';
+$pageTitle = __('About');
 $activeNav = '';
 include('Front_end/front_about.php');

@@ -9,13 +9,14 @@ include __DIR__ . '/head.php';
     <a class="brand" href="login.php"><span class="mark">৳</span><?= e(APP_NAME) ?></a>
     <div class="rise">
       <h1><?php if (isset($artTitle)): ?><?= e($artTitle) ?><?php else: ?>টাকা লাগবে?<br>চিন্তা নেই।<?php endif; ?></h1>
-      <p><?= e($artText ?? 'Send money to friends, pay your bills, split the kacchi, and save up for Eid. All from one wallet.') ?></p>
+      <p><?= e($artText ?? __('Send money to friends, pay your bills, split the kacchi, and save up for Eid. All from one wallet.')) ?></p>
       <ul>
-        <li><?= icon('shield') ?>Money never goes missing halfway, even if two things happen at once</li>
-        <li><?= icon('lock') ?>A separate PIN for anything that moves money</li>
-        <li><?= icon('receipt') ?>A receipt for everything, even the ones that bounced</li>
+        <li><?= icon('shield') ?><?= __('Money never goes missing halfway, even if two things happen at once') ?></li>
+        <li><?= icon('lock') ?><?= __('A separate PIN for anything that moves money') ?></li>
+        <li><?= icon('receipt') ?><?= __('A receipt for everything, even the ones that bounced') ?></li>
       </ul>
     </div>
   </aside>
 
   <main class="auth-form" id="main">
+    <div class="auth-lang"><?= lang_button('lang-btn') ?></div>

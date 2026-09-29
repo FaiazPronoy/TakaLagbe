@@ -81,10 +81,10 @@ function move_money(array $o): array
     $skipLimits  = (bool)  ($o['skip_limits'] ?? false);
 
     if ($amount <= 0) {
-        throw new MoneyError('Please enter a valid amount.');
+        throw new MoneyError(__('Please enter a valid amount.'));
     }
     if ($from !== null && $to !== null && $from === $to) {
-        throw new MoneyError('You cannot send money to your own account.');
+        throw new MoneyError(__('You cannot send money to your own account.'));
     }
 
     $fee      = round($amount * $feePct / 100 + $feeFlat, 2);
@@ -108,7 +108,7 @@ function move_money(array $o): array
         foreach ($lock as $phone) {
             $row = one('SELECT phone, balance FROM account WHERE phone = ? FOR UPDATE', [$phone]);
             if ($row === null) {
-                throw new MoneyError('Account ' . mask_phone($phone) . ' was not found.');
+                throw new MoneyError(__('Account {phone} was not found.', ['phone' => mask_phone($phone)]));
             }
             $balances[$phone] = (float) $row['balance'];
         }
@@ -117,8 +117,8 @@ function move_money(array $o): array
         if ($from !== null) {
             if ($balances[$from] < $debit) {
                 throw new MoneyError(
-                    'Insufficient balance. You need ' . money($debit) .
-                    ' and you have ' . money($balances[$from]) . '.'
+                    __('Insufficient balance. You need {need} and you have {have}.',
+                       ['need' => money($debit), 'have' => money($balances[$from])])
                 );
             }
             if (!$skipLimits) {
@@ -127,13 +127,13 @@ function move_money(array $o): array
                 );
                 if (spent_today($from) + $debit > $limit) {
                     throw new MoneyError(
-                        'This would cross your daily limit of ' . money($limit) .
-                        '. You have already moved ' . money(spent_today($from)) . ' today.'
+                        __('This would cross your daily limit of {limit}. You have already moved {moved} today.',
+                           ['limit' => money($limit), 'moved' => money(spent_today($from))])
                     );
                 }
                 if (recent_trx_count($from) >= VELOCITY_MAX_TRX) {
                     throw new MoneyError(
-                        'Too many transactions in a short time. Please wait a few minutes.'
+                        __('Too many transactions in a short time. Please wait a few minutes.')
                     );
                 }
             }

@@ -19,14 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $merchant = one('SELECT * FROM merchants WHERE merchant_id = ?', [$merchantId]);
 
     if (!$merchant) {
-        $error = 'Please choose a merchant.';
+        $error = __('Please choose a merchant.');
     } elseif (!valid_amount($amount)) {
-        $error = 'Enter a valid amount.';
+        $error = __('Enter a valid amount.');
     } elseif ((float) $amount < MIN_AMOUNT) {
-        $error = 'The smallest payment is ' . money(MIN_AMOUNT) . '.';
+        $error = __('The smallest payment is {amount}.', ['amount' => money(MIN_AMOUNT)]);
     } elseif (!verify_pin($phone, $pin)) {
         $left  = pin_tries_left($phone);
-        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+        $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
     } else {
         $pdo = db();
         $pdo->beginTransaction();
@@ -55,11 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            $error = 'The payment could not be completed. Please try again.';
+            $error = __('The payment could not be completed. Please try again.');
         }
     }
 }
 
-$pageTitle = 'Make a payment';
+$pageTitle = __('Make a payment');
 $activeNav = 'home';
 include('Front_end/front_payment.php');

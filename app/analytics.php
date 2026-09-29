@@ -94,6 +94,6 @@ $failedCount = (int) scalar(
 
 $dailyAvg = $days > 0 ? $spendTotal / $days : 0;
 
-$pageTitle = 'Insights';
+$pageTitle = __('Insights');
 $activeNav = 'analytics';
 include('Front_end/front_analytics.php');

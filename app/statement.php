@@ -95,6 +95,6 @@ foreach ($rows as $t) {
     }
 }
 
-$pageTitle = 'Statement';
+$pageTitle = __('Statement');
 $activeNav = 'history';
 include('Front_end/front_statement.php');

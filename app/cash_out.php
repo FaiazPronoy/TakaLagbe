@@ -18,16 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $agent = one('SELECT * FROM agent_details WHERE agent_id = ?', [$agentId]);
 
     if (!$agent) {
-        $error = 'That agent number was not found.';
+        $error = __('That agent number was not found.');
     } elseif (!valid_amount($amount)) {
-        $error = 'Enter a valid amount.';
+        $error = __('Enter a valid amount.');
     } elseif ((float) $amount < MIN_AMOUNT) {
-        $error = 'The smallest cash out is ' . money(MIN_AMOUNT) . '.';
+        $error = __('The smallest cash out is {amount}.', ['amount' => money(MIN_AMOUNT)]);
     } elseif ((float) $amount > CASH_OUT_MAX) {
-        $error = 'You cannot cash out more than ' . money(CASH_OUT_MAX) . ' at a time.';
+        $error = __('You cannot cash out more than {amount} at a time.', ['amount' => money(CASH_OUT_MAX)]);
     } elseif (!verify_pin($phone, $pin)) {
         $left  = pin_tries_left($phone);
-        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+        $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
     } else {
         $pdo = db();
         $pdo->beginTransaction();
@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               [(float) $amount, $agentId]);
             $pdo->commit();
 
-            flash('ok', 'Collect ' . money($amount) . ' from agent ' . $agentId . '.');
+            flash('ok', __('Collect {amount} from agent {agent}.', ['amount' => money($amount), 'agent' => $agentId]));
             redirect('receipt.php?id=' . urlencode($trx['trx_id']));
 
         } catch (MoneyError $e) {
@@ -63,11 +63,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            $error = 'Cash out could not be completed. Please try again.';
+            $error = __('Cash out could not be completed. Please try again.');
         }
     }
 }
 
-$pageTitle = 'Cash out';
+$pageTitle = __('Cash out');
 $activeNav = 'home';
 include('Front_end/front_cashout.php');

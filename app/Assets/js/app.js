@@ -7,6 +7,9 @@
   var root = document.documentElement;
   var $ = function (sel, el) { return (el || document).querySelector(sel); };
   var $$ = function (sel, el) { return Array.prototype.slice.call((el || document).querySelectorAll(sel)); };
+  // the page's words for anything the script says, in the reader's language
+  var words = window.TKL_TEXT || {};
+  var t = function (s) { return words[s] || s; };
   var taka = function (n) {
     return '৳ ' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
@@ -18,7 +21,7 @@
     var sync = function () {
       var dark = root.getAttribute('data-theme') === 'dark';
       btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
-      btn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+      btn.setAttribute('aria-label', dark ? t('Switch to light theme') : t('Switch to dark theme'));
     };
     sync();
     btn.addEventListener('click', function () {
@@ -98,7 +101,7 @@
           if (fill) fill.style.width = p + '%';
           if (p >= 100) {
             done = true; clearInterval(timer);
-            if (txt) txt.textContent = 'Sending…';
+            if (txt) txt.textContent = t('Sending…');
             if (form) form.requestSubmit ? form.requestSubmit() : form.submit();
           }
         }, 25);
@@ -124,13 +127,13 @@
         var fee = Math.round((a * pct / 100 + flat) * 100) / 100;
         var back = Math.round(a * cb) / 100;
         var after = bal - a - fee + back;
-        var rows = [['Amount', taka(a)]];
-        if (fee) rows.push(['Charge', taka(fee)]);
-        if (back) rows.push(['Cashback', '+ ' + taka(back)]);
-        rows.push(['Balance after', taka(after)]);
+        var rows = [[t('Amount'), taka(a)]];
+        if (fee) rows.push([t('Charge'), taka(fee)]);
+        if (back) rows.push([t('Cashback'), '+ ' + taka(back)]);
+        rows.push([t('Balance after'), taka(after)]);
         out.innerHTML = rows.map(function (r) {
           return '<div><span>' + r[0] + '</span><b>' + r[1] + '</b></div>';
-        }).join('') + (after < 0 ? '<span class="err">That is more than you have.</span>' : '');
+        }).join('') + (after < 0 ? '<span class="err">' + t('That is more than you have.') + '</span>' : '');
       }
       input.addEventListener('input', draw);
       draw();
@@ -200,7 +203,7 @@
       b.addEventListener('click', function () {
         var label = b.getAttribute('aria-label') || '';
         navigator.clipboard && navigator.clipboard.writeText(b.getAttribute('data-copy')).then(function () {
-          b.setAttribute('aria-label', 'Copied');
+          b.setAttribute('aria-label', t('Copied'));
           b.classList.add('on');
           setTimeout(function () { b.setAttribute('aria-label', label); b.classList.remove('on'); }, 1400);
         });
@@ -213,7 +216,7 @@
                 '018': 'Robi', '016': 'Airtel', '015': 'Teletalk' };
     $$('[data-operator]').forEach(function (input) {
       var out = document.getElementById(input.getAttribute('data-operator'));
-      var draw = function () { out.textContent = map[input.value.slice(0, 3)] ? 'Operator: ' + map[input.value.slice(0, 3)] : ''; };
+      var draw = function () { out.textContent = map[input.value.slice(0, 3)] ? t('Operator: {name}').replace('{name}', map[input.value.slice(0, 3)]) : ''; };
       input.addEventListener('input', draw);
       draw();
     });
@@ -224,10 +227,11 @@
     var total = $('[data-split-total]'), people = $('[data-split-people]'), out = $('#splitPreview');
     if (!total || !people || !out) return;
     var draw = function () {
-      var t = parseFloat(total.value), n = people.value.split(/[\s,;]+/).filter(Boolean).length;
-      out.textContent = t > 0 && n
-        ? 'Split ' + (n + 1) + ' ways, ' + taka(Math.round(t / (n + 1) * 100) / 100) + ' each, you included.'
-        : 'Add the total and at least one number to see each share.';
+      var sum = parseFloat(total.value), n = people.value.split(/[\s,;]+/).filter(Boolean).length;
+      out.textContent = sum > 0 && n
+        ? t('Split {n} ways, {each} each, you included.').replace('{n}', n + 1)
+            .replace('{each}', taka(Math.round(sum / (n + 1) * 100) / 100))
+        : t('Add the total and at least one number to see each share.');
     };
     total.addEventListener('input', draw);
     people.addEventListener('input', draw);
@@ -244,7 +248,7 @@
       $('.real', fig).hidden = hide;
       $('.dots', fig).hidden = !hide;
       btn.setAttribute('aria-pressed', hide ? 'true' : 'false');
-      btn.setAttribute('aria-label', hide ? 'Show balance' : 'Hide balance');
+      btn.setAttribute('aria-label', hide ? t('Show balance') : t('Hide balance'));
       $('.i-eye', btn).style.display = hide ? '' : 'none';
       $('.i-eye-off', btn).style.display = hide ? 'none' : '';
     };
@@ -281,12 +285,12 @@
       b.className = 'peek';
       b.innerHTML = eye;
       b.setAttribute('aria-pressed', 'false');
-      b.setAttribute('aria-label', 'Show what you typed');
+      b.setAttribute('aria-label', t('Show what you typed'));
       b.addEventListener('click', function () {
         var show = input.type === 'password';
         input.type = show ? 'text' : 'password';
         b.setAttribute('aria-pressed', show ? 'true' : 'false');
-        b.setAttribute('aria-label', show ? 'Hide it again' : 'Show what you typed');
+        b.setAttribute('aria-label', show ? t('Hide it again') : t('Show what you typed'));
         input.focus();
       });
       wrap.appendChild(b);

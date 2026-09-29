@@ -14,18 +14,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $label = mb_substr(post('label'), 0, 40);
 
         if (!valid_phone($saved)) {
-            $error = 'Enter a valid 11 digit number.';
+            $error = __('Enter a valid 11 digit number.');
         } elseif ($saved === $phone) {
-            $error = 'You do not need to save your own number.';
+            $error = __('You do not need to save your own number.');
         } elseif (!scalar('SELECT 1 FROM user WHERE phone = ?', [$saved])) {
-            $error = 'That number is not registered on ' . APP_NAME . '.';
+            $error = __('That number is not registered on {app}.', ['app' => APP_NAME]);
         } elseif (scalar('SELECT 1 FROM favourites WHERE owner_phone = ? AND saved_phone = ?',
                          [$phone, $saved])) {
-            $error = 'That number is already in your favourites.';
+            $error = __('That number is already in your favourites.');
         } else {
             q('INSERT INTO favourites (owner_phone, saved_phone, label) VALUES (?,?,?)',
               [$phone, $saved, $label ?: name_of($saved)]);
-            flash('ok', 'Saved to favourites.');
+            flash('ok', __('Saved to favourites.'));
             redirect('favourites.php');
         }
     }
@@ -33,14 +33,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'remove') {
         q('DELETE FROM favourites WHERE owner_phone = ? AND id = ?',
           [$phone, (int) post('id')]);
-        flash('ok', 'Removed from favourites.');
+        flash('ok', __('Removed from favourites.'));
         redirect('favourites.php');
     }
 
     if ($action === 'rename') {
         q('UPDATE favourites SET label = ? WHERE owner_phone = ? AND id = ?',
           [mb_substr(post('label'), 0, 40), $phone, (int) post('id')]);
-        flash('ok', 'Name updated.');
+        flash('ok', __('Name updated.'));
         redirect('favourites.php');
     }
 }
@@ -68,6 +68,6 @@ $suggestions = all(
       GROUP BY t.transaction_to, u.firstname, u.lastname, u.avatar_color
       ORDER BY n DESC LIMIT 5", [$phone, $phone]);
 
-$pageTitle = 'Favourites';
+$pageTitle = __('Favourites');
 $activeNav = 'home';
 include('Front_end/front_favourites.php');

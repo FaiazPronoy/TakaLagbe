@@ -86,9 +86,15 @@ def check(name, cond, extra=""):
     print(("  ok   " if cond else "  FAIL ") + name + (("  -> " + str(extra)) if (extra and not cond) else ""))
 
 
+def english(session):
+    # the site speaks Bangla unless told otherwise; the checks read the English
+    session.cookies.set("tkl_lang", "en")
+    return session
+
+
 class User:
     def __init__(self, phone, pw="secret123", pin="481596"):
-        self.s = requests.Session()
+        self.s = english(requests.Session())
         self.phone, self.pw, self.pin = phone, pw, pin
 
     def tokens(self, path):
@@ -345,7 +351,7 @@ def main():
 
     # ------------------------------------------------------ security
     print("\n=== security ===")
-    fresh = requests.Session()
+    fresh = english(requests.Session())
     r = fresh.get(BASE + "/account.php", allow_redirects=False)
     check("dashboard needs a session", r.status_code == 302 and "login" in r.headers.get("Location", ""))
     r = fresh.get(BASE + "/admin_dashboard.php", allow_redirects=False)

@@ -21,18 +21,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
     if ($failed >= LOGIN_MAX_ATTEMPTS) {
-        $error = 'Too many attempts. Please try again later.';
+        $error = __('Too many attempts. Please try again later.');
     } elseif (strlen($new) < 6) {
-        $error = 'The new password must be at least 6 characters.';
+        $error = __('The new password must be at least 6 characters.');
     } elseif ($new !== $confirm) {
-        $error = 'The two passwords do not match.';
+        $error = __('The two passwords do not match.');
     } else {
         $user = one('SELECT * FROM user WHERE phone = ? AND nid = ? AND dob = ?',
                     [$phone, $nid, $dob]);
         if (!$user) {
             q("INSERT INTO login_attempts (kind, identifier, ip, successful)
                VALUES ('login',?,?,0)", [$phone, client_ip()]);
-            $error = 'Those details do not match any account.';
+            $error = __('Those details do not match any account.');
         } else {
             q('UPDATE user SET password_hash = ? WHERE phone = ?',
               [password_hash($new, PASSWORD_BCRYPT), $phone]);

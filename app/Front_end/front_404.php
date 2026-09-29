@@ -7,10 +7,10 @@ if (is_logged_in()) {
 <main id="main" class="page">
   <div class="wrap narrow">
     <div class="card rise">
-      <?= empty_state('search', 'Nothing here',
-            'That page or record does not exist, or it belongs to someone else.',
+      <?= empty_state('search', __('Nothing here'),
+            __('That page or record does not exist, or it belongs to someone else.'),
             '<a class="btn" href="' . (is_logged_in() ? 'account.php' : 'login.php') . '">'
-            . (is_logged_in() ? 'Back to home' : 'Go to sign in') . '</a>', 1) ?>
+            . e(is_logged_in() ? __('Back to home') : __('Go to sign in')) . '</a>', 1) ?>
     </div>
   </div>
 </main>

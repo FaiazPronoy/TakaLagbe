@@ -10,7 +10,7 @@ $trx = one('SELECT * FROM transactions WHERE trx_id = ?', [$id]);
 
 if (!$trx || ($trx['transaction_from'] !== $phone && $trx['transaction_to'] !== $phone)) {
     http_response_code(404);
-    $pageTitle = 'Receipt not found';
+    $pageTitle = __('Receipt not found');
     $activeNav = '';
     include('Front_end/front_404.php');
     exit;
@@ -18,6 +18,6 @@ if (!$trx || ($trx['transaction_from'] !== $phone && $trx['transaction_to'] !== 
 
 $out = trx_is_out($trx, $phone);
 
-$pageTitle = 'Receipt ' . $trx['trx_id'];
+$pageTitle = __('Receipt {ref}', ['ref' => $trx['trx_id']]);
 $activeNav = 'history';
 include('Front_end/front_receipt.php');

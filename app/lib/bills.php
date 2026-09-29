@@ -59,21 +59,20 @@ function run_bill_page(string $billtype): void
             [$billtype, $orgId, $consumerNo, $month]) : null;
 
         if (!$org) {
-            $error = 'Please choose a provider.';
+            $error = __('Please choose a provider.');
         } elseif ($consumerNo === '' || !preg_match('/^[0-9A-Za-z\-]{4,40}$/', $consumerNo)) {
-            $error = 'Enter a valid ' . strtolower($consumerLabel) . '.';
+            $error = __('Enter a valid {what}.', ['what' => mb_strtolower(__($consumerLabel))]);
         } elseif (!in_array($month, $months, true)) {
-            $error = 'Please choose a billing month.';
+            $error = __('Please choose a billing month.');
         } elseif (!valid_amount($amount)) {
-            $error = 'Enter a valid amount.';
+            $error = __('Enter a valid amount.');
         } elseif ((float) $amount < MIN_AMOUNT) {
-            $error = 'The smallest bill payment is ' . money(MIN_AMOUNT) . '.';
+            $error = __('The smallest bill payment is {amount}.', ['amount' => money(MIN_AMOUNT)]);
         } elseif ($already) {
-            $error = 'This bill was already paid for ' . $month
-                   . '. Reference ' . $already . '.';
+            $error = __('This bill was already paid for {month}. Reference {ref}.', ['month' => $month, 'ref' => $already]);
         } elseif (!verify_pin($phone, $pin)) {
             $left  = pin_tries_left($phone);
-            $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+            $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
         } else {
             $pdo = db();
             $pdo->beginTransaction();
@@ -97,8 +96,8 @@ function run_bill_page(string $billtype): void
                    $consumerNo, (float) $amount, $month, $trx['trx_id']]);
 
                 $pdo->commit();
-                flash('ok', $title . ' of ' . money($amount) . ' paid to '
-                          . $org['organization_name'] . '.');
+                flash('ok', __('{bill} of {amount} paid to {org}.',
+                               ['bill' => __($title), 'amount' => money($amount), 'org' => $org['organization_name']]));
                 redirect('receipt.php?id=' . urlencode($trx['trx_id']));
 
             } catch (MoneyError $e) {
@@ -114,7 +113,7 @@ function run_bill_page(string $billtype): void
                     : 'The bill could not be paid. Please try again.';
             } catch (Throwable $e) {
                 if ($pdo->inTransaction()) { $pdo->rollBack(); }
-                $error = 'The bill could not be paid. Please try again.';
+                $error = __('The bill could not be paid. Please try again.');
             }
         }
     }
@@ -122,7 +121,7 @@ function run_bill_page(string $billtype): void
     $recent = all('SELECT * FROM bill_payments WHERE payer_phone = ? AND billtype = ?
                    ORDER BY payment_date DESC LIMIT 5', [$phone, $billtype]);
 
-    $pageTitle = $title;
+    $pageTitle = __($title);
     $activeNav = 'home';
     include __DIR__ . '/../Front_end/front_bill.php';
 }

@@ -17,29 +17,30 @@ $__here = static fn(string $key): string => $activeNav === $key ? ' aria-current
 
 
     <div class="tools">
-      <button class="tool theme-btn" id="themeBtn" type="button" aria-label="Switch theme" aria-pressed="false">
+      <?= lang_button() ?>
+      <button class="tool theme-btn" id="themeBtn" type="button" aria-label="<?= e(__('Switch theme')) ?>" aria-pressed="false">
         <span class="i-moon"><?= icon('moon') ?></span><span class="i-sun"><?= icon('sun') ?></span>
       </button>
       <a class="tool" href="notifications.php"<?= $__here('notifications') ?>
-         aria-label="Notifications<?= $__unread ? ', ' . $__unread . ' unread' : '' ?>" title="Notifications">
+         aria-label="<?= e($__unread ? __('Notifications, {n} unread', ['n' => $__unread]) : __('Notifications')) ?>" title="<?= e(__('Notifications')) ?>">
         <?= icon('bell') ?>
         <?php if ($__unread): ?><span class="dot" aria-hidden="true"><?= $__unread > 9 ? '9+' : $__unread ?></span><?php endif; ?>
       </a>
       <?php if ($__user): ?>
         <details class="menu">
-          <summary aria-label="Your account">
+          <summary aria-label="<?= e(__('Your account')) ?>">
             <?= avatar($__user['firstname'], $__user['lastname'], $__user['avatar_color']) ?>
             <span class="menu-name hide-m"><?= e($__user['firstname']) ?></span>
           </summary>
           <div class="menu-box">
             <p class="menu-who"><strong><?= e($__user['firstname'] . ' ' . $__user['lastname']) ?></strong>
               <span class="small muted"><?= e($__user['phone']) ?></span></p>
-            <a href="profile.php"><?= icon('user') ?>Profile and security</a>
-            <a href="qr.php"><?= icon('qr') ?>My QR code</a>
-            <a href="supports.php"><?= icon('lifebuoy') ?>Help</a>
+            <a href="profile.php"><?= icon('user') ?><?= __('Profile and security') ?></a>
+            <a href="qr.php"><?= icon('qr') ?><?= __('My QR code') ?></a>
+            <a href="supports.php"><?= icon('lifebuoy') ?><?= __('Help') ?></a>
             <form method="post" action="logout.php">
               <?= csrf_field() ?>
-              <button type="submit"><?= icon('logout') ?>Sign out</button>
+              <button type="submit"><?= icon('logout') ?><?= __('Sign out') ?></button>
             </form>
           </div>
         </details>
@@ -48,14 +49,14 @@ $__here = static fn(string $key): string => $activeNav === $key ? ' aria-current
   </div>
 </header>
 
-<nav class="tabs-m" aria-label="Main">
-  <a href="account.php"<?= $__here('home') ?>><?= icon('home') ?>Home</a>
-  <a href="history.php"<?= $__here('history') ?>><?= icon('history') ?>History</a>
-  <a href="savings.php" class="wide"<?= $__here('savings') ?>><?= icon('target') ?>Savings</a>
-  <a href="sendmoney.php" class="tab-send"<?= $__here('send') ?>><span><?= icon('send') ?></span>Send</a>
-  <a href="requests.php"<?= $__here('requests') ?>><?= icon('exchange') ?>Requests<?php if ($__owed): ?><span class="count" aria-label="<?= $__owed ?> waiting"><?= $__owed ?></span><?php endif; ?></a>
-  <a href="analytics.php" class="wide"<?= $__here('analytics') ?>><?= icon('chart') ?>Insights</a>
-  <a href="profile.php"<?= $__here('profile') ?>><?= icon('user') ?>Me</a>
+<nav class="tabs-m" aria-label="<?= e(__('Main')) ?>">
+  <a href="account.php"<?= $__here('home') ?>><?= icon('home') ?><?= __('Home') ?></a>
+  <a href="history.php"<?= $__here('history') ?>><?= icon('history') ?><?= __('History') ?></a>
+  <a href="savings.php" class="wide"<?= $__here('savings') ?>><?= icon('target') ?><?= __('Savings') ?></a>
+  <a href="sendmoney.php" class="tab-send"<?= $__here('send') ?>><span><?= icon('send') ?></span><?= __('Send') ?></a>
+  <a href="requests.php"<?= $__here('requests') ?>><?= icon('exchange') ?><?= __('Requests') ?><?php if ($__owed): ?><span class="count" aria-label="<?= e(__('{n} waiting', ['n' => $__owed])) ?>"><?= $__owed ?></span><?php endif; ?></a>
+  <a href="analytics.php" class="wide"<?= $__here('analytics') ?>><?= icon('chart') ?><?= __('Insights') ?></a>
+  <a href="profile.php"<?= $__here('profile') ?>><?= icon('user') ?><?= __('Me') ?></a>
 </nav>
 
 <?php if ($__flash = take_flash()): ?>

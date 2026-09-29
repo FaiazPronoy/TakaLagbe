@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new MoneyError('Give the goal a name.');
             }
             if (!valid_amount($target) || (float) $target < MIN_AMOUNT) {
-                throw new MoneyError('Set a target of at least ' . money(MIN_AMOUNT) . '.');
+                throw new MoneyError(__('Set a target of at least {amount}.', ['amount' => money(MIN_AMOUNT)]));
             }
             if ($deadline !== null && strtotime($deadline) < strtotime('today')) {
                 throw new MoneyError('The deadline has to be in the future.');
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             q('INSERT INTO savings_goals (phone, title, target_amount, deadline)
                VALUES (?,?,?,?)', [$phone, $title, (float) $target, $deadline]);
             audit($phone, 'savings_goal_created', $title);
-            flash('ok', 'Goal "' . $title . '" created.');
+            flash('ok', __('Goal "{goal}" created.', ['goal' => $title]));
             redirect('savings.php');
         }
 
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pin    = post('pin');
 
             if (!valid_amount($amount) || (float) $amount < MIN_AMOUNT) {
-                throw new MoneyError('Enter an amount of at least ' . money(MIN_AMOUNT) . '.');
+                throw new MoneyError(__('Enter an amount of at least {amount}.', ['amount' => money(MIN_AMOUNT)]));
             }
             if (!verify_pin($phone, $pin)) {
                 $left = pin_tries_left($phone);
@@ -146,8 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 q('UPDATE savings_goals SET saved_amount = 0, status = ? WHERE id = ?',
                   [$done ? 'completed' : 'cancelled', $goalId]);
                 $pdo->commit();
-                flash('ok', 'Goal closed and ' . money($goal['saved_amount'])
-                          . ' returned to your balance.');
+                flash('ok', __('Goal closed and {amount} returned to your balance.', ['amount' => money($goal['saved_amount'])]));
                 redirect('savings.php');
             } catch (Throwable $err) {
                 if ($pdo->inTransaction()) { $pdo->rollBack(); }
@@ -159,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         record_refusal($e);
         $error = $e->getMessage();
     } catch (Throwable $e) {
-        $error = 'That did not work. Please try again.';
+        $error = __('That did not work. Please try again.');
     }
 }
 
@@ -169,6 +168,6 @@ $archived = all("SELECT * FROM savings_goals WHERE phone = ? AND status <> 'acti
                  ORDER BY created_at DESC LIMIT 6", [$phone]);
 $totalSaved = array_sum(array_map(static fn($g) => (float) $g['saved_amount'], $goals));
 
-$pageTitle = 'Savings';
+$pageTitle = __('Savings');
 $activeNav = 'savings';
 include('Front_end/front_savings.php');

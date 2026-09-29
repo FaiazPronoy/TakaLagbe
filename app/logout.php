@@ -17,5 +17,5 @@ if (ini_get('session.use_cookies')) {
 }
 session_destroy();
 start_session();
-flash('ok', 'You have been signed out.');
+flash('ok', __('You have been signed out.'));
 redirect('login.php');

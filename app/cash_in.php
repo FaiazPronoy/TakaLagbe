@@ -18,16 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $agent = one('SELECT * FROM agent_details WHERE agent_id = ?', [$agentId]);
 
     if (!$agent) {
-        $error = 'That agent number was not found.';
+        $error = __('That agent number was not found.');
     } elseif (!valid_amount($amount)) {
-        $error = 'Enter a valid amount.';
+        $error = __('Enter a valid amount.');
     } elseif ((float) $amount < MIN_AMOUNT) {
-        $error = 'The smallest cash in is ' . money(MIN_AMOUNT) . '.';
+        $error = __('The smallest cash in is {amount}.', ['amount' => money(MIN_AMOUNT)]);
     } elseif ((float) $amount > ADD_MONEY_MAX) {
-        $error = 'You cannot cash in more than ' . money(ADD_MONEY_MAX) . ' at a time.';
+        $error = __('You cannot cash in more than {amount} at a time.', ['amount' => money(ADD_MONEY_MAX)]);
     } elseif (!verify_pin($phone, $pin)) {
         $left  = pin_tries_left($phone);
-        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+        $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
     } else {
         $pdo = db();
         $pdo->beginTransaction();
@@ -56,11 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            $error = 'Cash in could not be completed. Please try again.';
+            $error = __('Cash in could not be completed. Please try again.');
         }
     }
 }
 
-$pageTitle = 'Cash in';
+$pageTitle = __('Cash in');
 $activeNav = 'home';
 include('Front_end/front_cashin.php');

@@ -83,6 +83,6 @@ $queryFor = static function (array $override) use ($search, $type, $direction, $
     ));
 };
 
-$pageTitle = 'History';
+$pageTitle = __('History');
 $activeNav = 'history';
 include('Front_end/front_history.php');

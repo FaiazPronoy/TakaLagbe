@@ -28,26 +28,26 @@ $security = [
 ?>
 <main id="main" class="page">
   <div class="wrap">
-    <?= page_head('About ' . APP_NAME, 'One wallet for sending, paying, saving and splitting, made in Dhaka.',
-                  ['account.php', 'Home'], '', 'Version ' . APP_VERSION, badge: ['info', 8]) ?>
+    <?= page_head(__('About {app}', ['app' => APP_NAME]), __('One wallet for sending, paying, saving and splitting, made in Dhaka.'),
+                  ['account.php', __('Home')], '', __('Version {v}', ['v' => APP_VERSION]), badge: ['info', 8]) ?>
 
-    <section class="hero rise mb-6" style="--n:1" aria-label="In numbers">
+    <section class="hero rise mb-6" style="--n:1" aria-label="<?= e(__('In numbers')) ?>">
       <?= guilloche() ?>
       <div class="grid cols-4">
         <?php foreach ([['Users', number_format($stats['users'])], ['Transactions', number_format($stats['transactions'])],
                         ['Moved', '৳' . money($stats['volume'], false)], ['Billers', number_format($stats['billers'])]] as [$k, $v]): ?>
-          <div><span class="label"><?= $k ?></span><p class="figure m0 mt-1" style="font-size:var(--step-2)"><?= e($v) ?></p></div>
+          <div><span class="label"><?= e(__($k)) ?></span><p class="figure m0 mt-1" style="font-size:var(--step-2)"><?= e($v) ?></p></div>
         <?php endforeach; ?>
       </div>
     </section>
 
-    <h2 class="reveal">What it does</h2>
+    <h2 class="reveal"><?= __('What it does') ?></h2>
     <div class="grid cols-3 mb-6">
       <?php foreach ($features as $i => [$ico, $name, $desc]): ?>
         <div class="card tight lift reveal" style="--n:<?= $i % 3 ?>">
           <div class="row" style="flex-wrap:nowrap;align-items:flex-start">
             <span class="ico" style="color:var(--brand)"><?= icon($ico) ?></span>
-            <div><strong><?= e($name) ?></strong><p class="small muted m0"><?= e($desc) ?></p></div>
+            <div><strong><?= e(__($name)) ?></strong><p class="small muted m0"><?= e(__($desc)) ?></p></div>
           </div>
         </div>
       <?php endforeach; ?>
@@ -55,13 +55,13 @@ $security = [
 
     <div>
       <section class="card reveal" aria-labelledby="safeTitle">
-        <div class="card-h"><h2 id="safeTitle">How we keep your money safe</h2></div>
+        <div class="card-h"><h2 id="safeTitle"><?= __('How we keep your money safe') ?></h2></div>
         <ol class="rows" style="list-style:none">
           <?php foreach ($security as $i => [$t, $b]): ?>
             <li class="entry" style="align-items:flex-start">
               <span class="ico mono" style="font-size:.85rem"><?= $i + 1 ?></span>
-              <span class="body"><span class="t" style="white-space:normal"><?= e($t) ?></span>
-                <span class="s wrap-ok"><?= e($b) ?></span></span>
+              <span class="body"><span class="t" style="white-space:normal"><?= e(__($t)) ?></span>
+                <span class="s wrap-ok"><?= e(__($b)) ?></span></span>
             </li>
           <?php endforeach; ?>
         </ol>

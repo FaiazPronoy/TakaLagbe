@@ -2,6 +2,7 @@
 /* Session, auth and the small shared helpers. */
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/../lib/lang.php';
 
 /* the request */
 
@@ -263,10 +264,10 @@ function short_date($ts): string
 function time_ago($ts): string
 {
     $diff = time() - strtotime((string) $ts);
-    if ($diff < 60)     return 'just now';
-    if ($diff < 3600)   return floor($diff / 60) . ' min ago';
-    if ($diff < 86400)  return floor($diff / 3600) . ' hr ago';
-    if ($diff < 604800) return floor($diff / 86400) . ' d ago';
+    if ($diff < 60)     return __('just now');
+    if ($diff < 3600)   return __('{n} min ago', ['n' => floor($diff / 60)]);
+    if ($diff < 86400)  return __('{n} hr ago', ['n' => floor($diff / 3600)]);
+    if ($diff < 604800) return __('{n} d ago', ['n' => floor($diff / 86400)]);
     return date('d M Y', strtotime((string) $ts));
 }
 

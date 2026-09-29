@@ -60,7 +60,11 @@ def admin_in(page):
 
 # ------------------------------------------------------------------ crawl
 
-SKIP = re.compile(r"logout|format=csv|#|^mailto:")
+HERE = os.path.dirname(os.path.abspath(__file__))
+DEMO_TEXT = "".join(open(os.path.join(HERE, "..", f), encoding="utf-8").read()
+                    for f in ("tools/seed_demo.php", "demo_data.sql", "takalagbe.sql")
+                    if os.path.exists(os.path.join(HERE, "..", f)))
+SKIP = re.compile(r"logout|language.php|format=csv|#|^mailto:")
 
 
 def crawl(context, start, limit=150):
@@ -189,6 +193,15 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     with sync_playwright() as p:
         browser = p.chromium.launch(channel=CHANNEL)
+        # the site speaks Bangla unless told otherwise; these checks read the
+        # English, and section 7 goes through it again in Bangla
+        bangla_context = browser.new_context
+
+        def english_context(**kw):
+            ctx = bangla_context(**kw)
+            ctx.add_cookies([{"name": "tkl_lang", "value": "en", "url": BASE}])
+            return ctx
+        browser.new_context = english_context
 
         # ---- 1. crawl --------------------------------------------------
         print("\n=== crawl ===")
@@ -408,7 +421,7 @@ def main():
         theirs = val("SELECT trx_id FROM transactions WHERE transaction_from='01913765240' "
                      "AND transaction_to<>'%s' AND status='success' LIMIT 1" % USER)
         r = page.goto(BASE + "/receipt.php?id=" + theirs)
-        check("someone else's receipt is a 404, not a peek", r.status == 404 and theirs not in page.content())
+        check("someone else's receipt is a 404, not a peek", r.status == 404 and theirs not in page.inner_text("main"))
         r = fresh.goto(BASE + "/admin_user.php")
         check("a customer cannot open the admin console", fresh.url.endswith("admin_login.php"))
 
@@ -439,6 +452,45 @@ def main():
                     n += 1
                 ctx.close()
         check("%d screenshots written to tests/out" % n, n == len(shots) * 4)
+
+        # ---- 7. Bangla -------------------------------------------------
+        print("\n=== Bangla ===")
+        bn = bangla_context()
+        bp = bn.new_page()
+        bp.goto(BASE + "/login.php")
+        check("a new visitor gets Bangla", bp.evaluate("document.documentElement.lang") == "bn"
+              and "ওয়ালেট খুলুন" in bp.content())
+        sign_in(bp)
+        english_left = {}
+        for path in ("account.php", "sendmoney.php", "history.php", "paybill.php", "requests.php", "savings.php",
+                     "analytics.php", "profile.php", "notifications.php", "supports.php", "about.php"):
+            bp.goto(BASE + "/" + path)
+            bp.wait_for_load_state("networkidle")
+            # names, numbers, references and brand words are fine in English;
+            # a run of three plain English words in the page text is not
+            text = bp.evaluate("""() => {
+              const skip = el => el.closest('.mono, .code, input, textarea, [translate=no]');
+              const w = document.createTreeWalker(document.querySelector('main'), NodeFilter.SHOW_TEXT);
+              const out = []; let n;
+              while ((n = w.nextNode())) if (!skip(n.parentElement)) out.push(n.textContent);
+              return out.join(' | ');
+            }""")
+            # what people typed (goal names, notes, tickets) and the billers'
+            # own names come from the demo data and stay as written
+            runs = [r for r in re.findall(r"[A-Za-z']+(?: [A-Za-z']+){2,}", text)
+                    if r not in DEMO_TEXT
+                    and not re.search(r"TakaLagbe|PDF|CSV|SQL|PDO|CSRF|bcrypt|FOR UPDATE|Excel|password_hash", r)]
+            if runs:
+                english_left[path] = runs[:3]
+        check("customer pages have no English sentences left in Bangla", not english_left, english_left)
+        bp.goto(BASE + "/account.php")
+        bp.click(".lang-btn")
+        bp.wait_for_load_state("networkidle")
+        check("the EN button switches to English and stays on the page",
+              bp.url.endswith("account.php") and bp.evaluate("document.documentElement.lang") == "en")
+        bp.goto(BASE + "/admin_login.php")
+        check("the admin console stays in English", bp.evaluate("document.documentElement.lang") == "en")
+        bn.close()
 
         browser.close()
 

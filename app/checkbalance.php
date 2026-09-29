@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
     if (!verify_pin($phone, post('pin'))) {
         $left  = pin_tries_left($phone);
-        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+        $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
     } else {
         $balance = balance_of($phone);
         audit($phone, 'balance_checked', 'balance viewed');
@@ -21,6 +21,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $inSavings = (float) scalar("SELECT COALESCE(SUM(saved_amount),0) FROM savings_goals
                               WHERE phone = ? AND status = 'active'", [$phone], 0);
 
-$pageTitle = 'Check balance';
+$pageTitle = __('Check balance');
 $activeNav = 'home';
 include('Front_end/front_checkbalance.php');

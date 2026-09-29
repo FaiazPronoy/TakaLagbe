@@ -1,11 +1,11 @@
 <footer class="foot">
   <div class="wrap">
-    <span>© <?= date('Y') ?> <strong><?= e(APP_NAME) ?></strong> · Send. Pay. Save.</span>
+    <span>© <?= date('Y') ?> <strong><?= e(APP_NAME) ?></strong> <?= __('· Send. Pay. Save.') ?></span>
     <?php if (($bodyClass ?? '') !== 'admin'): ?>
-      <nav aria-label="Footer">
-        <a href="about.php">About</a>
-        <a href="supports.php">Help</a>
-        <a href="currency.php">Currency converter</a>
+      <nav aria-label="<?= e(__('Footer')) ?>">
+        <a href="about.php"><?= __('About') ?></a>
+        <a href="supports.php"><?= __('Help') ?></a>
+        <a href="currency.php"><?= __('Currency converter') ?></a>
       </nav>
     <?php endif; ?>
   </div>

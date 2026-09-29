@@ -29,24 +29,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $inst = one('SELECT * FROM institutes WHERE institute_id = ?', [$instituteId]);
 
     if (!$inst) {
-        $error = 'Please choose an institute.';
+        $error = __('Please choose an institute.');
     } elseif (!preg_match('/^[0-9A-Za-z\-]{4,30}$/', $studentId)) {
-        $error = 'Enter a valid student ID.';
+        $error = __('Enter a valid student ID.');
     } elseif ($studentName === '') {
-        $error = 'Enter the student name.';
+        $error = __('Enter the student name.');
     } elseif (!in_array($semester, $semesters, true)) {
-        $error = 'Please choose a semester.';
+        $error = __('Please choose a semester.');
     } elseif (!valid_amount($amount)) {
-        $error = 'Enter a valid amount.';
+        $error = __('Enter a valid amount.');
     } elseif ((float) $amount < MIN_AMOUNT) {
-        $error = 'The smallest payment is ' . money(MIN_AMOUNT) . '.';
+        $error = __('The smallest payment is {amount}.', ['amount' => money(MIN_AMOUNT)]);
     } elseif (scalar('SELECT 1 FROM education_fee
                       WHERE institute_id = ? AND student_id = ? AND semester = ?',
                      [$instituteId, $studentId, $semester])) {
-        $error = 'This semester fee has already been paid for that student ID.';
+        $error = __('This semester fee has already been paid for that student ID.');
     } elseif (!verify_pin($phone, $pin)) {
         $left  = pin_tries_left($phone);
-        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+        $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
     } else {
         $pdo = db();
         $pdo->beginTransaction();
@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 : 'The fee could not be paid. Please try again.';
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            $error = 'The fee could not be paid. Please try again.';
+            $error = __('The fee could not be paid. Please try again.');
         }
     }
 }
@@ -91,6 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $recent = all('SELECT * FROM education_fee WHERE payer_phone = ?
                ORDER BY timestamp DESC LIMIT 5', [$phone]);
 
-$pageTitle = 'Education fee';
+$pageTitle = __('Education fee');
 $activeNav = 'home';
 include('Front_end/front_education_fee.php');

@@ -23,10 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new MoneyError('You cannot request money from yourself.');
             }
             if (!scalar('SELECT 1 FROM user WHERE phone = ?', [$from])) {
-                throw new MoneyError('That number is not registered on ' . APP_NAME . '.');
+                throw new MoneyError(__('That number is not registered on {app}.', ['app' => APP_NAME]));
             }
             if (!valid_amount($amount) || (float) $amount < MIN_AMOUNT) {
-                throw new MoneyError('Ask for at least ' . money(MIN_AMOUNT) . '.');
+                throw new MoneyError(__('Ask for at least {amount}.', ['amount' => money(MIN_AMOUNT)]));
             }
             $open = (int) scalar("SELECT COUNT(*) FROM money_requests
                                    WHERE requester_phone = ? AND payer_phone = ?
@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    name_of($phone) . ' asked you for ' . money($amount)
                    . ($note ? '. Note: ' . $note : '.'), 'request', (float) $amount);
             audit($phone, 'money_requested', $from . ' ' . $amount);
-            flash('ok', 'Request sent to ' . name_of($from) . '.');
+            flash('ok', __('Request sent to {name}.', ['name' => name_of($from)]));
             redirect('requests.php');
         }
 
@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     throw new MoneyError('Your own number is counted automatically.');
                 }
                 if (!scalar('SELECT 1 FROM user WHERE phone = ?', [$n])) {
-                    throw new MoneyError($n . ' is not registered on ' . APP_NAME . '.');
+                    throw new MoneyError(__('{phone} is not registered on {app}.', ['phone' => $n, 'app' => APP_NAME]));
                 }
             }
 
@@ -95,8 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->commit();
 
             audit($phone, 'bill_split', $group . ' ' . $total . ' between ' . $heads);
-            flash('ok', 'Bill split ' . $heads . ' ways. Each person owes '
-                      . money($share) . '.');
+            flash('ok', __('Bill split {n} ways. Each person owes {amount}.', ['n' => $heads, 'amount' => money($share)]));
             redirect('requests.php');
         }
 
@@ -115,9 +114,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 notify($req['requester_phone'], 'Request declined',
                        name_of($phone) . ' declined your request for '
                        . money($req['amount']) . '.', 'out');
-                flash('ok', 'Request declined.');
+                flash('ok', __('Request declined.'));
             } else {
-                flash('ok', 'Request cancelled.');
+                flash('ok', __('Request cancelled.'));
             }
             redirect('requests.php');
         }
@@ -125,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } catch (MoneyError $e) {
         $error = $e->getMessage();
     } catch (Throwable $e) {
-        $error = 'That did not work. Please try again.';
+        $error = __('That did not work. Please try again.');
     }
 }
 
@@ -147,6 +146,6 @@ $iOwe = (float) scalar(
     "SELECT COALESCE(SUM(amount),0) FROM money_requests
       WHERE payer_phone = ? AND status = 'pending'", [$phone], 0);
 
-$pageTitle = 'Requests';
+$pageTitle = __('Requests');
 $activeNav = 'requests';
 include('Front_end/front_requests.php');

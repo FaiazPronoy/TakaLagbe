@@ -16,6 +16,6 @@ $thisMonth = (float) scalar(
       WHERE payer_phone = ? AND payment_date >= DATE_FORMAT(CURDATE(),'%Y-%m-01')",
     [$phone], 0);
 
-$pageTitle = 'Pay bills';
+$pageTitle = __('Pay bills');
 $activeNav = 'home';
 include('Front_end/front_paybill.php');

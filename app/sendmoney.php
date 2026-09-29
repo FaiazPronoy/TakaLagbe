@@ -35,22 +35,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $prefill = ['to' => $receiver, 'amount' => $amount, 'note' => $note];
 
     if (!valid_phone($receiver)) {
-        $error = 'Enter a valid 11 digit mobile number.';
+        $error = __('Enter a valid 11 digit mobile number.');
     } elseif ($receiver === $phone) {
-        $error = 'You cannot send money to your own account.';
+        $error = __('You cannot send money to your own account.');
     } elseif (!valid_amount($amount)) {
-        $error = 'Enter a valid amount.';
+        $error = __('Enter a valid amount.');
     } elseif ((float) $amount < MIN_AMOUNT) {
-        $error = 'The smallest amount you can send is ' . money(MIN_AMOUNT) . '.';
+        $error = __('The smallest amount you can send is {amount}.', ['amount' => money(MIN_AMOUNT)]);
     } elseif ((float) $amount > SEND_MONEY_MAX) {
-        $error = 'You cannot send more than ' . money(SEND_MONEY_MAX) . ' in one go.';
+        $error = __('You cannot send more than {amount} in one go.', ['amount' => money(SEND_MONEY_MAX)]);
     } elseif (!scalar('SELECT 1 FROM account WHERE phone = ?', [$receiver])) {
-        $error = 'That number is not registered on ' . APP_NAME . '.';
+        $error = __('That number is not registered on {app}.', ['app' => APP_NAME]);
     } elseif (scalar("SELECT 1 FROM user WHERE phone = ? AND status = 'frozen'", [$receiver])) {
-        $error = 'That account cannot receive money right now.';
+        $error = __('That account cannot receive money right now.');
     } elseif (!verify_pin($phone, $pin)) {
         $left  = pin_tries_left($phone);
-        $error = 'Wrong transaction PIN.' . ($left > 0 ? " $left attempt(s) left." : '');
+        $error = __('Wrong transaction PIN.') . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : '');
     } else {
         $pdo = db();
         $pdo->beginTransaction();
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = $e->getMessage();
         } catch (Throwable $e) {
             if ($pdo->inTransaction()) { $pdo->rollBack(); }
-            $error = 'The transfer could not be completed. Nothing has left your account.';
+            $error = __('The transfer could not be completed. Nothing has left your account.');
         }
     }
 }
@@ -107,6 +107,6 @@ $favourites = all(
        FROM favourites f LEFT JOIN user u ON u.phone = f.saved_phone
       WHERE f.owner_phone = ? ORDER BY f.created_at DESC LIMIT 8", [$phone]);
 
-$pageTitle = 'Send money';
+$pageTitle = __('Send money');
 $activeNav = 'send';
 include('Front_end/front_sendmoney.php');

@@ -30,54 +30,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /* ---- validation ------------------------------------------------ */
     if (!valid_phone($phone)) {
-        $errors['Phone'] = 'Enter a valid 11 digit Bangladeshi number, for example 01712345678.';
+        $errors['Phone'] = __('Enter a valid 11 digit Bangladeshi number, for example 01712345678.');
     }
     if ($firstname === '' || $lastname === '') {
-        $errors['Firstname'] = 'Please enter your full name.';
+        $errors['Firstname'] = __('Please enter your full name.');
     }
     if (!in_array(strlen($nid), [10, 13, 17, 18], true) || !ctype_digit($nid)) {
-        $errors['Nid'] = 'NID must be 10, 13, 17 or 18 digits.';
+        $errors['Nid'] = __('NID must be 10, 13, 17 or 18 digits.');
     }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors['Email'] = 'Enter a valid email address.';
+        $errors['Email'] = __('Enter a valid email address.');
     }
     if ($dob === '') {
-        $errors['Dob'] = 'Please enter your date of birth.';
+        $errors['Dob'] = __('Please enter your date of birth.');
     } else {
         try {
             $age = (new DateTime())->diff(new DateTime($dob))->y;
             if ($age < 18) {
-                $errors['Dob'] = 'You must be at least 18 years old to open an account.';
+                $errors['Dob'] = __('You must be at least 18 years old to open an account.');
             } elseif ($age > 120) {
-                $errors['Dob'] = 'Please check the date of birth.';
+                $errors['Dob'] = __('Please check the date of birth.');
             }
         } catch (Exception $e) {
-            $errors['Dob'] = 'That is not a valid date.';
+            $errors['Dob'] = __('That is not a valid date.');
         }
     }
     if (strlen($password) < 6) {
-        $errors['Password'] = 'Password must be at least 6 characters.';
+        $errors['Password'] = __('Password must be at least 6 characters.');
     } elseif ($password !== $confirm) {
-        $errors['ConfirmPassword'] = 'The two passwords do not match.';
+        $errors['ConfirmPassword'] = __('The two passwords do not match.');
     }
     if (!valid_pin($pin)) {
-        $errors['Pin'] = 'The transaction PIN must be exactly 6 digits.';
+        $errors['Pin'] = __('The transaction PIN must be exactly 6 digits.');
     } elseif ($pin !== $pinAgain) {
-        $errors['PinConfirm'] = 'The two PINs do not match.';
+        $errors['PinConfirm'] = __('The two PINs do not match.');
     } elseif (preg_match('/^(\d)\1{5}$/', $pin) || in_array($pin, ['123456', '654321'], true)) {
-        $errors['Pin'] = 'Please choose a less obvious PIN.';
+        $errors['Pin'] = __('Please choose a less obvious PIN.');
     }
 
     /* ---- uniqueness ------------------------------------------------ */
     if (!$errors) {
         if (scalar('SELECT 1 FROM user WHERE phone = ?', [$phone])) {
-            $errors['Phone'] = 'This number is already registered.';
+            $errors['Phone'] = __('This number is already registered.');
         }
         if (scalar('SELECT 1 FROM user WHERE email = ?', [$email])) {
-            $errors['Email'] = 'This email is already registered.';
+            $errors['Email'] = __('This email is already registered.');
         }
         if (scalar('SELECT 1 FROM user WHERE nid = ?', [$nid])) {
-            $errors['Nid'] = 'This NID is already registered.';
+            $errors['Nid'] = __('This NID is already registered.');
         }
     }
 
@@ -104,12 +104,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             notify($phone, 'Welcome to ' . APP_NAME,
                 'Your account is ready. Add money to get started.', 'gift');
             audit($phone, 'signup', 'account created');
-            flash('ok', 'Account created. Please sign in.');
+            flash('ok', __('Account created. Please sign in.'));
             redirect('login.php');
 
         } catch (Throwable $err) {
             $pdo->rollBack();
-            $errors['Phone'] = 'Could not create the account. Please try again.';
+            $errors['Phone'] = __('Could not create the account. Please try again.');
         }
     }
 }

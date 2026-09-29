@@ -10,6 +10,6 @@ $amount = get('amount');
 $payload = 'TKL|' . $phone . '|' . $user['firstname'] . ' ' . $user['lastname']
          . '|' . (valid_amount($amount) ? number_format((float) $amount, 2, '.', '') : '');
 
-$pageTitle = 'My QR code';
+$pageTitle = __('My QR code');
 $activeNav = 'home';
 include('Front_end/front_qr.php');
