@@ -7,7 +7,7 @@ $pageTitle = $pageTitle ?? APP_NAME;
 $bodyClass = $bodyClass ?? '';
 // the front doors say what the app is; inner pages say where you are
 $tabTitle = !empty($frontDoor)
-    ? APP_NAME . ' | ' . __('A Mobile Money Wallet')
+    ? APP_NAME . ' | ' . __('A Money Transaction System')
     : $pageTitle . ' · ' . APP_NAME;
 ?>
 <!DOCTYPE html>

@@ -17,7 +17,7 @@ return [
         'Sign out' => 'সাইন আউট',
         'Main' => 'প্রধান',
         'Home' => 'হোম',
-        'A Mobile Money Wallet' => 'মোবাইল মানি ওয়ালেট',
+        'A Money Transaction System' => 'টাকা লেনদেনের সিস্টেম',
         'History' => 'লেনদেন',
         'Savings' => 'সঞ্চয়',
         'Send' => 'পাঠান',
