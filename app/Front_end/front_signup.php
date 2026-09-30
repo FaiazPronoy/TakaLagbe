@@ -1,5 +1,6 @@
 <?php
 $pageTitle = __('Open an account');
+$frontDoor = true;
 $artTitle  = __('Your wallet, in about a minute.');
 $artText   = __('Your phone number is your account number. Pick a password for signing in and a PIN for paying. That\'s it.');
 include __DIR__ . '/partials/auth_top.php';

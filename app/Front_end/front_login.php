@@ -1,5 +1,6 @@
 <?php
 $pageTitle = __('Sign in');
+$frontDoor = true;
 include __DIR__ . '/partials/auth_top.php';
 $f = take_flash();
 ?>

@@ -35,5 +35,6 @@ $requests = all(
       ORDER BY r.created_at DESC LIMIT 3", [$phone]);
 
 $pageTitle = __('Home');
+$frontDoor = true;
 $activeNav = 'home';
 include('Front_end/front_account.php');

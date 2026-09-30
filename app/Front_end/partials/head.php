@@ -5,6 +5,10 @@ require_once __DIR__ . '/../../lib/view.php';
 
 $pageTitle = $pageTitle ?? APP_NAME;
 $bodyClass = $bodyClass ?? '';
+// the front doors say what the app is; inner pages say where you are
+$tabTitle = !empty($frontDoor)
+    ? APP_NAME . ' | ' . __('A Mobile Money Wallet')
+    : $pageTitle . ' · ' . APP_NAME;
 ?>
 <!DOCTYPE html>
 <html lang="<?= lang() ?>">
@@ -13,7 +17,7 @@ $bodyClass = $bodyClass ?? '';
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="TakaLagbe! is a mobile money wallet: send money, pay bills, save and split.">
-<title><?= e($pageTitle) ?> · <?= e(APP_NAME) ?></title>
+<title><?= e($tabTitle) ?></title>
 <script>
 /* before anything paints: the saved theme, and a class that says script is on */
 (function () {
