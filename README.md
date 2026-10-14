@@ -1,64 +1,153 @@
 # TakaLagbe!
 
-A mobile money wallet in PHP and MySQL: send money, pay bills and tuition,
-recharge, save towards goals, split bills, with a back office for the operator.
-Built once, then rebuilt from the ground up.
+**A mobile money app, like bKash or Nagad, built with PHP and MySQL.**
+Send money, pay bills and tuition, recharge, save for goals and split bills,
+with an admin console to run the whole system.
 
-**Live demo:** _link goes here once it is deployed_ ·
-**Releases:** [v1.0, the first version, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases)
+| | |
+|---|---|
+| **Course** | CSE370: Database Systems, BRAC University |
+| **Type** | Group project |
+| **Made by** | Faiaz Abrar Zaman Pronoy and Sinthia Khandoker |
+| **Versions** | [v1.0, the first version, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases) |
 
-## Sign in to the demo
+---
+
+## Features
+
+**Money**
+- Send money to anyone, free, up to ৳25,000 at a time
+- Add money from a bank or card
+- Cash in and cash out at an agent
+- Mobile recharge, with the operator found from the number
+- Pay electricity, gas, water and internet bills
+- Pay university and school fees
+- Pay merchants, with cashback
+
+**Everyday**
+- Savings goals with a target, a deadline and a progress bar
+- Request money, or split a bill between many people
+- Favourites for one-tap sending
+- Your own QR code to get paid, and a scanner to pay others
+- Notifications for everything that happens
+- Insights: spending by category, a 6 month trend, and who you send to most
+- History with search and filters
+- Statements to print as PDF or download as CSV
+- A receipt for every transaction
+
+**Admin console**
+- Platform overview with charts
+- Find, freeze or unfreeze users, and change daily limits
+- Manage billers, merchants, institutes and agents
+- Answer support tickets
+- Audit log and failed sign in attempts
+
+**Also**
+- Bangla first, with an English button
+- Light and dark mode
+- Works on phones, and even with JavaScript turned off
+
+---
+
+## How the money stays safe
+
+- **Every taka moves through one function**, inside a database transaction
+- **Both accounts are locked** before a balance is read, so two payments at once cannot overspend
+- **Passwords and the 6 digit PIN** are hashed with bcrypt
+- **Every query is a prepared statement**, so SQL injection does not work
+- **Every form has a CSRF token**, and money forms have a one-time token too
+- **5 wrong passwords** lock the number for 15 minutes. **5 wrong PINs** freeze the account.
+- Money columns cannot go below zero, enforced by the database itself
+
+---
+
+## Database
+
+- **18 tables**, with foreign keys and CHECK rules
+- **Two triggers** keep each biller's total up to date
+- One `bill_payments` table for all four bill types
+- `user` and `account` are one to one: a wallet cannot exist without its owner
+
+The full design is explained in [app/README.md](app/README.md).
+
+---
+
+## Built with
+
+| Part | Tools |
+|---|---|
+| Backend | PHP 8 (no framework) |
+| Database | MySQL |
+| Frontend | Hand-written CSS and plain JavaScript (no library) |
+| Server | Apache (XAMPP) |
+| Tests | A PHP test suite that checks the database after each step, and Playwright |
+
+Fonts are the only thing loaded from outside.
+
+---
+
+## Demo logins
 
 | Role | Where | Sign in with |
 |---|---|---|
-| Customer | the home page | `01711482093` / `demo1234`, transaction PIN `482915` |
-| A second customer | the home page | `01819337406` / `demo1234`, same PIN |
+| Customer | home page | `01711482093` / `demo1234`, PIN `482915` |
+| Second customer | home page | `01819337406` / `demo1234`, same PIN |
 | Admin | `/admin_login.php` | `admin` / `admin123` |
 
-The data is made up: twelve people with six months of transfers, bills,
-recharges and savings. No real money moves.
+The data is made up: 12 people with 6 months of activity. No real money moves.
 
-## v1 and v2
+---
 
-| | v1.0 (the first version, 2024) | v2.0 (the rebuild) |
-|---|---|---|
-| Passwords | stored and compared as plain text | bcrypt, plus a separate hashed six digit PIN for payments |
-| SQL | form input pasted into query strings; the sign in form was injectable | prepared statements everywhere |
-| Moving money | two separate UPDATEs, no transaction | one transaction, both accounts locked in a fixed order |
-| Forms | no CSRF protection | CSRF token on every form, one time token on money forms |
-| Schema | 13 tables, four copies of the bill table | 18 tables, foreign keys, CHECK constraints, two triggers |
-| Front end | Bootstrap from a CDN, emoji icons | hand written CSS with design tokens, light and dark themes, SVG icons, works with JavaScript off |
-| Tests | none | an HTTP suite that checks the database after each step, and browser checks (crawl, WCAG contrast in both themes, keyboard, no-JS, 390px) |
+## Run it
 
-The v1 source is in the v1.0 release. The code for v2 is in
-[`app/`](app/), and its README explains how the money is
-kept consistent, the data model, and how to run it and the tests.
+You need **XAMPP** (Apache, MySQL and PHP 8).
 
-## Bugs found and fixed while rebuilding
+- **Windows:** double-click `RUN-TakaLagbe.bat`. It does everything below.
+- **By hand:**
+  1. Copy the `app` folder into `C:\xampp\htdocs\` and rename it `takalagbe`
+  2. Start **Apache** and **MySQL** in XAMPP
+  3. Import `takalagbe.sql` in phpMyAdmin
+  4. Load the demo data:
 
-- The committed test suite was failing: the money forms had gained a one time token the tests never sent.
-- Paying with JavaScript off was impossible, because the PIN boxes had no name; every try used up a PIN attempt.
-- Keyboard users could not send money: Enter on the hold-to-send button did nothing.
-- Several cash outs at the same moment could take an agent's float below zero.
-- The same bill or semester fee could be paid more than once by requests arriving together.
-- Recharges, bills and fees could be charged twice by resending the same form.
-- Sending any amount to anyone settled whatever request was attached to the link.
-- Declined cash outs, bills, recharges, payments and fees were not recorded, although the help page said they were.
-- A statement for a past period closed on today's balance, and listed declined attempts as money out.
-- Money put into savings counted against the daily sending limit, and as spending in Insights.
-- Nonsense dates in the address bar printed 1970 on the statement.
-- The statement ran one query per row.
-- Signing out was a plain link that any other site could trigger.
-- The schema file, the tests and the config folder could be downloaded from the web server.
-- White initials on the brass and gold avatar colours failed contrast.
-- One of the original clip art images still carried a stock photo watermark, and the support page listed a real company's helpline.
+```bash
+C:\xampp\php\php.exe tools\seed_demo.php --yes
+```
 
-## Contributors
+Then open <http://localhost/takalagbe/>.
 
-- Faiaz Abrar Zaman Pronoy
-- Sinthia Khandoker
-- Jahirul Islam Zishan
+---
+
+## Tests
+
+- `app/tests/e2e.py` runs **108 checks** through the real site, and checks the database after each step
+- It fires two payments at the same moment to prove the balance never goes wrong
+- `app/tests/browser_checks.py` runs **44 checks**: every page, contrast in both themes, keyboard use, no JavaScript and phone width
+
+---
+
+## Folder layout
+
+```
+app/
+  *.php          one file per page
+  Front_end/     the page templates
+  lib/           money, bills, security and translations
+  Assets/        CSS, JavaScript and images
+  tools/         demo data and hosting helpers
+  tests/         the test suites
+  takalagbe.sql  the database
+deploy/          files for hosting
+```
+
+---
+
+## Authors
+
+- **Faiaz Abrar Zaman Pronoy** (ফাইয়াজ আবরার জামান প্রনয়), lead developer
+- **Sinthia Khandoker** (সিনথিয়া খন্দকার)
 
 ## Licence
 
-All rights reserved, see [LICENSE](LICENSE).
+Copyright 2024-2026 Faiaz Abrar Zaman Pronoy and Sinthia Khandoker. All rights reserved.
+You may read the code and run it to try it out. You may not copy it, hand it in
+as your own work, or publish it. See [LICENSE](LICENSE).

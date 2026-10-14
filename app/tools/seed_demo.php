@@ -56,7 +56,7 @@ $pairs = [
     ['01855670129',  '01670248831', [800, 2500],  ['Pocket money', 'Coaching fee', 'Tiffin money for the week']],
     ['01984402751',  $main,         [300, 1200],  ['Birthday cake share', 'Concert ticket', 'Borrowed for the Sylhet trip']],
     [$other,         '01913765240', [1500, 4000], ['Laptop repair', 'Borrowed money, thanks bhai']],
-    ['01552104478',  '01984402751', [150, 600],   ['Fuchka and coffee', 'Class notes printing']],
+    ['01552104478',  '01984402751', [150, 600],   ['Fuchka and coffee', 'Class notes printing', "Fuchka at Bilkis Apa's cart"]],
     ['01721093358',  '01748221967', [500, 2000],  ['Futsal booking', 'Office lunch']],
 ];
 

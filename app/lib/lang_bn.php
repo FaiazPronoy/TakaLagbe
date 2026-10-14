@@ -28,6 +28,7 @@ return [
         'About' => 'আমাদের কথা',
         'Currency converter' => 'মুদ্রা রূপান্তর',
         '· Send. Pay. Save.' => '· পাঠান। দিন। জমান।',
+        'Made by Faiaz Abrar Zaman Pronoy and Sinthia Khandoker. All rights reserved.' => 'ফাইয়াজ আবরার জামান প্রনয় ও সিনথিয়া খন্দকারের তৈরি। সর্বস্বত্ব সংরক্ষিত।',
 
         // sign in, sign up, reset
         'Send money to friends, pay your bills, split the kacchi, and save up for Eid. All from one wallet.' =>
