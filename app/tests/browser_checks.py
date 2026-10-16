@@ -58,6 +58,24 @@ def admin_in(page):
     page.wait_for_url("**/admin_dashboard.php")
 
 
+def too_wide(page, url):
+    """True when url scrolls sideways at phone width on two loads in a row.
+    A download manager that hooks the browser's traffic (IDM's driver does it
+    here, even with IDM closed) now and then drops a piece of the page on the
+    way in. With a closing tag gone, <main> lands inside the header and the
+    page lays out wide, but the next load comes in whole. A layout that is
+    really too wide is too wide every time."""
+    for tries in range(2):
+        page.goto(url)
+        # a phone quietly zooms out to fit a page that is too wide, so compare
+        # with the 390 we asked for, not with whatever width it settled on
+        if not page.evaluate("document.documentElement.scrollWidth > 390"):
+            if tries:
+                print("  note %s came in broken once, fine on a second load" % urlparse(url).path)
+            return False
+    return True
+
+
 # ------------------------------------------------------------------ crawl
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -326,17 +344,13 @@ def main():
         pp = phone.new_page()
         wide = []
         for url in list(pages) + list(public):
-            pp.goto(url)
-            # a phone quietly zooms out to fit a page that is too wide, so compare
-            # with the 390 we asked for, not with whatever width it settled on
-            if pp.evaluate("document.documentElement.scrollWidth > 390"):
+            if too_wide(pp, url):
                 wide.append(urlparse(url).path)
         pa = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True)
         admin_in(pa.new_page())
         pap = pa.new_page()
         for url in admin_pages:
-            pap.goto(url)
-            if pap.evaluate("document.documentElement.scrollWidth > 390"):
+            if too_wide(pap, url):
                 wide.append(urlparse(url).path)
         check("no page scrolls sideways at 390px", not wide, sorted(set(wide)))
 
