@@ -16,7 +16,7 @@ $tabTitle = !empty($frontDoor)
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="author" content="Faiaz Abrar Zaman Pronoy and Sinthia Khandoker">
+<meta name="author" content="Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan">
 <meta name="description" content="TakaLagbe! is a mobile money wallet: send money, pay bills, save and split.">
 <title><?= e($tabTitle) ?></title>
 <script>

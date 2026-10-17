@@ -8,7 +8,7 @@
         <a href="currency.php"><?= __('Currency converter') ?></a>
       </nav>
     <?php endif; ?>
-    <span class="made-by"><?= __('Made by Faiaz Abrar Zaman Pronoy and Sinthia Khandoker. All rights reserved.') ?></span>
+    <span class="made-by"><?= __('Made by Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan. All rights reserved.') ?></span>
   </div>
 </footer>
 </body>
