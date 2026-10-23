@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      # the app and the suite both use a scratch database, never the real one
+      TKL_DB_HOST: 127.0.0.1
+      TKL_DB_USER: root
+      TKL_DB_PASS: root
+      TKL_DB_NAME: takalagbe_test
+      TKL_DB: takalagbe_test
+      MYSQL_HOST: 127.0.0.1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: pdo_mysql, mbstring
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: sudo systemctl start mysql
+      - name: Create the test database
+        run: |
+          mysql -uroot -proot -e "CREATE DATABASE takalagbe_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+          sed '/^CREATE DATABASE/,/^USE /d' app/takalagbe.sql | mysql -uroot -proot takalagbe_test
+      - run: pip install requests
+      - name: Start the app
+        run: php -S 127.0.0.1:8080 -t app > php.log 2>&1 &
+      - run: python app/tests/e2e.py
+      - if: failure()
+        run: cat php.log
