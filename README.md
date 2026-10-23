@@ -117,6 +117,21 @@ Then open <http://localhost/takalagbe/>.
 
 ---
 
+## Settings
+
+Locally nothing is needed: without `config/local.php` the app uses XAMPP's defaults. On a server, copy `app/config/local.example.php` to `app/config/local.php`. That file is never committed.
+
+| Setting | What it is |
+|---|---|
+| `DB_HOST`, `DB_PORT`, `DB_NAME` | Where the MySQL database is |
+| `DB_USER`, `DB_PASS` | The database login |
+| `DEBUG` | `false` on a server, so errors are not shown to visitors |
+| `HOSTS` | Host names the app answers to |
+
+The same values can come from environment variables instead (`TKL_DB_HOST`, `TKL_DB_NAME` and so on).
+
+---
+
 ## Tests
 
 - `app/tests/e2e.py` runs **108 checks** through the real site, and checks the database after each step
