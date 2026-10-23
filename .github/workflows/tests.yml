@@ -9,6 +9,17 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    # MariaDB, like XAMPP, since the suite reads its query counters
+    services:
+      db:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=20
     env:
       # the app and the suite both use a scratch database, never the real one
       TKL_DB_HOST: 127.0.0.1
@@ -26,7 +37,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: sudo systemctl start mysql
       - name: Create the test database
         run: |
           mysql -uroot -proot -e "CREATE DATABASE takalagbe_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
