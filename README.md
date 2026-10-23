@@ -1,5 +1,7 @@
 # TakaLagbe!
 
+[![Tests](https://github.com/FaiazPronoy/TakaLagbe/actions/workflows/tests.yml/badge.svg)](https://github.com/FaiazPronoy/TakaLagbe/actions/workflows/tests.yml)
+
 **A mobile money app, like bKash or Nagad, built with PHP and MySQL.**
 Send money, pay bills and tuition, recharge, save for goals and split bills,
 with an admin console to run the whole system.
@@ -10,6 +12,10 @@ with an admin console to run the whole system.
 | **Type** | Group project |
 | **Made by** | Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan |
 | **Versions** | [v1.0, the first version, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases) |
+
+| | |
+|---|---|
+| ![Wallet home](docs/home.jpg) | ![Spending insights](docs/insights.jpg) |
 
 ---
 
