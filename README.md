@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/FaiazPronoy/TakaLagbe/actions/workflows/tests.yml/badge.svg)](https://github.com/FaiazPronoy/TakaLagbe/actions/workflows/tests.yml)
 
-**A mobile money app, like bKash or Nagad, built with PHP and MySQL.**
+**A digital wallet and money transfer system, built with PHP and MySQL.**
 Send money, pay bills and tuition, recharge, save for goals and split bills,
 with an admin console to run the whole system.
 
