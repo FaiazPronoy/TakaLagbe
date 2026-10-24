@@ -43,7 +43,7 @@ echo.
 echo   Done. Opening the app.
 echo.
 echo   App     http://localhost/takalagbe/
-echo           01711482093 / demo1234, PIN 482915
+echo           01700000001 / demo1234, PIN 482915
 echo   Admin   http://localhost/takalagbe/admin_login.php
 echo           admin / admin123
 echo.

@@ -27,37 +27,37 @@ const DEMO_PIN      = '482915';
 
 /* phone => first, last, gender, dob, bank, monthly top up, city */
 $people = [
-    '01711482093' => ['Nusrat',   'Jahan',     'Female', '1998-03-14', 'BRAC Bank',         [14000, 18000]],
-    '01819337406' => ['Tanvir',   'Ahmed',     'Male',   '1996-11-02', 'Dutch Bangla Bank', [11000, 15000]],
-    '01552104478' => ['Farhana',  'Akter',     'Female', '2000-07-21', 'City Bank',         [6000, 8500]],
-    '01913765240' => ['Rakibul',  'Hasan',     'Male',   '1994-01-09', 'Islami Bank',       [12000, 16000]],
-    '01626908315' => ['Sadia',    'Islam',     'Female', '2001-05-30', null,                [5000, 7000]],
-    '01748221967' => ['Mehedi',   'Hasan',     'Male',   '1999-09-17', 'Eastern Bank',      [7000, 10000]],
-    '01307554812' => ['Tahmina',  'Sultana',   'Female', '1992-12-05', 'Prime Bank',        [9000, 12000]],
-    '01855670129' => ['Arif',     'Chowdhury', 'Male',   '1990-04-11', 'Visa Card',         [15000, 19000]],
-    '01474319086' => ['Shahriar', 'Kabir',     'Male',   '2002-02-26', null,                [4000, 6000]],
-    '01984402751' => ['Maliha',   'Rahman',    'Female', '1997-08-08', 'Mastercard',        [7000, 9500]],
-    '01721093358' => ['Imran',    'Hossain',   'Male',   '1995-06-19', 'BRAC Bank',         [6500, 9000]],
-    '01670248831' => ['Sumaiya',  'Khatun',    'Female', '2003-10-03', null,                [3500, 5000]],
+    '01700000001' => ['Nusrat',   'Jahan',     'Female', '1998-03-14', 'BRAC Bank',         [14000, 18000]],
+    '01800000002' => ['Tanvir',   'Ahmed',     'Male',   '1996-11-02', 'Dutch Bangla Bank', [11000, 15000]],
+    '01500000003' => ['Farhana',  'Akter',     'Female', '2000-07-21', 'City Bank',         [6000, 8500]],
+    '01900000004' => ['Rakibul',  'Hasan',     'Male',   '1994-01-09', 'Islami Bank',       [12000, 16000]],
+    '01600000005' => ['Sadia',    'Islam',     'Female', '2001-05-30', null,                [5000, 7000]],
+    '01700000006' => ['Mehedi',   'Hasan',     'Male',   '1999-09-17', 'Eastern Bank',      [7000, 10000]],
+    '01300000007' => ['Tahmina',  'Sultana',   'Female', '1992-12-05', 'Prime Bank',        [9000, 12000]],
+    '01800000008' => ['Arif',     'Chowdhury', 'Male',   '1990-04-11', 'Visa Card',         [15000, 19000]],
+    '01400000009' => ['Shahriar', 'Kabir',     'Male',   '2002-02-26', null,                [4000, 6000]],
+    '01900000010' => ['Maliha',   'Rahman',    'Female', '1997-08-08', 'Mastercard',        [7000, 9500]],
+    '01700000011' => ['Imran',    'Hossain',   'Male',   '1995-06-19', 'BRAC Bank',         [6500, 9000]],
+    '01600000012' => ['Sumaiya',  'Khatun',    'Female', '2003-10-03', null,                [3500, 5000]],
 ];
-$main  = '01711482093';
-$other = '01819337406';
+$main  = '01700000001';
+$other = '01800000002';
 $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E'];
 
 /* who sends whom money, and what for */
 $pairs = [
-    [$main,          '01552104478', [300, 900],   ['Rickshaw and lunch', 'Your share of the Uber', 'Chotpoti money', 'Book photocopy']],
+    [$main,          '01500000003', [300, 900],   ['Rickshaw and lunch', 'Your share of the Uber', 'Chotpoti money', 'Book photocopy']],
     [$main,          $other,        [500, 2500],  ['House rent share, Mirpur 10', 'Internet bill share', 'Groceries split']],
     [$other,         $main,         [400, 1800],  ['Paying you back for Star Kabab', 'Electricity share', 'Movie tickets, Star Cineplex']],
-    ['01913765240',  $main,         [1000, 5000], ['Tuition for Raisa, class 8 maths', 'Tuition, this month']],
-    [$main,          '01626908315', [500, 1500],  ["Ammu'r medicine", 'For the Eid shopping', 'Bus fare home']],
-    ['01748221967',  $other,        [200, 1200],  ['Cricket kit share', 'Biryani on Friday', 'Pathao ride back']],
-    ['01307554812',  '01474319086', [1000, 3000], ['Hostel fee', 'Pocket money', 'For books']],
-    ['01855670129',  '01670248831', [800, 2500],  ['Pocket money', 'Coaching fee', 'Tiffin money for the week']],
-    ['01984402751',  $main,         [300, 1200],  ['Birthday cake share', 'Concert ticket', 'Borrowed for the Sylhet trip']],
-    [$other,         '01913765240', [1500, 4000], ['Laptop repair', 'Borrowed money, thanks bhai']],
-    ['01552104478',  '01984402751', [150, 600],   ['Fuchka and coffee', 'Class notes printing', "Fuchka at Bilkis Apa's cart"]],
-    ['01721093358',  '01748221967', [500, 2000],  ['Futsal booking', 'Office lunch']],
+    ['01900000004',  $main,         [1000, 5000], ['Tuition for Raisa, class 8 maths', 'Tuition, this month']],
+    [$main,          '01600000005', [500, 1500],  ["Ammu'r medicine", 'For the Eid shopping', 'Bus fare home']],
+    ['01700000006',  $other,        [200, 1200],  ['Cricket kit share', 'Biryani on Friday', 'Pathao ride back']],
+    ['01300000007',  '01400000009', [1000, 3000], ['Hostel fee', 'Pocket money', 'For books']],
+    ['01800000008',  '01600000012', [800, 2500],  ['Pocket money', 'Coaching fee', 'Tiffin money for the week']],
+    ['01900000010',  $main,         [300, 1200],  ['Birthday cake share', 'Concert ticket', 'Borrowed for the Sylhet trip']],
+    [$other,         '01900000004', [1500, 4000], ['Laptop repair', 'Borrowed money, thanks bhai']],
+    ['01500000003',  '01900000010', [150, 600],   ['Fuchka and coffee', 'Class notes printing', "Fuchka at Bilkis Apa's cart"]],
+    ['01700000011',  '01700000006', [500, 2000],  ['Futsal booking', 'Office lunch']],
 ];
 
 /* merchant id => amount range */
@@ -73,13 +73,13 @@ $bills = [
                        ['internet_bills',    '333', 'BNET-22091',     [1050, 1050]]],
     $other         => [['electricity_bills', '444', 'DPDC-11873542', [900, 2100]],
                        ['water_bills',       '222', 'WASA-5601389',  [450, 900]]],
-    '01913765240'  => [['electricity_bills', '446', 'PBS-3309817',   [700, 1800]],
+    '01900000004'  => [['electricity_bills', '446', 'PBS-3309817',   [700, 1800]],
                        ['internet_bills',    '334', 'XP-008812',     [1200, 1200]]],
-    '01307554812'  => [['gas_bills',         '114', 'BGL-4471206',   [975, 975]],
+    '01300000007'  => [['gas_bills',         '114', 'BGL-4471206',   [975, 975]],
                        ['water_bills',       '223', 'CWASA-218804',  [380, 720]]],
-    '01855670129'  => [['electricity_bills', '445', 'DESCO-40771190', [2400, 4800]],
+    '01800000008'  => [['electricity_bills', '445', 'DESCO-40771190', [2400, 4800]],
                        ['internet_bills',    '335', 'SAM-771045',     [1500, 1500]]],
-    '01984402751'  => [['electricity_bills', '447', 'BPDB-6620419',   [650, 1400]]],
+    '01900000010'  => [['electricity_bills', '447', 'BPDB-6620419',   [650, 1400]]],
 ];
 
 $merchantRows = [];
@@ -167,7 +167,7 @@ foreach ($bills as $phone => $list) {
 }
 
 /* ---- cash out now and then --------------------------------------------- */
-foreach ([$main => 4, $other => 3, '01913765240' => 3, '01626908315' => 2, '01474319086' => 2] as $phone => $n) {
+foreach ([$main => 4, $other => 3, '01900000004' => 3, '01600000005' => 2, '01400000009' => 2] as $phone => $n) {
     for ($i = 0; $i < $n; $i++) {
         $agent = $pick(['AG1001', 'AG1002', 'AG1003']);
         $add(['t' => $when(mt_rand(1, 170)), 'from' => $phone, 'to' => null, 'to_ref' => $agent,
@@ -182,10 +182,10 @@ $year = (int) date('Y', $today);
 $add(['t' => strtotime("$year-06-08 11:20"), 'from' => $main, 'to' => null, 'to_ref' => 'BRAC University',
       'amount' => 21500.0, 'type' => 'Education Fee', 'category' => 'Education', 'note' => "Summer $year fee for 22101487",
       'fee' => ['555', '22101487', 'Nusrat Jahan', "Summer $year"]]);
-$add(['t' => $when(9, 12, 5), 'from' => '01855670129', 'to' => null, 'to_ref' => 'Notre Dame College',
+$add(['t' => $when(9, 12, 5), 'from' => '01800000008', 'to' => null, 'to_ref' => 'Notre Dame College',
       'amount' => 9800.0, 'type' => 'Education Fee', 'category' => 'Education', 'note' => "Fall $year fee for NDC-24-1177",
       'fee' => ['557', 'NDC-24-1177', 'Sumaiya Khatun', "Fall $year"]]);
-$add(['t' => $when(14, 16, 40), 'from' => '01307554812', 'to' => null, 'to_ref' => 'BUET',
+$add(['t' => $when(14, 16, 40), 'from' => '01300000007', 'to' => null, 'to_ref' => 'BUET',
       'amount' => 7350.0, 'type' => 'Education Fee', 'category' => 'Education', 'note' => "Fall $year fee for 2106118",
       'fee' => ['556', '2106118', 'Shahriar Kabir', "Fall $year"]]);
 
@@ -219,7 +219,7 @@ foreach ($people as $phone => [$first, $last, $gender, $dob]) {
        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
       [$phone, $first, $last, (string) (1990000000 + mt_rand(1000000, 9999999)) . mt_rand(100, 999),
        strtolower($first . '.' . $last) . mt_rand(10, 99) . '@gmail.com', $pwHash, $pinHash, $dob, $gender,
-       $palette[$i % count($palette)], $phone === '01721093358' ? 'frozen' : 'active',
+       $palette[$i % count($palette)], $phone === '01700000011' ? 'frozen' : 'active',
        $phone === $main ? 50000 : DAILY_LIMIT_DEFAULT, $joined]);
     q('INSERT INTO account (phone, balance) VALUES (?, 0)', [$phone]);
     $balance[$phone] = 0.0;
@@ -316,7 +316,7 @@ $goals = [
     [$main,         'New laptop for thesis',  85000, date('Y-m-d', strtotime('+3 months', $today)), [6000, 5000, 4500, 3000]],
     [$main,         'Emergency fund',         50000, null,                                          [3000, 2500, 2000]],
     [$other,        'Sajek trip in December', 18000, date('Y-12-10', $today),                     [2500, 2000]],
-    ['01984402751', 'Eid shopping',           12000, null,                                          [1500]],
+    ['01900000010', 'Eid shopping',           12000, null,                                          [1500]],
 ];
 foreach ($goals as [$phone, $title, $target, $deadline, $deposits]) {
     q('INSERT INTO savings_goals (phone, title, target_amount, deadline, created_at) VALUES (?,?,?,?,?)',
@@ -346,18 +346,18 @@ $req = static fn(string $by, string $of, float $amt, string $note, string $statu
     => q('INSERT INTO money_requests (requester_phone, payer_phone, amount, note, split_group, status, created_at)
           VALUES (?,?,?,?,?,?,?)', [$by, $of, $amt, $note, $grp, $status, date('Y-m-d H:i:s', $when($ago))]);
 $req($other,         $main,         350,  'Star Kabab on Thursday, your share', 'pending', 1);
-$req('01984402751',  $main,         1200, 'Coke Studio Bangla tickets',          'pending', 3);
-$req($main,          '01552104478', 450,  'Rickshaw to Dhanmondi and back',      'pending', 2);
-$req($main,          '01913765240', 800,  'Printing the thesis draft',           'paid',    20);
-$req($main,          '01748221967', 300,  'Fuchka at TSC',                      'declined', 34);
-foreach (['01552104478', '01984402751', $other] as $p) {
+$req('01900000010',  $main,         1200, 'Coke Studio Bangla tickets',          'pending', 3);
+$req($main,          '01500000003', 450,  'Rickshaw to Dhanmondi and back',      'pending', 2);
+$req($main,          '01900000004', 800,  'Printing the thesis draft',           'paid',    20);
+$req($main,          '01700000006', 300,  'Fuchka at TSC',                      'declined', 34);
+foreach (['01500000003', '01900000010', $other] as $p) {
     $req($main, $p, 612.5, 'Friday dinner at Kacchi Bhai (4 ways)', $p === $other ? 'paid' : 'pending', 4, 'SP7C31A0B2');
 }
 
 /* ---- favourites --------------------------------------------------------- */
-foreach ([[$main, $other, 'Tanvir (flatmate)'], [$main, '01552104478', 'Farhana'],
-          [$main, '01626908315', 'Sadia apu'], [$main, '01984402751', 'Maliha'],
-          [$other, $main, 'Nusrat'], [$other, '01913765240', 'Rakib bhai']] as [$o, $s, $l]) {
+foreach ([[$main, $other, 'Tanvir (flatmate)'], [$main, '01500000003', 'Farhana'],
+          [$main, '01600000005', 'Sadia apu'], [$main, '01900000010', 'Maliha'],
+          [$other, $main, 'Nusrat'], [$other, '01900000004', 'Rakib bhai']] as [$o, $s, $l]) {
     q('INSERT INTO favourites (owner_phone, saved_phone, label, created_at) VALUES (?,?,?,?)',
       [$o, $s, $l, $ts($when(mt_rand(30, 150)))]);
 }
@@ -384,9 +384,9 @@ q("INSERT INTO notifications (user_phone, title, body, icon, amount, created_at)
 /* ---- support desk ------------------------------------------------------- */
 $tickets = [
     [$main,          'I paid my DESCO bill twice by mistake last month, the second one was DESCO-40218867 again. Can it be reversed?', 1, 26],
-    ['01626908315',  'Cash out at agent AG1002 said the agent did not have enough cash. The agent says they do. Which one is right?', 1, 17],
+    ['01600000005',  'Cash out at agent AG1002 said the agent did not have enough cash. The agent says they do. Which one is right?', 1, 17],
     [$other,         'The QR scanner does not open on my phone. It just says the browser cannot open the camera.', 0, 3],
-    ['01721093358',  'My account got frozen after I typed the wrong PIN. I am the owner, NID ends in 4471. Please unfreeze.', 0, 1],
+    ['01700000011',  'My account got frozen after I typed the wrong PIN. I am the owner, NID ends in 4471. Please unfreeze.', 0, 1],
 ];
 foreach ($tickets as [$phone, $msg, $solved, $ago]) {
     [$f, $l] = $people[$phone];
@@ -409,12 +409,12 @@ foreach ($people as $phone => $_) {
 }
 foreach (range(1, 4) as $k) {
     q("INSERT INTO login_attempts (kind, identifier, ip, successful, attempted_at) VALUES ('login',?,?,0,?)",
-      ['01721093358', '45.125.222.91', $ts($when(2, 3, 10 + $k))]);
+      ['01700000011', '45.125.222.91', $ts($when(2, 3, 10 + $k))]);
 }
 q("INSERT INTO login_attempts (kind, identifier, ip, successful, attempted_at) VALUES ('login',?,?,0,?)",
   [$main, '114.130.54.17', $ts($when(6, 23, 48))]);
 q('INSERT INTO audit_log (actor, action, detail, ip, created_at) VALUES (?,?,?,?,?)',
-  ['01721093358', 'account_frozen', 'too many wrong PIN attempts', '45.125.222.91', $ts($when(2, 3, 20))]);
+  ['01700000011', 'account_frozen', 'too many wrong PIN attempts', '45.125.222.91', $ts($when(2, 3, 20))]);
 
 $pdo->commit();
 

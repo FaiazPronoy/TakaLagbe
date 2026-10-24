@@ -37,7 +37,7 @@ $f = take_flash();
 
       <div class="js-only demo-try">
         <button class="btn btn-quiet btn-block" type="button" id="tryDemo"
-                data-phone="01711482093" data-password="demo1234"><?= icon('user') ?><?= __('Try the demo account') ?></button>
+                data-phone="01700000001" data-password="demo1234"><?= icon('user') ?><?= __('Try the demo account') ?></button>
         <p class="small muted" id="demoPin" hidden><?= __('Filled in for you. When a payment asks for a PIN, use') ?> <strong>482915</strong>.</p>
       </div>
     </div>

@@ -96,8 +96,8 @@ Fonts are the only thing loaded from outside.
 
 | Role | Where | Sign in with |
 |---|---|---|
-| Customer | home page | `01711482093` / `demo1234`, PIN `482915` |
-| Second customer | home page | `01819337406` / `demo1234`, same PIN |
+| Customer | home page | `01700000001` / `demo1234`, PIN `482915` |
+| Second customer | home page | `01800000002` / `demo1234`, same PIN |
 | Admin | `/admin_login.php` | `admin` / `admin123` |
 
 The data is made up: 12 people with 6 months of activity. No real money moves.

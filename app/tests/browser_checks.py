@@ -26,7 +26,7 @@ DB_NAME = os.environ.get("TKL_DB", "takalagbe_test")
 MYSQL   = os.environ.get("TKL_MYSQL", r"C:\xampp\mysql\bin\mysql.exe")
 CHANNEL = os.environ.get("TKL_BROWSER", "msedge")
 OUT     = os.path.join(os.path.dirname(__file__), "out")
-USER, OTHER, PASSWORD, PIN = "01711482093", "01819337406", "demo1234", "482915"
+USER, OTHER, PASSWORD, PIN = "01700000001", "01800000002", "demo1234", "482915"
 
 PASS, FAIL = [], []
 
@@ -432,7 +432,7 @@ def main():
         page.wait_for_load_state("networkidle")
         check("and removed", val("SELECT COUNT(*) FROM favourites WHERE id=%s" % fid) == "0")
 
-        theirs = val("SELECT trx_id FROM transactions WHERE transaction_from='01913765240' "
+        theirs = val("SELECT trx_id FROM transactions WHERE transaction_from='01900000004' "
                      "AND transaction_to<>'%s' AND status='success' LIMIT 1" % USER)
         r = page.goto(BASE + "/receipt.php?id=" + theirs)
         check("someone else's receipt is a 404, not a peek", r.status == 404 and theirs not in page.inner_text("main"))
