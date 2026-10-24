@@ -12,6 +12,7 @@ with an admin console to run the whole system.
 | **Type** | Group project |
 | **Made by** | Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan |
 | **Versions** | [v1.0, the first version, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases) |
+| **History** | Built in Spring 2024 for the course. Rebuilt and published here in October 2026. |
 
 | | |
 |---|---|
@@ -92,7 +93,7 @@ Fonts are the only thing loaded from outside.
 
 ---
 
-## Demo logins
+## Try it
 
 | Role | Where | Sign in with |
 |---|---|---|
@@ -108,7 +109,7 @@ The data is made up: 12 people with 6 months of activity. No real money moves.
 
 You need **XAMPP** (Apache, MySQL and PHP 8).
 
-- **Windows:** double-click `RUN-TakaLagbe.bat`. It does everything below.
+- **Windows:** double-click `RUN-TakaLagbe.bat`. It copies the app into XAMPP, imports the database and loads the demo data.
 - **By hand:**
   1. Copy the `app` folder into `C:\xampp\htdocs\` and rename it `takalagbe`
   2. Start **Apache** and **MySQL** in XAMPP
@@ -162,11 +163,24 @@ deploy/          files for hosting
 
 ---
 
-## Authors
+## The team
+
+Faiaz led the project. He designed the database, planned the features, split
+them across the team and reviewed each part before it was merged.
 
 - **Faiaz Abrar Zaman Pronoy** (ফাইয়াজ আবরার জামান প্রনয়), lead developer
+  - The database design: 18 tables, keys, CHECK rules and triggers
+  - The money engine in `lib/money.php`: one transaction per transfer, with both accounts locked
+  - Security: bcrypt, prepared statements, CSRF and one-time tokens, lockouts
+  - Send money, add money, cash in and out, savings goals, requests and split bills
+  - The admin console, and the test suites
 - **Sinthia Khandoker** (সিনথিয়া খন্দকার)
+  - Bill and tuition payments, and the biller lists
+  - Statements and receipts
+  - The Bangla translation
 - **Jahirul Islam Zishan** (জহিরুল ইসলাম জিশান)
+  - Mobile recharge and the QR code pages
+  - Notifications and support tickets
 
 ## Licence
 
