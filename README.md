@@ -11,6 +11,7 @@ with an admin console to run the whole system.
 | **Course** | CSE370: Database Systems, BRAC University |
 | **Type** | Group project |
 | **Made by** | Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan |
+| **Live demo** | https://takalagbe.site.je |
 | **Versions** | [v1.0, the first version, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases) |
 | **History** | Built in Spring 2024 for the course. Rebuilt and published here in October 2026. |
 
@@ -158,7 +159,6 @@ app/
   tools/         demo data and hosting helpers
   tests/         the test suites
   takalagbe.sql  the database
-deploy/          files for hosting
 ```
 
 ---
