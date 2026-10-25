@@ -76,7 +76,7 @@ with an admin console to run the whole system.
 - One `bill_payments` table for all four bill types
 - `user` and `account` are one to one: a wallet cannot exist without its owner
 
-The full design is explained in [app/README.md](app/README.md).
+The full design is explained in [docs/design.md](docs/design.md).
 
 ---
 
@@ -152,13 +152,15 @@ The same values can come from environment variables instead (`TKL_DB_HOST`, `TKL
 
 ```
 app/
-  *.php          one file per page
-  Front_end/     the page templates
-  lib/           money, bills, security and translations
-  Assets/        CSS, JavaScript and images
+  *.php          one controller per page
+  views/         the page templates, one per controller
+  config/        settings, the database connection and request helpers
+  lib/           money, bills, QR codes, icons and translations
+  assets/        CSS and JavaScript
   tools/         demo data and hosting helpers
   tests/         the test suites
   takalagbe.sql  the database
+docs/            screenshots and design notes
 ```
 
 ---

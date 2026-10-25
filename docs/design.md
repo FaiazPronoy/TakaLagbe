@@ -1,0 +1,242 @@
+# TakaLagbe! design notes
+
+How the money engine, the database and the QR encoder work. Paths are relative to `app/`. For features and setup, see the [README](../README.md).
+
+---
+
+## How the money is kept safe
+
+**Every taka moves through one function.** `lib/money.php::move_money()` is the
+only code that writes to the `account` table.
+
+**The debit, the credit and the ledger row are one transaction**, so a crash
+cannot take money from one side without it arriving at the other.
+
+**Both accounts are locked before a balance is read:**
+
+```sql
+SELECT phone, balance FROM account WHERE phone = ? FOR UPDATE
+```
+
+They are locked in phone-number order, so two transfers going opposite ways
+cannot end up waiting on each other. The daily limit and the velocity counter
+are checked after the lock is taken, so they cannot be beaten by sending two
+requests at once.
+
+The test suite fires two ৳800 transfers from a ৳1,000 balance at the same
+moment from two threads. One succeeds, the balance lands on ৳200.
+
+**The rest:**
+
+- Passwords and PINs are bcrypt hashes (`password_hash` / `password_verify`).
+- Every query is prepared; PDO runs with `ATTR_EMULATE_PREPARES => false`.
+- Every form carries a CSRF token, checked with `hash_equals`.
+- Output goes through `e()`, so a `<script>` in a note prints as text.
+- Five wrong sign-ins lock a number for fifteen minutes; five wrong PINs freeze
+  the account and notify the owner.
+- `session_regenerate_id(true)` on sign in, and an `HttpOnly` session cookie.
+- Money columns are `DECIMAL(12,2)`, with `CHECK (balance >= 0)` underneath.
+- Refused transactions are written to the ledger with `status = 'failed'` and
+  the reason, and `audit_log` records who did what.
+
+---
+
+## The data model
+
+Eighteen tables. The decisions worth explaining:
+
+- **`bill_payments` replaces four near identical tables.** `electricity_bills`,
+  `gas_bills`, `water_bills` and `internet_bills` were the same six columns
+  four times over. They are one table now with a `billtype` column, and the
+  four pages share one engine in `lib/bills.php`.
+
+- **`user` and `account` are one to one**, with a foreign key and
+  `ON DELETE CASCADE`, so a wallet cannot outlive its owner. Signup creates
+  both inside one transaction, so a user can never exist without a wallet.
+
+- **Eleven foreign keys**, mostly `ON DELETE CASCADE ON UPDATE CASCADE`, so
+  deleting a user takes their wallet, favourites, goals, requests,
+  notifications, bills, fees and recharges with them. The file brackets itself
+  with `SET FOREIGN_KEY_CHECKS = 0 … 1`, so it imports cleanly over an existing
+  database as well as into an empty one.
+
+- **`transactions` deliberately has no foreign key.** `transaction_from` and
+  `transaction_to` hold either a phone number or a name (like "Titas Gas Limited" or
+  "Savings: New laptop"), because a ledger row has to stay readable after the
+  counterparty is edited or removed. It is denormalised on purpose; everything
+  else uses a real key.
+
+- **Two triggers keep the running totals.** `trg_bill_payment_total` and
+  `trg_education_fee_total` add each new payment to the biller's
+  `total_received_amount`, so that column cannot drift away from the rows it
+  summarises. It used to be an `UPDATE` in PHP after every insert.
+
+- **`login_attempts` has a `kind` column** (`login`, `admin` or `pin`) rather
+  than one column holding `admin:someone` and another holding `pin:127.0.0.1`.
+  One column, one meaning.
+
+- Supporting tables: `favourites`, `savings_goals`, `money_requests` (with a
+  `split_group` tying a split bill batch together), `notifications`,
+  `login_attempts`, `audit_log`, `admin`, `merchants`, `organizations`,
+  `institutes`, `education_fee`, `mobile_recharge`, `agent_details`,
+  `support_messages`.
+
+Lines marked **FK** are enforced by a foreign key. The two that are not are the
+ledger joins described above.
+
+```
+                          +-----------+
+                          |   user    |
+                          +-----------+
+                            |       |
+                  1 FK      |       |      * FK
+              +-------------+       +--------------------+
+              |                                          |
+        +-----------+                +----------------------------------+
+        |  account  |                | favourites     savings_goals     |
+        +-----------+                | notifications  money_requests    |
+              |                      | support_messages  agent_details  |
+              | * (by phone,         +----------------------------------+
+              |    not a key)                            |
+              |                                          | * FK
+        +--------------+             +----------------------------------+
+        | transactions |             | bill_payments    education_fee   |
+        +--------------+             | mobile_recharge                  |
+              ^                      +----------------------------------+
+              |                            * |  FK        * |  FK
+              | by name              +---------------+  +------------+
+        +-----------+                | organizations |  | institutes |
+        | merchants |----------------+---------------+  +------------+
+        +-----------+
+
+   money_requests.split_group ties one split bill batch together
+   login_attempts, audit_log, admin are standalone
+```
+
+---
+
+## About the QR code
+
+`lib/qr.php` builds the QR code itself rather than calling a library: byte
+mode, error correction level L, versions 1 to 10, Reed-Solomon over GF(256),
+all eight mask patterns scored against the four penalty rules in
+ISO/IEC 18004, written out as an SVG.
+
+This is more than the project needed, and a library would have done. I wrote it
+because I wanted to know how a QR code actually works, and it is the part of
+this project I learned the most from. If you are reading the code, that file
+is the one to ask me about.
+
+---
+
+## Layout
+
+```
+app/
+├── .htaccess             HTTPS, headers, and what may not be opened directly
+├── config/
+│   ├── config.php        every tunable number: limits, fees, cashback
+│   ├── local.example.php settings for a server, copied to local.php
+│   ├── db.php            the PDO connection and four query helpers
+│   └── helpers.php       session, auth guard, CSRF, flash, formatting, audit
+├── lib/
+│   ├── money.php         the money engine, the only thing that writes balances
+│   ├── bills.php         one engine behind all four bill pages
+│   ├── qr.php            the QR encoder
+│   ├── icons.php         the SVG icon set and the engraved rosette
+│   └── view.php          shared markup: rows, PIN field, empty states, charts
+├── assets/
+│   ├── css/app.css       design tokens, then everything built from them
+│   └── js/app.js         plain JavaScript, no library
+├── views/
+│   ├── partials/         head, nav, foot, admin nav
+│   └── *.php             one view per page, named after its controller
+├── tools/                demo data, and the SQL file for shared hosting
+├── tests/                the HTTP suite and the browser checks
+├── *.php                 one controller per page
+└── takalagbe.sql         the schema and the reference data
+```
+
+Every page follows the same shape the original project used: a controller at
+the root does the work, then includes its view from `views/`.
+
+The look is a wallet app's: bottle green and mango on warm cream, like a new
+taka note, with a taka coin for the logo. Home opens on a green band with the
+month's money in and out beside a dark bank card holding the balance, and the
+four main actions sit on a tray across its edge. The main places live in a
+dock at the bottom on every screen size. Fonts are Poppins and Nunito, with
+Hind Siliguri for Bangla.
+
+Bangla lives in `lib/lang_bn.php`, keyed by the English sentence. `__()` in
+`lib/lang.php` looks a sentence up and fills its `{gaps}`, so a page reads the
+same in the source as on screen, and anything not translated yet simply shows
+in English.
+
+---
+
+## Tests
+
+Two suites. Both empty and refill tables, so give them their own database:
+
+```
+sed "s/`takalagbe`/`takalagbe_test`/g" takalagbe.sql | mysql -u root
+```
+
+and point a web server at this folder with `TKL_DB_NAME=takalagbe_test`.
+Use Apache (XAMPP's is fine) rather than `php -S`: on Windows the built in
+server answers one request at a time, so the race tests would pass without
+testing anything.
+
+**`tests/e2e.py`** (Python, `requests`) drives the app over HTTP and checks the
+database after each step, 108 checks: signup, every money flow and its
+arithmetic, charges and cashback, limits, savings, requests, split bills, the
+admin console, CSRF and replayed forms, SQL injection, escaping, PIN and
+sign in lockouts, other people's receipts, and three races run at the same
+moment (two transfers from one balance, three cash outs at one agent, three
+payments of one bill or fee).
+
+```
+set TKL_BASE=http://127.0.0.1:8090
+set TKL_DB=takalagbe_test
+python tests/e2e.py
+```
+
+**`tests/browser_checks.py`** (Playwright, using the Edge that comes with
+Windows) needs the test database filled by `seed_demo.php` first. It crawls
+every page a customer and an admin can reach and fails on any status other
+than 200 or any console error, measures the contrast of every piece of text
+against WCAG AA in both themes, tries the dialogs, keyboard and hold to send,
+runs the main flows with JavaScript switched off, checks for sideways
+scrolling at 390px, and saves screenshots to `tests/out/`. It runs in English,
+then goes through the customer pages again in Bangla and fails on any English
+sentence left on them.
+
+```
+pip install playwright
+python tests/browser_checks.py
+```
+
+---
+
+## Hosting
+
+Copy `config/local.example.php` to `config/local.php` and fill in the
+database, `DEBUG => false` and the host name. `local.php` is ignored by git.
+Settings can also come from `TKL_DB_HOST`, `TKL_DB_NAME` and so on.
+
+Hosts without a shell (InfinityFree) cannot run the seed script, so build one
+file to import instead:
+
+```
+php tools/seed_demo.php --yes
+php tools/build_hosting_sql.php hosting.sql
+```
+
+`hosting.sql` is the schema without `CREATE DATABASE`, followed by the demo
+rows. Import it into the database the host gave you.
+
+In production the app sends everyone to HTTPS (it trusts a proxy's
+`X-Forwarded-Proto`), marks the session cookie `Secure` and `SameSite=Lax`,
+refuses a `Host` it was not configured for and a form posted from another
+site, and `.htaccess` keeps `config/`, `lib/`, `tools/`, `tests/`, the views
+and the `.sql` file from being opened directly.
