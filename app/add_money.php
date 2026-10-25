@@ -37,9 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'type'        => 'Add Money',
                 'category'    => 'Cash',
                 'note'        => 'Top up from ' . $bank,
-                'skip_limits' => true,     // money coming in is never limited
+                'skip_limits' => true,
             ]);
-            flash('ok', money($amount) . ' added from ' . $bank . '.');
+            flash('ok', __('{amount} added from {bank}.', ['amount' => money($amount), 'bank' => $bank]));
             redirect('receipt.php?id=' . urlencode($trx['trx_id']));
         } catch (MoneyError $e) {
             $error = $e->getMessage();
@@ -49,4 +49,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $pageTitle = __('Add money');
 $activeNav = 'home';
-include('Front_end/front_add_money.php');
+include('views/add_money.php');

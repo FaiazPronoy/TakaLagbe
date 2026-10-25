@@ -4,10 +4,9 @@ require_once __DIR__ . '/lib/view.php';
 
 $phone = require_login();
 
-/* ---- read the filters ---------------------------------------------- */
 $search    = mb_substr(get('q'), 0, 60);
 $type      = get('type');
-$direction = get('dir');                 // in | out | ''
+$direction = get('dir');
 $from      = get('from');
 $to        = get('to');
 $page      = max(1, (int) get('page', '1'));
@@ -32,7 +31,6 @@ if ($direction === 'in') {
     $where[]  = 't.transaction_from = ?';
     $params[] = $phone;
 }
-// a date that is not a real date is ignored rather than passed to MySQL
 $from = valid_date($from) ? $from : '';
 $to   = valid_date($to)   ? $to   : '';
 if ($from !== '') {
@@ -46,7 +44,6 @@ if ($to !== '') {
 
 $clause = implode(' AND ', $where);
 
-/* ---- totals for this filter ---------------------------------------- */
 $total = (int) scalar("SELECT COUNT(*) FROM transactions t WHERE $clause", $params, 0);
 $pages = max(1, (int) ceil($total / ROWS_PER_PAGE));
 $page  = min($page, $pages);
@@ -74,7 +71,6 @@ $types = array_column(
           ORDER BY transaction_type", [$phone, $phone]),
     'transaction_type');
 
-/* keeps the current filters when building a page link */
 $queryFor = static function (array $override) use ($search, $type, $direction, $from, $to): string {
     return http_build_query(array_merge(
         array_filter(['q' => $search, 'type' => $type, 'dir' => $direction,
@@ -85,4 +81,4 @@ $queryFor = static function (array $override) use ($search, $type, $direction, $
 
 $pageTitle = __('History');
 $activeNav = 'history';
-include('Front_end/front_history.php');
+include('views/history.php');

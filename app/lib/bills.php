@@ -1,5 +1,4 @@
 <?php
-/* Bill payment lookups. */
 
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/money.php';
@@ -11,7 +10,6 @@ const BILL_TYPES = [
     'internet_bills'    => ['Internet bill',    'wifi',    'Customer number'],
 ];
 
-/** Months a bill can be paid for: this month and the eleven before it. */
 function bill_months(): array
 {
     $out = [];
@@ -21,10 +19,6 @@ function bill_months(): array
     return $out;
 }
 
-/**
- * Runs a complete bill page: handles the POST, then includes the view.
- * Called by electricity_bills.php and its three siblings.
- */
 function run_bill_page(string $billtype): void
 {
     if (!isset(BILL_TYPES[$billtype])) {
@@ -106,8 +100,6 @@ function run_bill_page(string $billtype): void
                 $error = $e->getMessage();
             } catch (PDOException $e) {
                 if ($pdo->inTransaction()) { $pdo->rollBack(); }
-                // the unique key caught a second payment for the same month
-                // that slipped past the check above at the same moment
                 $error = ($e->errorInfo[1] ?? 0) === 1062
                     ? 'This bill was already paid for ' . $month . '.'
                     : 'The bill could not be paid. Please try again.';
@@ -123,5 +115,5 @@ function run_bill_page(string $billtype): void
 
     $pageTitle = __($title);
     $activeNav = 'home';
-    include __DIR__ . '/../Front_end/front_bill.php';
+    include __DIR__ . '/../views/bill.php';
 }

@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                $semester, (float) $amount, $trx['trx_id']]);
 
             $pdo->commit();
-            flash('ok', money($amount) . ' paid to ' . $inst['institute_name'] . '.');
+            flash('ok', __('{amount} paid to {name}.', ['amount' => money($amount), 'name' => $inst['institute_name']]));
             redirect('receipt.php?id=' . urlencode($trx['trx_id']));
 
         } catch (MoneyError $e) {
@@ -93,4 +93,4 @@ $recent = all('SELECT * FROM education_fee WHERE payer_phone = ?
 
 $pageTitle = __('Education fee');
 $activeNav = 'home';
-include('Front_end/front_education_fee.php');
+include('views/education_fee.php');

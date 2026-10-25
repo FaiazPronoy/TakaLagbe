@@ -1,15 +1,4 @@
 <?php
-/*
- * Writes one SQL file to import on shared hosting, where there is no shell
- * to run seed_demo.php and no permission to CREATE DATABASE.
- *
- *   php tools/seed_demo.php --yes
- *   php tools/build_hosting_sql.php hosting.sql
- *
- * The file is the schema without its CREATE DATABASE and USE lines, then
- * every row of the database you just seeded. Import it with phpMyAdmin into
- * the database the host gave you.
- */
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit;
@@ -21,11 +10,8 @@ $out = $argv[1] ?? 'hosting.sql';
 $schema = file_get_contents(__DIR__ . '/../takalagbe.sql');
 $schema = preg_replace('/^CREATE DATABASE.*?;\s*$/ms', '', $schema);
 $schema = preg_replace('/^USE `takalagbe`;\s*$/m', '', $schema);
-// the dump turns key checks back on at the end; the data below needs them off
 $schema = preg_replace('/^SET FOREIGN_KEY_CHECKS = 1;\s*$/m', '', $schema);
 
-// organizations and institutes go last: the triggers add to their totals as
-// the payment rows go in, and the saved totals then put them back exactly
 $tables = ['user', 'account', 'transactions', 'favourites', 'savings_goals', 'money_requests',
            'notifications', 'login_attempts', 'audit_log', 'admin', 'support_messages',
            'merchants', 'agent_details', 'bill_payments', 'education_fee', 'mobile_recharge',

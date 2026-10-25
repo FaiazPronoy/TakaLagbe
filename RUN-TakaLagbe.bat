@@ -25,7 +25,9 @@ echo [1/3] Copying into htdocs ...
 robocopy "app" "%XAMPP%\htdocs\takalagbe" /E /NFL /NDL /NJH /NJS /NP >nul
 
 echo [2/3] Importing the database ...
-"%XAMPP%\mysql\bin\mysql.exe" -u root < "%XAMPP%\htdocs\takalagbe\takalagbe.sql"
+set "MYSQL_PASS="
+if defined TKL_DB_PASS set "MYSQL_PASS=-p%TKL_DB_PASS%"
+"%XAMPP%\mysql\bin\mysql.exe" -u root %MYSQL_PASS% < "%XAMPP%\htdocs\takalagbe\takalagbe.sql"
 if errorlevel 1 (
   echo.
   echo [X] Could not reach MySQL.

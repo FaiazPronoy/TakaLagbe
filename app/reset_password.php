@@ -36,8 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             q('UPDATE user SET password_hash = ? WHERE phone = ?',
               [password_hash($new, PASSWORD_BCRYPT), $phone]);
-            // only the login lockout clears here; the pin counter is what
-            // freezes an account, and a password reset must not unfreeze it
             q("DELETE FROM login_attempts WHERE identifier = ? AND kind = 'login'", [$phone]);
             notify($phone, 'Password changed',
                    'Your password was reset. If this was not you, contact support now.', 'lock');
@@ -47,4 +45,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include('Front_end/front_reset_password.php');
+include('views/reset_password.php');

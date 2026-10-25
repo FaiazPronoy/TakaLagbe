@@ -1,20 +1,4 @@
 #!/usr/bin/env python3
-"""
-End to end test suite for TakaLagbe!
-
-Drives the real application over HTTP the way a browser would: it signs
-users up, signs them in, moves money, pays bills and then checks the
-database to prove the balances and the ledger agree.
-
-This wipes every table before it runs, so it will not touch the database the
-app normally uses. Point TKL_DB at a scratch copy first:
-
-    mysql -u root -e "CREATE DATABASE takalagbe_test"
-    mysql -u root takalagbe_test < takalagbe.sql
-    set TKL_DB=takalagbe_test && python tests/e2e.py
-
-Run:  python3 tests/e2e.py            (server must be on 127.0.0.1:8080)
-"""
 import csv, os, re, shutil, subprocess, sys, threading
 from datetime import date, timedelta
 import requests
@@ -31,11 +15,6 @@ SEMESTER = "Fall %d" % TODAY.year
 
 
 def _client():
-    """
-    Finds the command line client. XAMPP ships `mysql`; a Linux box usually
-    has `mariadb`. Set TKL_MYSQL to point at it directly if it is not on PATH,
-    for example  set TKL_MYSQL=C:\\xampp\\mysql\\bin\\mysql.exe
-    """
     override = os.environ.get("TKL_MYSQL")
     if override:
         return override
@@ -87,7 +66,6 @@ def check(name, cond, extra=""):
 
 
 def english(session):
-    # the site speaks Bangla unless told otherwise; the checks read the English
     session.cookies.set("tkl_lang", "en")
     return session
 
@@ -98,14 +76,12 @@ class User:
         self.phone, self.pw, self.pin = phone, pw, pin
 
     def tokens(self, path):
-        """The CSRF token, plus the one shot token a money form carries."""
         html = self.s.get(BASE + "/" + path).text
         csrf = re.search(r'name="csrf" value="([a-f0-9]+)"', html)
         once = re.search(r'name="once" value="([a-f0-9]+)"', html)
         return (csrf.group(1) if csrf else ""), (once.group(1) if once else None)
 
     def form(self, path, data):
-        """Loads the form and fills in its tokens, without sending it yet."""
         csrf, once = self.tokens(path)
         data = dict(data, csrf=csrf)
         if once:
@@ -149,7 +125,6 @@ def reset_db():
                     "SET FOREIGN_KEY_CHECKS=1;")
 
 
-# balances set directly in SQL by the suite, so the ledger cannot explain them
 SEEDED = {}
 
 
@@ -172,15 +147,10 @@ def _ledger_balance(phone):
     return round(total, 2)
 
 
-# =====================================================================
-#  The suite
-# =====================================================================
-
 def main():
     print("\n=== resetting the database ===")
     reset_db()
 
-    # ---------------------------------------------------------- signup
     print("\n=== sign up and sign in ===")
     a = User("01711111111", pw="faiaz2026", pin="481596")
     b = User("01822222222", pw="rafid2026", pin="334455")
@@ -211,7 +181,6 @@ def main():
 
     login(b); login(c)
 
-    # ------------------------------------------------------- add money
     print("\n=== putting money in ===")
     a.post("add_money.php", {"bank": "BRAC Bank", "amount": "20000", "pin": a.pin})
     b.post("add_money.php", {"bank": "City Bank", "amount": "8000", "pin": b.pin})
@@ -227,9 +196,8 @@ def main():
     r = a.post("add_money.php", {"bank": "BRAC Bank", "amount": "500", "pin": "000000"})
     check("add money needs the right PIN", "Wrong transaction PIN" in r.text)
 
-    # ----------------------------------------------------- send money
     print("\n=== sending money ===")
-    r = a.post("sendmoney.php", {"receiver_phone": "01822222222", "amount": "1500.75",
+    r = a.post("send_money.php", {"receiver_phone": "01822222222", "amount": "1500.75",
                                  "note": "lunch", "pin": a.pin, "save_favourite": "1"})
     check("transfer lands on a receipt", "receipt.php" in r.url)
     check("sender debited exactly",
@@ -247,18 +215,17 @@ def main():
           val("SELECT COUNT(*) FROM notifications WHERE user_phone='01711111111' "
               "AND title='Send Money'") == "1")
 
-    r = a.post("sendmoney.php", {"receiver_phone": "01711111111", "amount": "100", "pin": a.pin})
+    r = a.post("send_money.php", {"receiver_phone": "01711111111", "amount": "100", "pin": a.pin})
     check("cannot send to yourself", "your own account" in r.text)
-    r = a.post("sendmoney.php", {"receiver_phone": "01700000000", "amount": "100", "pin": a.pin})
+    r = a.post("send_money.php", {"receiver_phone": "01700000000", "amount": "100", "pin": a.pin})
     check("unregistered number is refused", "not registered" in r.text)
-    r = c.post("sendmoney.php", {"receiver_phone": "01711111111", "amount": "999999", "pin": c.pin})
+    r = c.post("send_money.php", {"receiver_phone": "01711111111", "amount": "999999", "pin": c.pin})
     check("per transfer cap is enforced", "cannot send more than" in r.text)
-    r = c.post("sendmoney.php", {"receiver_phone": "01711111111", "amount": "24000", "pin": c.pin})
+    r = c.post("send_money.php", {"receiver_phone": "01711111111", "amount": "24000", "pin": c.pin})
     check("cannot send money you do not have", "Insufficient balance" in r.text)
     check("the refusal is written to the ledger",
           int(val("SELECT COUNT(*) FROM transactions WHERE status='failed'")) >= 1)
 
-    # -------------------------------------------------------- charges
     print("\n=== charges and cashback ===")
     before = float(val("SELECT balance FROM account WHERE phone='01711111111'"))
     a.post("cash_out.php", {"agent_id": "AG1002", "cash_out_amount": "2000", "pin": a.pin})
@@ -267,7 +234,7 @@ def main():
           abs((before - after) - (2000 + 37.00)) < 0.001, before - after)
 
     before = after
-    a.post("mobilerecharge.php", {"rechargePhoneNumber": "01712345678",
+    a.post("mobile_recharge.php", {"rechargePhoneNumber": "01712345678",
                                   "rechargeAmount": "500", "connection": "Prepaid", "pin": a.pin})
     after = float(val("SELECT balance FROM account WHERE phone='01711111111'"))
     check("recharge gives one percent back", abs((before - after) - (500 - 5)) < 0.001, before - after)
@@ -275,7 +242,7 @@ def main():
           val("SELECT operator FROM mobile_recharge") == "Grameenphone")
 
     before = after
-    a.post("payment.php", {"merchant_id": "M103", "amount": "1000",
+    a.post("pay_merchant.php", {"merchant_id": "M103", "amount": "1000",
                            "reference": "table 7", "pin": a.pin})
     after = float(val("SELECT balance FROM account WHERE phone='01711111111'"))
     check("merchant cashback applied", abs((before - after) - (1000 - 20)) < 0.001, before - after)
@@ -301,18 +268,16 @@ def main():
                                      "amount": "3000", "pin": a.pin})
     check("the same semester cannot be paid twice", "already been paid" in r.text)
 
-    # --------------------------------------------------------- limits
     print("\n=== limits and velocity ===")
     d = User("01313131313", pw="limit2026", pin="112233")
     signup(d, "Limit", "Test", "1234567893", "limit@test.com"); login(d)
     seed_balance("01313131313", 50000, limit=3000)
-    d.post("sendmoney.php", {"receiver_phone": "01711111111", "amount": "2500", "pin": d.pin})
-    r = d.post("sendmoney.php", {"receiver_phone": "01711111111", "amount": "1000", "pin": d.pin})
+    d.post("send_money.php", {"receiver_phone": "01711111111", "amount": "2500", "pin": d.pin})
+    r = d.post("send_money.php", {"receiver_phone": "01711111111", "amount": "1000", "pin": d.pin})
     check("daily limit blocks the transfer that would cross it", "daily limit" in r.text)
     check("the balance was not touched by the blocked transfer",
           val("SELECT balance FROM account WHERE phone='01313131313'") == "47500.00")
 
-    # ------------------------------------------------------- savings
     print("\n=== savings goals ===")
     a.post("savings.php", {"action": "create", "title": "New laptop",
                            "target_amount": "60000",
@@ -329,12 +294,11 @@ def main():
     check("closing a goal returns the money",
           abs(float(val("SELECT balance FROM account WHERE phone='01711111111'")) - before) < 0.001)
 
-    # ---------------------------------------------------- requests
     print("\n=== requests and split bill ===")
     a.post("requests.php", {"action": "request", "from_phone": "01822222222",
                             "amount": "300", "note": "chai"})
     rid = val("SELECT id FROM money_requests WHERE requester_phone='01711111111'")
-    r = b.post("sendmoney.php", {"receiver_phone": "01711111111", "amount": "300",
+    r = b.post("send_money.php", {"receiver_phone": "01711111111", "amount": "300",
                                  "pin": b.pin, "request_id": rid})
     check("paying a request closes it",
           val("SELECT status FROM money_requests WHERE id=%s" % rid) == "paid")
@@ -349,7 +313,6 @@ def main():
     r = a.post("requests.php", {"action": "request", "from_phone": "01711111111", "amount": "50"})
     check("cannot request money from yourself", "from yourself" in r.text)
 
-    # ------------------------------------------------------ security
     print("\n=== security ===")
     fresh = english(requests.Session())
     r = fresh.get(BASE + "/account.php", allow_redirects=False)
@@ -357,19 +320,19 @@ def main():
     r = fresh.get(BASE + "/admin_dashboard.php", allow_redirects=False)
     check("admin needs a session", r.status_code == 302 and "admin_login" in r.headers.get("Location", ""))
 
-    r = a.s.post(BASE + "/sendmoney.php", data={"receiver_phone": "01822222222",
+    r = a.s.post(BASE + "/send_money.php", data={"receiver_phone": "01822222222",
                  "amount": "100", "pin": a.pin, "csrf": "forged"})
     check("a forged CSRF token is rejected", r.status_code == 400)
 
     injected = "01822222222' OR '1'='1"
-    r = a.post("sendmoney.php", {"receiver_phone": injected, "amount": "10", "pin": a.pin})
+    r = a.post("send_money.php", {"receiver_phone": injected, "amount": "10", "pin": a.pin})
     check("SQL injection in a form field does nothing", "valid 11 digit" in r.text)
     r = a.get("history.php?q=" + requests.utils.quote("' OR 1=1 -- "))
     check("SQL injection in the search box does nothing", r.status_code == 200 and "Fatal" not in r.text)
     check("the user table is still there", val("SELECT COUNT(*) FROM user") is not None)
 
     xss = '<script>alert(1)</script>'
-    a.post("sendmoney.php", {"receiver_phone": "01822222222", "amount": "50",
+    a.post("send_money.php", {"receiver_phone": "01822222222", "amount": "50",
                              "note": xss, "pin": a.pin})
     r = a.get("history.php")
     check("a script tag in a note is escaped, not executed", "<script>alert(1)</script>" not in r.text)
@@ -378,7 +341,7 @@ def main():
     signup(victim, "Pin", "Victim", "1234567894", "victim@test.com"); login(victim)
     seed_balance("01414141414", 5000)
     for _ in range(5):
-        victim.post("sendmoney.php", {"receiver_phone": "01711111111",
+        victim.post("send_money.php", {"receiver_phone": "01711111111",
                                       "amount": "100", "pin": "000000"})
     check("five wrong PINs freeze the account",
           val("SELECT status FROM user WHERE phone='01414141414'") == "frozen")
@@ -398,14 +361,13 @@ def main():
     r = a.get("receipt.php?id=" + str(stranger_trx))
     check("but a party to it can", r.status_code == 200 and stranger_trx in r.text)
 
-    # --------------------------------------------------- concurrency
     print("\n=== two transfers at the same moment ===")
     seed_balance("01911111111", 1000, limit=100000)
     results = []
     def race():
         s = User("01911111111", pw="nabila2026", pin="907152")
         login(s)
-        rr = s.post("sendmoney.php", {"receiver_phone": "01711111111",
+        rr = s.post("send_money.php", {"receiver_phone": "01711111111",
                                       "amount": "800", "pin": s.pin})
         results.append("receipt.php" in rr.url)
     threads = [threading.Thread(target=race) for _ in range(2)]
@@ -416,7 +378,6 @@ def main():
     check("the balance never went negative", bal >= 0, bal)
     check("the balance is exactly right", abs(bal - 200) < 0.001, bal)
 
-    # ------------------------------------------------------ sanity
     print("\n=== the data still makes sense ===")
     check("no balance is negative anywhere",
           val("SELECT COUNT(*) FROM account WHERE balance < 0") == "0")
@@ -424,12 +385,11 @@ def main():
           val("SELECT COUNT(*) FROM transactions") ==
           val("SELECT COUNT(DISTINCT trx_id) FROM transactions"))
 
-    # --------------------------------------------------------- admin
     print("\n=== admin console ===")
     ad = User("admin")
     r = ad.post("admin_login.php", {"username": "admin", "password": "admin123"})
     check("admin can sign in", r.url.endswith("admin_dashboard.php"))
-    r = ad.post("admin_user.php", {"action": "unfreeze", "phone": "01414141414"})
+    r = ad.post("admin_users.php", {"action": "unfreeze", "phone": "01414141414"})
     check("admin can reopen a frozen account",
           val("SELECT status FROM user WHERE phone='01414141414'") == "active")
     check("the unfreeze is in the audit log",
@@ -438,15 +398,13 @@ def main():
     victim2 = User("01414141414", pw="victim2026", pin="778899")
     check("the reopened user can sign in again", login(victim2).url.endswith("account.php"))
 
-    # --------------------------------------------------------- pages
     print("\n=== every page renders ===")
-    pages = ["account.php", "sendmoney.php", "add_money.php", "cash_in.php", "cash_out.php",
-             "mobilerecharge.php", "payment.php", "paybill.php", "electricity_bills.php",
+    pages = ["account.php", "send_money.php", "add_money.php", "cash_in.php", "cash_out.php",
+             "mobile_recharge.php", "pay_merchant.php", "pay_bill.php", "electricity_bills.php",
              "gas_bills.php", "water_bills.php", "internet_bills.php", "education_fee.php",
-             "history.php", "analytics.php", "statement.php", "savings.php", "requests.php",
-             "favourites.php", "notifications.php", "profile.php", "qr.php", "checkbalance.php",
-             "supports.php", "currency.php", "about.php", "organizations_list.php",
-             "institutes_list.php"]
+             "history.php", "insights.php", "statement.php", "savings.php", "requests.php",
+             "favourites.php", "notifications.php", "profile.php", "qr.php",
+             "support.php", "currency.php", "about.php"]
     broken = []
     for p in pages:
         rr = a.get(p)
@@ -455,8 +413,8 @@ def main():
             broken.append(p)
     check("all %d customer pages render cleanly" % len(pages), not broken, broken)
 
-    admin_pages = ["admin_dashboard.php", "admin_user.php", "admin_merchant.php",
-                   "admin_education.php", "admin_supports.php", "admin_issue.php"]
+    admin_pages = ["admin_dashboard.php", "admin_users.php", "admin_merchants.php",
+                   "admin_institutes.php", "admin_support.php", "admin_audit.php"]
     broken = []
     for p in admin_pages:
         rr = ad.get(p)
@@ -473,7 +431,6 @@ def main():
     check("the QR code is drawn inline as SVG", "<svg" in r.text and "viewBox" in r.text)
 
 
-    # ------------------------------------------------- regressions
     print("\n=== awkward inputs ===")
 
     ad0 = User("adminprobe")
@@ -498,15 +455,14 @@ def main():
           == "Savings: " + long_title)
     a.post("savings.php", {"action": "close", "goal_id": gid})
 
-    a.post("payment.php", {"merchant_id": "M104", "amount": "300", "pin": a.pin})
+    a.post("pay_merchant.php", {"merchant_id": "M104", "amount": "300", "pin": a.pin})
     check("a merchant payment keeps the merchant's category",
           val("SELECT category FROM transactions WHERE transaction_to='Star Kabab' "
               "ORDER BY id DESC LIMIT 1") == "Food")
 
-    # a recharge should never show up in the recipient's own history
     before_rows = int(val("SELECT COUNT(*) FROM transactions "
                           "WHERE transaction_to='01822222222'"))
-    a.post("mobilerecharge.php", {"rechargePhoneNumber": "01822222222",
+    a.post("mobile_recharge.php", {"rechargePhoneNumber": "01822222222",
                                   "rechargeAmount": "100",
                                   "connection": "Prepaid", "pin": a.pin})
     after_rows = int(val("SELECT COUNT(*) FROM transactions "
@@ -519,33 +475,30 @@ def main():
     check("and they cannot open the payer's recharge receipt", r.status_code == 404,
           r.status_code)
 
-    # a refusal should still leave a record
     failed_before = int(val("SELECT COUNT(*) FROM transactions WHERE status='failed'"))
-    c.post("sendmoney.php", {"receiver_phone": "01822222222", "amount": "24000",
+    c.post("send_money.php", {"receiver_phone": "01822222222", "amount": "24000",
                              "pin": c.pin})
     failed_after = int(val("SELECT COUNT(*) FROM transactions WHERE status='failed'"))
     check("a refused transfer is written to the ledger too",
           failed_after == failed_before + 1, (failed_before, failed_after))
 
-    # refused attempts should not count towards the velocity brake
     poor = User("01313000001", pw="poor2026", pin="221133")
     signup(poor, "Velocity", "Probe", "1234567895", "velocity@test.com")
     login(poor)
     seed_balance("01313000001", 5000)
     for _ in range(11):
-        poor.post("sendmoney.php", {"receiver_phone": "01711111111",
+        poor.post("send_money.php", {"receiver_phone": "01711111111",
                                     "amount": "999999", "pin": poor.pin})
-    r = poor.post("sendmoney.php", {"receiver_phone": "01711111111",
+    r = poor.post("send_money.php", {"receiver_phone": "01711111111",
                                     "amount": "100", "pin": poor.pin})
     check("failed attempts do not trip the velocity brake",
           "receipt.php" in r.url, r.url)
 
-    # a long name plus a long note used to overflow the notification column
     longname = User("01313000002", pw="longer2026", pin="553311")
     signup(longname, "Mohammad" * 5, "Chowdhury" * 5, "1234567896", "long@test.com")
     login(longname)
     seed_balance("01313000002", 3000)
-    r = longname.post("sendmoney.php", {
+    r = longname.post("send_money.php", {
         "receiver_phone": "01711111111", "amount": "150",
         "note": "x" * 120, "pin": longname.pin, "save_favourite": "1"})
     check("a very long name and note still complete the transfer",
@@ -553,12 +506,10 @@ def main():
     check("and the favourite is saved without overflowing",
           val("SELECT COUNT(*) FROM favourites WHERE owner_phone='01313000002'") == "1")
 
-    # the schema itself
     fks = int(val("SELECT COUNT(*) FROM information_schema.TABLE_CONSTRAINTS "
                   "WHERE CONSTRAINT_SCHEMA='" + DB_NAME + "' AND CONSTRAINT_TYPE='FOREIGN KEY'"))
     check("the schema declares its relationships as real foreign keys", fks >= 10, fks)
 
-    # the running totals are kept by a trigger, not by PHP
     org_total = float(val("SELECT total_received_amount FROM organizations "
                           "WHERE organization_id='444'") or 0)
     paid = float(val("SELECT COALESCE(SUM(amount),0) FROM bill_payments "
@@ -566,7 +517,6 @@ def main():
     check("the trigger keeps the biller total in step with its payments",
           abs(org_total - paid) < 0.001, (org_total, paid))
 
-    # ------------------------------------------- found in the v2 audit
     print("\n=== v2 audit regressions ===")
 
     def balance(u):
@@ -580,10 +530,10 @@ def main():
     seed_balance(c.phone, 30000, limit=100000)
 
     before = balance(a)
-    data = a.form("mobilerecharge.php", {"rechargePhoneNumber": a.phone, "rechargeAmount": "99",
+    data = a.form("mobile_recharge.php", {"rechargePhoneNumber": a.phone, "rechargeAmount": "99",
                                          "connection": "Prepaid", "pin": a.pin})
-    a.s.post(BASE + "/mobilerecharge.php", data=data)
-    r = a.s.post(BASE + "/mobilerecharge.php", data=data)
+    a.s.post(BASE + "/mobile_recharge.php", data=data)
+    r = a.s.post(BASE + "/mobile_recharge.php", data=data)
     check("a replayed recharge is refused", r.status_code == 409, r.status_code)
     check("and the recharge was only charged once", abs((before - balance(a)) - 98.01) < 0.001,
           before - balance(a))
@@ -602,12 +552,12 @@ def main():
                             "note": "kacchi at Sultans Dine"})
     rid = val("SELECT id FROM money_requests WHERE requester_phone='%s' AND amount=350 "
               "ORDER BY id DESC LIMIT 1" % a.phone)
-    r = b.post("sendmoney.php?request=%s" % rid, {"receiver_phone": c.phone, "amount": "10",
+    r = b.post("send_money.php?request=%s" % rid, {"receiver_phone": c.phone, "amount": "10",
                                                    "pin": b.pin, "request_id": rid})
     check("sending ten taka to someone else does not settle a request",
           val("SELECT status FROM money_requests WHERE id=%s" % rid) == "pending")
     check("and the page says what the request was for", "That request is for" in r.text)
-    b.post("sendmoney.php?request=%s" % rid, {"receiver_phone": a.phone, "amount": "350",
+    b.post("send_money.php?request=%s" % rid, {"receiver_phone": a.phone, "amount": "350",
                                               "pin": b.pin, "request_id": rid})
     check("paying the right person the right amount settles it",
           val("SELECT status FROM money_requests WHERE id=%s" % rid) == "paid")
@@ -620,7 +570,7 @@ def main():
     poor.post("cash_out.php", {"agent_id": "AG1001", "cash_out_amount": "2000", "pin": poor.pin})
     poor.post("gas_bills.php", {"organization_id": "112", "consumer_no": "KGD-2002", "amount": "900",
                                 "month": LAST_MONTH, "pin": poor.pin})
-    poor.post("payment.php", {"merchant_id": "M102", "amount": "800", "pin": poor.pin})
+    poor.post("pay_merchant.php", {"merchant_id": "M102", "amount": "800", "pin": poor.pin})
     check("declined cash out, bill and payment are all on the ledger", failed_count() == n + 3,
           (n, failed_count()))
 
@@ -631,8 +581,8 @@ def main():
     check("a statement that ends yesterday closes on yesterday's balance, not today's",
           closing == [["Closing balance", "0.00"]], closing)
 
-    c.post("sendmoney.php", {"receiver_phone": a.phone, "amount": "25000", "pin": c.pin})
-    c.post("sendmoney.php", {"receiver_phone": a.phone, "amount": "9000", "pin": c.pin})
+    c.post("send_money.php", {"receiver_phone": a.phone, "amount": "25000", "pin": c.pin})
+    c.post("send_money.php", {"receiver_phone": a.phone, "amount": "9000", "pin": c.pin})
     r = c.get("statement.php?format=csv")
     check("declined attempts are left out of the statement", ",failed" not in r.text)
 
@@ -648,7 +598,7 @@ def main():
     saver.post("savings.php", {"action": "create", "title": "Eid", "target_amount": "8000"})
     gid = val("SELECT id FROM savings_goals WHERE phone='%s'" % saver.phone)
     saver.post("savings.php", {"action": "deposit", "goal_id": gid, "amount": "4500", "pin": saver.pin})
-    r = saver.post("sendmoney.php", {"receiver_phone": a.phone, "amount": "1000", "pin": saver.pin})
+    r = saver.post("send_money.php", {"receiver_phone": a.phone, "amount": "1000", "pin": saver.pin})
     check("money moved into savings does not use up the daily sending limit",
           "receipt.php" in r.url, r.url)
 
@@ -667,7 +617,6 @@ def main():
                          capture_output=True, text=True)
     check("the database itself refuses a negative agent float", out.returncode != 0)
 
-    # three people at the same counter, the same bill, the same fee, all at once
     def race(jobs):
         gate = threading.Barrier(len(jobs))
         def go(u, page, data):
@@ -690,7 +639,6 @@ def main():
     check("three people paying one bill at once pay it once",
           val("SELECT COUNT(*) FROM bill_payments WHERE consumer_no='KWASA-7007'") == "1")
 
-    # a race does not always lose, so run it a few times
     for sid in ("NIC-7781", "NIC-7782", "NIC-7783"):
         race([(u, "education_fee.php", u.form("education_fee.php", {
             "institute_id": "558", "student_id": sid, "student_name": "sadia islam",
@@ -720,14 +668,13 @@ def main():
     check("the sign out button does",
           a.s.get(BASE + "/account.php", allow_redirects=False).status_code == 302)
 
-    r = saver.get("analytics.php")
+    r = saver.get("insights.php")
     check("insights do not count money moved into savings as spending",
           '<ul class="legend">' in r.text
           and "Savings" not in r.text.split('<ul class="legend">')[1].split("</ul>")[0])
 
-    # the pages have to work with scripting switched off
-    money_pages = ["sendmoney.php", "add_money.php", "cash_in.php", "cash_out.php", "mobilerecharge.php",
-                   "payment.php", "electricity_bills.php", "education_fee.php", "checkbalance.php"]
+    money_pages = ["send_money.php", "add_money.php", "cash_in.php", "cash_out.php", "mobile_recharge.php",
+                   "pay_merchant.php", "electricity_bills.php", "education_fee.php"]
     no_pin = [p for p in money_pages
               if not re.search(r'<input class="pin" type="password" id="\w+" name="pin"', b.get(p).text)
               or 'type="hidden" name="pin"' in b.get(p).text]
@@ -741,9 +688,8 @@ def main():
           not any("openModal(" in b.get(p).text for p in dialogs))
 
     check("history rows are links to their receipts", 'href="receipt.php?id=' in b.get("history.php").text)
-    check("the support page does not list a real company's helpline", "16247" not in b.get("supports.php").text)
+    check("the support page does not list a real company's helpline", "16247" not in b.get("support.php").text)
 
-    # -------------------------------------------------------- result
     print("\n" + "=" * 62)
     print("  %d passed, %d failed" % (len(PASS), len(FAIL)))
     if FAIL:

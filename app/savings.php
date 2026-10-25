@@ -11,25 +11,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post('action');
 
     try {
-        /* create */
         if ($action === 'create') {
             $title    = mb_substr(post('title'), 0, 60);
             $target   = post('target_amount');
             $deadline = post('deadline') ?: null;
 
             if ($title === '') {
-                throw new MoneyError('Give the goal a name.');
+                throw new MoneyError(__('Give the goal a name.'));
             }
             if (!valid_amount($target) || (float) $target < MIN_AMOUNT) {
                 throw new MoneyError(__('Set a target of at least {amount}.', ['amount' => money(MIN_AMOUNT)]));
             }
             if ($deadline !== null && strtotime($deadline) < strtotime('today')) {
-                throw new MoneyError('The deadline has to be in the future.');
+                throw new MoneyError(__('The deadline has to be in the future.'));
             }
             $open = (int) scalar("SELECT COUNT(*) FROM savings_goals
                                    WHERE phone = ? AND status = 'active'", [$phone], 0);
             if ($open >= 8) {
-                throw new MoneyError('You can keep up to 8 goals open at a time.');
+                throw new MoneyError(__('You can keep up to 8 goals open at a time.'));
             }
 
             q('INSERT INTO savings_goals (phone, title, target_amount, deadline)
@@ -39,7 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('savings.php');
         }
 
-        /* deposit */
         if ($action === 'deposit' || $action === 'withdraw') {
             require_fresh('savings_move');
             $goalId = (int) post('goal_id');
@@ -51,22 +49,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             if (!verify_pin($phone, $pin)) {
                 $left = pin_tries_left($phone);
-                throw new MoneyError('Wrong transaction PIN.'
-                    . ($left > 0 ? " $left attempt(s) left." : ''));
+                throw new MoneyError(__('Wrong transaction PIN.')
+                    . ($left > 0 ? ' ' . __('{n} attempt(s) left.', ['n' => $left]) : ''));
             }
 
             $pdo = db();
             $pdo->beginTransaction();
             try {
-                /* Read the goal inside the transaction and lock the row. Without
-                   the lock, two withdrawals fired at the same moment would both
-                   see the full balance and both succeed, which would create money
-                   out of nothing. */
                 $goal = one("SELECT * FROM savings_goals
                               WHERE id = ? AND phone = ? AND status = 'active'
                               FOR UPDATE", [$goalId, $phone]);
                 if (!$goal) {
-                    throw new MoneyError('That goal was not found.');
+                    throw new MoneyError(__('That goal was not found.'));
                 }
 
                 if ($action === 'deposit') {
@@ -78,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'type'        => 'Savings',
                         'category'    => 'Savings',
                         'note'        => 'Added to goal ' . $goal['title'],
-                        'skip_limits' => true,   // saving is not spending
+                        'skip_limits' => true,
                     ]);
                     q('UPDATE savings_goals SET saved_amount = saved_amount + ? WHERE id = ?',
                       [(float) $amount, $goalId]);
@@ -88,11 +82,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         notify($phone, 'Goal reached',
                                'You hit your target for "' . $goal['title'] . '".', 'gift');
                     }
-                    $msg = money($amount) . ' moved into "' . $goal['title'] . '".';
+                    $msg = __('{amount} moved into "{goal}".', ['amount' => money($amount), 'goal' => $goal['title']]);
                 } else {
                     if ((float) $goal['saved_amount'] < (float) $amount) {
-                        throw new MoneyError('That goal only holds '
-                            . money($goal['saved_amount']) . '.');
+                        throw new MoneyError(__('That goal only holds {amount}.', ['amount' => money($goal['saved_amount'])]));
                     }
                     move_money([
                         'from'        => null,
@@ -106,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     ]);
                     q('UPDATE savings_goals SET saved_amount = saved_amount - ? WHERE id = ?',
                       [(float) $amount, $goalId]);
-                    $msg = money($amount) . ' returned to your balance.';
+                    $msg = __('{amount} returned to your balance.', ['amount' => money($amount)]);
                 }
                 $pdo->commit();
                 flash('ok', $msg);
@@ -118,7 +111,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        /* close */
         if ($action === 'close') {
             $goalId = (int) post('goal_id');
             $pdo = db();
@@ -128,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                               WHERE id = ? AND phone = ? AND status = 'active'
                               FOR UPDATE", [$goalId, $phone]);
                 if (!$goal) {
-                    throw new MoneyError('That goal was not found.');
+                    throw new MoneyError(__('That goal was not found.'));
                 }
                 if ((float) $goal['saved_amount'] > 0) {
                     move_money([
@@ -170,4 +162,4 @@ $totalSaved = array_sum(array_map(static fn($g) => (float) $g['saved_amount'], $
 
 $pageTitle = __('Savings');
 $activeNav = 'savings';
-include('Front_end/front_savings.php');
+include('views/savings.php');

@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               [(float) $amount, $agentId]);
             $pdo->commit();
 
-            flash('ok', money($amount) . ' added to your wallet.');
+            flash('ok', __('{amount} added to your wallet.', ['amount' => money($amount)]));
             redirect('receipt.php?id=' . urlencode($trx['trx_id']));
 
         } catch (MoneyError $e) {
@@ -63,4 +63,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $pageTitle = __('Cash in');
 $activeNav = 'home';
-include('Front_end/front_cashin.php');
+include('views/cash_in.php');

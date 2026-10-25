@@ -1,24 +1,13 @@
--- =====================================================================
---  TakaLagbe!  :  Digital Money Transaction System
---  Database schema  (MySQL / MariaDB)
---
---  Import:  mysql -u root takalagbe < takalagbe.sql
---       or  phpMyAdmin → New → "takalagbe" → Import
--- =====================================================================
-
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+06:00";
 SET NAMES utf8mb4;
 
--- Turned off so the DROP statements below can run in any order, and so a
--- re-import over an existing database does not trip over its own keys.
 SET FOREIGN_KEY_CHECKS = 0;
 
 CREATE DATABASE IF NOT EXISTS `takalagbe`
   DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `takalagbe`;
 
--- ---------------------------------------------------------------- users
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
   `userid`        INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -27,8 +16,8 @@ CREATE TABLE `user` (
   `lastname`      VARCHAR(50)  NOT NULL,
   `nid`           VARCHAR(18)  NOT NULL,
   `email`         VARCHAR(100) NOT NULL,
-  `password_hash` VARCHAR(255) NOT NULL,          -- bcrypt, never plain text
-  `pin_hash`      VARCHAR(255) NOT NULL,          -- 6-digit transaction PIN, bcrypt
+  `password_hash` VARCHAR(255) NOT NULL,
+  `pin_hash`      VARCHAR(255) NOT NULL,
   `dob`           DATE         NOT NULL,
   `gender`        ENUM('Male','Female','Others') NOT NULL DEFAULT 'Others',
   `avatar_color`  VARCHAR(7)   NOT NULL DEFAULT '#40A2E3',
@@ -41,7 +30,6 @@ CREATE TABLE `user` (
   UNIQUE KEY `uq_nid`   (`nid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------------- accounts
 DROP TABLE IF EXISTS `account`;
 CREATE TABLE `account` (
   `phone`      VARCHAR(11)   NOT NULL,
@@ -53,15 +41,13 @@ CREATE TABLE `account` (
   CONSTRAINT `chk_balance_non_negative` CHECK (`balance` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------- transactions
--- every money movement lands here exactly once
 DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `id`               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `trx_id`           VARCHAR(14)  NOT NULL,        -- human readable, e.g. TKL8F2A9C31
+  `trx_id`           VARCHAR(14)  NOT NULL,
   `transaction_from` VARCHAR(120) NOT NULL,
   `transaction_to`   VARCHAR(120) NOT NULL,
-  `transaction_type` VARCHAR(24)  NOT NULL,        -- Send Money / Cash In / Bill Pay ...
+  `transaction_type` VARCHAR(24)  NOT NULL,
   `category`         VARCHAR(24)  NOT NULL DEFAULT 'Other',
   `amount`           DECIMAL(12,2) NOT NULL,
   `fee`              DECIMAL(12,2) NOT NULL DEFAULT 0.00,
@@ -79,7 +65,6 @@ CREATE TABLE `transactions` (
   KEY `idx_category`  (`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------------ favourites
 DROP TABLE IF EXISTS `favourites`;
 CREATE TABLE `favourites` (
   `id`          INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -93,7 +78,6 @@ CREATE TABLE `favourites` (
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------- savings goals
 DROP TABLE IF EXISTS `savings_goals`;
 CREATE TABLE `savings_goals` (
   `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -110,7 +94,6 @@ CREATE TABLE `savings_goals` (
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- -------------------------------------------------------- money requests
 DROP TABLE IF EXISTS `money_requests`;
 CREATE TABLE `money_requests` (
   `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -118,7 +101,7 @@ CREATE TABLE `money_requests` (
   `payer_phone`     VARCHAR(11) NOT NULL,
   `amount`          DECIMAL(12,2) NOT NULL,
   `note`            VARCHAR(120) DEFAULT NULL,
-  `split_group`     VARCHAR(20)  DEFAULT NULL,   -- ties a split-bill batch together
+  `split_group`     VARCHAR(20)  DEFAULT NULL,
   `status`          ENUM('pending','paid','declined') NOT NULL DEFAULT 'pending',
   `created_at`      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -130,7 +113,6 @@ CREATE TABLE `money_requests` (
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ---------------------------------------------------------- notifications
 DROP TABLE IF EXISTS `notifications`;
 CREATE TABLE `notifications` (
   `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -147,12 +129,11 @@ CREATE TABLE `notifications` (
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------- login attempts
 DROP TABLE IF EXISTS `login_attempts`;
 CREATE TABLE `login_attempts` (
   `id`         INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `kind`       ENUM('login','admin','pin') NOT NULL DEFAULT 'login',
-  `identifier` VARCHAR(64) NOT NULL,   -- phone number, admin username, or IP for a PIN
+  `identifier` VARCHAR(64) NOT NULL,
   `ip`         VARCHAR(64) NOT NULL,
   `successful` TINYINT(1)  NOT NULL DEFAULT 0,
   `attempted_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -160,11 +141,10 @@ CREATE TABLE `login_attempts` (
   KEY `idx_attempt` (`kind`,`identifier`,`attempted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------------ audit log
 DROP TABLE IF EXISTS `audit_log`;
 CREATE TABLE `audit_log` (
   `id`        BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `actor`     VARCHAR(64) NOT NULL,   -- a phone number, or an admin username
+  `actor`     VARCHAR(64) NOT NULL,
   `action`    VARCHAR(60) NOT NULL,
   `detail`    VARCHAR(255) DEFAULT NULL,
   `ip`        VARCHAR(64)  DEFAULT NULL,
@@ -173,7 +153,6 @@ CREATE TABLE `audit_log` (
   KEY `idx_actor_time` (`actor`,`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ---------------------------------------------------------------- admin
 DROP TABLE IF EXISTS `admin`;
 CREATE TABLE `admin` (
   `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -183,7 +162,6 @@ CREATE TABLE `admin` (
   UNIQUE KEY `uq_admin_user` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------- support desk
 DROP TABLE IF EXISTS `support_messages`;
 CREATE TABLE `support_messages` (
   `id`           INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -197,7 +175,6 @@ CREATE TABLE `support_messages` (
   KEY `idx_solved` (`issue_solved`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------ merchants / billers
 DROP TABLE IF EXISTS `organizations`;
 CREATE TABLE `organizations` (
   `id`                    INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -220,16 +197,14 @@ CREATE TABLE `institutes` (
   UNIQUE KEY `uq_inst` (`institute_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------- bill payments
--- one table instead of four near-identical ones
 DROP TABLE IF EXISTS `bill_payments`;
 CREATE TABLE `bill_payments` (
   `id`                INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `payer_phone`       VARCHAR(11)  NOT NULL,
-  `billtype`          VARCHAR(50)  NOT NULL,   -- gas_bills / water_bills / ...
+  `billtype`          VARCHAR(50)  NOT NULL,
   `organization_id`   VARCHAR(20)  NOT NULL,
   `organization_name` VARCHAR(255) NOT NULL,
-  `consumer_no`       VARCHAR(40)  NOT NULL,   -- meter no / customer no / student id
+  `consumer_no`       VARCHAR(40)  NOT NULL,
   `amount`            DECIMAL(12,2) NOT NULL,
   `month`             VARCHAR(20)  NOT NULL,
   `trx_id`            VARCHAR(14)  DEFAULT NULL,
@@ -238,7 +213,6 @@ CREATE TABLE `bill_payments` (
   KEY `idx_bill_payer` (`payer_phone`,`payment_date`),
   KEY `idx_bill_type`  (`billtype`),
   KEY `idx_bill_org`   (`organization_id`),
-  -- one payment per bill per month; the page checks first, this stops two at once
   UNIQUE KEY `uq_bill_month` (`billtype`,`organization_id`,`consumer_no`,`month`),
   CONSTRAINT `fk_bill_payer` FOREIGN KEY (`payer_phone`)
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -268,7 +242,6 @@ CREATE TABLE `education_fee` (
     REFERENCES `institutes`(`institute_id`) ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------ mobile recharge
 DROP TABLE IF EXISTS `mobile_recharge`;
 CREATE TABLE `mobile_recharge` (
   `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -285,7 +258,6 @@ CREATE TABLE `mobile_recharge` (
     REFERENCES `user`(`phone`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ------------------------------------------------------------ merchants
 DROP TABLE IF EXISTS `merchants`;
 CREATE TABLE `merchants` (
   `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -298,7 +270,6 @@ CREATE TABLE `merchants` (
   UNIQUE KEY `uq_merchant` (`merchant_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------------- agents
 DROP TABLE IF EXISTS `agent_details`;
 CREATE TABLE `agent_details` (
   `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -311,7 +282,6 @@ CREATE TABLE `agent_details` (
   CONSTRAINT `chk_float_non_negative` CHECK (`cash_in_amount` >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ===================================================== reference data ==
 INSERT INTO `organizations` (`organization_id`,`organization_name`,`total_received_amount`,`billtype`) VALUES
 ('111','Titas Gas Limited',0,'gas_bills'),
 ('112','Karnaphuli Gas Limited',0,'gas_bills'),
@@ -351,14 +321,8 @@ INSERT INTO `agent_details` (`agent_id`,`phone_number`,`cash_in_amount`) VALUES
 ('AG1002','01711000002',50000.00),
 ('AG1003','01711000003',50000.00);
 
--- admin / admin123
 INSERT INTO `admin` (`username`,`password_hash`) VALUES
 ('admin','$2y$12$2E8zfqahDXux.q98sbq01.N3lqsGxveByWV6p5YbgLbI5aHFw2/Ba');
-
--- ------------------------------------------------------------- triggers
--- The running totals used to be updated from PHP after every insert, which
--- meant they drifted whenever anything else wrote a payment row. Keeping
--- them here means the database is the only thing responsible for them.
 
 DROP TRIGGER IF EXISTS `trg_bill_payment_total`;
 CREATE TRIGGER `trg_bill_payment_total`
@@ -376,5 +340,4 @@ FOR EACH ROW
      SET `total_received_amount` = `total_received_amount` + NEW.`amount`
    WHERE `institute_id` = NEW.`institute_id`;
 
--- Keys back on. From here the database enforces every relationship above.
 SET FOREIGN_KEY_CHECKS = 1;

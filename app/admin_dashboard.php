@@ -1,5 +1,4 @@
 <?php
-/* The admin overview: platform numbers, live charts and the newest activity. */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/view.php';
 
@@ -22,7 +21,6 @@ $stats = [
     'tickets'  => (int)   scalar('SELECT COUNT(*) FROM support_messages WHERE issue_solved = 0', [], 0),
 ];
 
-/* volume by type, for the donut */
 $byType = [];
 foreach (all("SELECT transaction_type t, SUM(amount) v, COUNT(*) n FROM transactions
                WHERE status = 'success' GROUP BY t ORDER BY v DESC") as $r) {
@@ -39,7 +37,6 @@ foreach (all("SELECT transaction_type t, SUM(amount) v, COUNT(*) n FROM transact
                  })];
 }
 
-/* fourteen day volume, for the bar chart */
 $rows = all("SELECT DATE(transaction_time) d, SUM(amount) v FROM transactions
               WHERE status = 'success' AND transaction_time >= (CURDATE() - INTERVAL 13 DAY)
               GROUP BY d");
@@ -67,4 +64,4 @@ $recentAudit = all('SELECT * FROM audit_log ORDER BY id DESC LIMIT 8');
 
 $pageTitle = 'Dashboard';
 $activeNav = 'dash';
-include('Front_end/front_admin_dashboard.php');
+include('views/admin_dashboard.php');

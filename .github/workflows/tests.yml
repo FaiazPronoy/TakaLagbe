@@ -9,7 +9,6 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    # MariaDB, like XAMPP, since the suite reads its query counters
     services:
       db:
         image: mariadb:10.11
@@ -21,7 +20,6 @@ jobs:
           --health-cmd="healthcheck.sh --connect --innodb_initialized"
           --health-interval=5s --health-timeout=5s --health-retries=20
     env:
-      # the app and the suite both use a scratch database, never the real one
       TKL_DB_HOST: 127.0.0.1
       TKL_DB_USER: root
       TKL_DB_PASS: root

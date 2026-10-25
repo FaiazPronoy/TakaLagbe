@@ -1,23 +1,17 @@
 <?php
-/* Balance changes and the ledger. Everything here runs in a transaction. */
 
 require_once __DIR__ . '/../config/helpers.php';
 
-/** Thrown when a transfer is refused. The message is safe to show. */
 class MoneyError extends RuntimeException
 {
-    /** Set when the refusal still has to be written to the ledger. */
     public ?array $attempt = null;
 }
 
-/** TKL + 9 hex characters, e.g. TKL8F2A9C31. Unique in the ledger. */
 function new_trx_id(): string
 {
-    // the column is UNIQUE, so a repeat would be rejected by the database
     return 'TKL' . strtoupper(bin2hex(random_bytes(4))) . random_int(0, 9);
 }
 
-/** How much this user has already sent out today. Savings stay in the wallet, so they do not count. */
 function spent_today(string $phone): float
 {
     return (float) scalar(
@@ -28,11 +22,6 @@ function spent_today(string $phone): float
     );
 }
 
-/**
- * Successful outgoing transfers in the last few minutes, used as a fraud brake.
- * Only successes count: a run of "insufficient balance" mistakes should not be
- * able to lock a user out of their own account.
- */
 function recent_trx_count(string $phone): int
 {
     return (int) scalar(
@@ -43,28 +32,6 @@ function recent_trx_count(string $phone): int
     );
 }
 
-/**
- * Move money.
- *
- * @param array $o keys:
- *   from      string|null  phone to debit, or null when the money comes
- *                          from outside the system (a bank, an agent)
- *   to        string|null  phone to credit, or null when the money leaves
- *                          the system (a biller, a merchant, a mobile top-up)
- *   from_ref  string       what to write in the ledger when `from` is null
- *   to_ref    string       what to write in the ledger when `to` is null
- *   amount    float
- *   type      string       'Send Money', 'Cash Out', 'Bill Pay' ...
- *   category  string       one of TRX_CATEGORIES
- *   note      string|null
- *   fee_pct   float        charged on top of the amount, taken from `from`
- *   fee_flat  float
- *   cashback_pct float     credited back to `from` after the debit
- *   skip_limits bool       true for internal moves such as savings
- *
- * @return array the ledger row that was written
- * @throws MoneyError when the transfer is refused
- */
 function move_money(array $o): array
 {
     $from        = $o['from']         ?? null;
@@ -92,16 +59,12 @@ function move_money(array $o): array
     $debit    = round($amount + $fee, 2);
 
     $pdo = db();
-    // a caller may already have a transaction open, for example a bill payment
-    // that wants the transfer and the bill row to land together
     $ownTransaction = !$pdo->inTransaction();
     if ($ownTransaction) {
         $pdo->beginTransaction();
     }
 
     try {
-        // lock both accounts, in phone number order so two transfers going
-        // opposite ways cannot end up waiting on each other
         $lock = array_values(array_unique(array_filter([$from, $to])));
         sort($lock);
         $balances = [];
@@ -113,7 +76,6 @@ function move_money(array $o): array
             $balances[$phone] = (float) $row['balance'];
         }
 
-        /* --- checks that need the lock to be honest ------------------ */
         if ($from !== null) {
             if ($balances[$from] < $debit) {
                 throw new MoneyError(
@@ -139,7 +101,6 @@ function move_money(array $o): array
             }
         }
 
-        /* --- apply ---------------------------------------------------- */
         $senderAfter = $receiverAfter = null;
 
         if ($from !== null) {
@@ -155,7 +116,6 @@ function move_money(array $o): array
             $senderAfter = round($senderAfter + $cashback, 2);
         }
 
-        /* --- ledger --------------------------------------------------- */
         $trxId = new_trx_id();
         q('INSERT INTO transactions
              (trx_id, transaction_from, transaction_to, transaction_type,
@@ -197,13 +157,10 @@ function move_money(array $o): array
                 record_refusal($err);
             }
         }
-        // otherwise the caller rolls back its own transaction, and anything
-        // written here would go with it, so the caller calls record_refusal()
         throw $err;
     }
 }
 
-/** Writes a refused transfer to the ledger. Call it after the rollback. */
 function record_refusal(MoneyError $e): void
 {
     if ($e->attempt !== null) {
@@ -212,7 +169,6 @@ function record_refusal(MoneyError $e): void
     }
 }
 
-/** Writes a refused transfer to the ledger so it shows up in the history. */
 function log_refusal(string $from, string $to, string $type, string $category,
                      float $amount, float $fee, string $reason): void
 {
@@ -225,11 +181,9 @@ function log_refusal(string $from, string $to, string $type, string $category,
            mb_substr($from, 0, 120), mb_substr($to, 0, 120),
            $type, $category, $amount, $fee, mb_substr($reason, 0, 120), 'failed']);
     } catch (Throwable $ignore) {
-        // never let bookkeeping hide the real error
     }
 }
 
-/** Notifications and the audit trail, written after a transfer lands. */
 function after_transfer(array $row, ?string $from, ?string $to, ?string $note): void
 {
     $amount = money($row['amount']);

@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
     $action = post('action');
 
-    /* details */
     if ($action === 'details') {
         $email  = strtolower(post('email'));
         $colour = post('avatar_color');
@@ -30,7 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* password */
     if ($action === 'password') {
         $current = post('current_password');
         $new     = post('new_password');
@@ -55,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* PIN */
     if ($action === 'pin') {
         $current = post('current_pin');
         $new     = post('new_pin');
@@ -79,7 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    /* daily limit */
     if ($action === 'limit') {
         $limit = post('daily_limit');
         $pin   = post('pin');
@@ -97,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$user = one('SELECT * FROM user WHERE phone = ?', [$phone]);   // refresh after any change
+$user = one('SELECT * FROM user WHERE phone = ?', [$phone]);
 
 $logins = all("SELECT * FROM login_attempts
                 WHERE kind = 'login' AND identifier = ?
@@ -117,4 +113,4 @@ $stats = [
 
 $pageTitle = __('Profile');
 $activeNav = 'profile';
-include('Front_end/front_profile.php');
+include('views/profile.php');

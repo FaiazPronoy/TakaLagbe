@@ -1,13 +1,10 @@
 <?php
-/* QR payload build and parse. */
 
 final class QrCode
 {
-    /* data codewords available per version at EC level L */
     private const DATA_CW = [1=>19, 2=>34, 3=>55, 4=>80, 5=>108,
                              6=>136, 7=>156, 8=>194, 9=>232, 10=>274];
 
-    /* [ec codewords per block, group1 blocks, group1 data, group2 blocks, group2 data] */
     private const BLOCKS = [
         1  => [7,  1, 19, 0, 0],
         2  => [10, 1, 34, 0, 0],
@@ -21,32 +18,24 @@ final class QrCode
         10 => [18, 2, 68, 2, 69],
     ];
 
-    /* centres of the alignment patterns for each version */
     private const ALIGN = [
         1 => [], 2 => [6,18], 3 => [6,22], 4 => [6,26], 5 => [6,30],
         6 => [6,34], 7 => [6,22,38], 8 => [6,24,42], 9 => [6,26,46], 10 => [6,28,50],
     ];
 
-    /* remainder bits appended after the final codeword */
     private const REMAINDER = [1=>0, 2=>7, 3=>7, 4=>7, 5=>7, 6=>7,
                                7=>0, 8=>0, 9=>0, 10=>0];
 
     private int $version;
     private int $size;
-    /** @var array<int,array<int,int|null>> null = free, 0/1 = module */
     private array $m = [];
-    /** @var array<int,array<int,bool>> true = reserved function module */
     private array $fixed = [];
 
-    /* public */
-
-    /** @return array<int,array<int,int>> matrix of 0/1, [row][col] */
     public static function matrix(string $text): array
     {
         return (new self($text))->m;
     }
 
-    /** Renders the code as a self contained SVG string. */
     public static function svg(string $text, int $scale = 5, int $quiet = 4): string
     {
         $m = self::matrix($text);
@@ -68,14 +57,6 @@ final class QrCode
              . '<rect width="100%" height="100%" fill="#fff"/>'
              . '<path d="' . $path . '" fill="#000"/></svg>';
     }
-
-    /** SVG wrapped in a data URI, ready for an <img src>. */
-    public static function dataUri(string $text, int $scale = 5): string
-    {
-        return 'data:image/svg+xml;base64,' . base64_encode(self::svg($text, $scale));
-    }
-
-    /* building */
 
     private function __construct(string $text)
     {
@@ -106,7 +87,6 @@ final class QrCode
         throw new RuntimeException('Text is too long for this QR encoder.');
     }
 
-    /** Mode indicator, length, payload, terminator and padding. */
     private function encodeData(array $bytes, int $len): array
     {
         $bits = [];
@@ -116,18 +96,18 @@ final class QrCode
             }
         };
 
-        $push(0b0100, 4);                                  // byte mode
-        $push($len, $this->version <= 9 ? 8 : 16);         // character count
+        $push(0b0100, 4);
+        $push($len, $this->version <= 9 ? 8 : 16);
         foreach ($bytes as $b) {
             $push($b, 8);
         }
 
         $capacityBits = self::DATA_CW[$this->version] * 8;
         for ($i = 0; $i < 4 && count($bits) < $capacityBits; $i++) {
-            $bits[] = 0;                                   // terminator
+            $bits[] = 0;
         }
         while (count($bits) % 8 !== 0) {
-            $bits[] = 0;                                   // to a byte boundary
+            $bits[] = 0;
         }
 
         $pad = [0xEC, 0x11];
@@ -147,8 +127,6 @@ final class QrCode
         return $out;
     }
 
-    /* Reed-Solomon over GF(256) */
-
     private static array $exp = [];
     private static array $log = [];
 
@@ -163,7 +141,7 @@ final class QrCode
             self::$log[$x] = $i;
             $x <<= 1;
             if ($x & 0x100) {
-                $x ^= 0x11D;                 // the QR primitive polynomial
+                $x ^= 0x11D;
             }
         }
         for ($i = 255; $i < 512; $i++) {
@@ -179,15 +157,14 @@ final class QrCode
         return self::$exp[self::$log[$a] + self::$log[$b]];
     }
 
-    /** Generator polynomial of the given degree. */
     private static function generator(int $degree): array
     {
         $g = [1];
         for ($i = 0; $i < $degree; $i++) {
             $next = array_fill(0, count($g) + 1, 0);
             foreach ($g as $j => $coef) {
-                $next[$j]     ^= $coef;                              // multiply by x
-                $next[$j + 1] ^= self::mul($coef, self::$exp[$i]);   // multiply by a^i
+                $next[$j]     ^= $coef;
+                $next[$j + 1] ^= self::mul($coef, self::$exp[$i]);
             }
             $g = $next;
         }
@@ -210,7 +187,6 @@ final class QrCode
         return $rem;
     }
 
-    /** Splits into blocks, adds EC bytes, then interleaves. */
     private function addErrorCorrection(array $data): array
     {
         self::initGf();
@@ -245,8 +221,6 @@ final class QrCode
         return $out;
     }
 
-    /* the matrix */
-
     private function blank(): void
     {
         for ($r = 0; $r < $this->size; $r++) {
@@ -268,7 +242,6 @@ final class QrCode
     {
         $n = $this->size;
 
-        /* three finder patterns with their separators */
         foreach ([[0, 0], [0, $n - 7], [$n - 7, 0]] as [$r0, $c0]) {
             for ($r = -1; $r <= 7; $r++) {
                 for ($c = -1; $c <= 7; $c++) {
@@ -282,13 +255,11 @@ final class QrCode
             }
         }
 
-        /* timing patterns */
         for ($i = 8; $i < $n - 8; $i++) {
             $this->set(6, $i, ($i % 2 === 0) ? 1 : 0);
             $this->set($i, 6, ($i % 2 === 0) ? 1 : 0);
         }
 
-        /* alignment patterns, skipping the finder corners */
         $centres = self::ALIGN[$this->version];
         foreach ($centres as $rc) {
             foreach ($centres as $cc) {
@@ -307,10 +278,8 @@ final class QrCode
             }
         }
 
-        /* the dark module, always on */
         $this->set($n - 8, 8, 1);
 
-        /* reserve the format information areas */
         for ($i = 0; $i <= 8; $i++) {
             if ($i !== 6) {
                 $this->set(8, $i, 0);
@@ -322,7 +291,6 @@ final class QrCode
             $this->set($n - 1 - $i, 8, 0);
         }
 
-        /* version information, only from version 7 upward */
         if ($this->version >= 7) {
             $bits = $this->versionBits();
             for ($i = 0; $i < 18; $i++) {
@@ -345,7 +313,6 @@ final class QrCode
         return $v | ($rem & 0xFFF);
     }
 
-    /** Walks the zigzag and drops the codeword bits into the free cells. */
     private function placeCodewords(array $codewords): void
     {
         $n = $this->size;
@@ -363,7 +330,7 @@ final class QrCode
         $up  = true;
         for ($right = $n - 1; $right >= 1; $right -= 2) {
             if ($right === 6) {
-                $right = 5;                 // column 6 is the timing pattern
+                $right = 5;
             }
             for ($step = 0; $step < $n; $step++) {
                 $r = $up ? ($n - 1 - $step) : $step;
@@ -420,14 +387,13 @@ final class QrCode
     private function drawFormat(int $mask): void
     {
         $n = $this->size;
-        $data = (0b01 << 3) | $mask;          // 01 = error correction level L
+        $data = (0b01 << 3) | $mask;
         $rem = $data;
         for ($i = 0; $i < 10; $i++) {
             $rem = ($rem << 1) ^ ((($rem >> 9) & 1) * 0x537);
         }
         $bits = (($data << 10) | ($rem & 0x3FF)) ^ 0x5412;
 
-        /* first copy, wrapped around the top-left finder */
         for ($i = 0; $i <= 5; $i++) {
             $this->m[$i][8] = ($bits >> $i) & 1;
         }
@@ -437,23 +403,20 @@ final class QrCode
         for ($i = 9; $i < 15; $i++) {
             $this->m[8][14 - $i] = ($bits >> $i) & 1;
         }
-        /* second copy, split between the other two finders */
         for ($i = 0; $i < 8; $i++) {
             $this->m[8][$n - 1 - $i] = ($bits >> $i) & 1;
         }
         for ($i = 8; $i < 15; $i++) {
             $this->m[$n - 15 + $i][8] = ($bits >> $i) & 1;
         }
-        $this->m[$n - 8][8] = 1;              // the dark module
+        $this->m[$n - 8][8] = 1;
     }
 
-    /** The four penalty rules from the specification. */
     private function penalty(): int
     {
         $n = $this->size;
         $score = 0;
 
-        /* rule 1: runs of five or more of the same colour */
         for ($pass = 0; $pass < 2; $pass++) {
             for ($a = 0; $a < $n; $a++) {
                 $run = 1;
@@ -476,7 +439,6 @@ final class QrCode
             }
         }
 
-        /* rule 2: two by two blocks of the same colour */
         for ($r = 0; $r < $n - 1; $r++) {
             for ($c = 0; $c < $n - 1; $c++) {
                 $v = $this->m[$r][$c];
@@ -488,7 +450,6 @@ final class QrCode
             }
         }
 
-        /* rule 3: the finder-like pattern 1011101 with four light modules */
         $a = [1,0,1,1,1,0,1,0,0,0,0];
         $b = [0,0,0,0,1,0,1,1,1,0,1];
         for ($pass = 0; $pass < 2; $pass++) {
@@ -507,7 +468,6 @@ final class QrCode
             }
         }
 
-        /* rule 4: how far the dark share is from half */
         $dark = 0;
         for ($r = 0; $r < $n; $r++) {
             $dark += array_sum($this->m[$r]);

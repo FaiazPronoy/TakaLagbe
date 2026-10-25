@@ -1,13 +1,4 @@
 <?php
-/*
- * Fills the database with six months of believable activity so the demo has
- * something to show. Wipes every customer table first.
- *
- *   php tools/seed_demo.php --yes
- *
- * Every balance is worked out by replaying the events in time order, the same
- * way move_money() would have, so the ledger and the account table agree.
- */
 if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit;
@@ -25,7 +16,6 @@ $today = strtotime('today');
 const DEMO_PASSWORD = 'demo1234';
 const DEMO_PIN      = '482915';
 
-/* phone => first, last, gender, dob, bank, monthly top up, city */
 $people = [
     '01700000001' => ['Nusrat',   'Jahan',     'Female', '1998-03-14', 'BRAC Bank',         [14000, 18000]],
     '01800000002' => ['Tanvir',   'Ahmed',     'Male',   '1996-11-02', 'Dutch Bangla Bank', [11000, 15000]],
@@ -44,7 +34,6 @@ $main  = '01700000001';
 $other = '01800000002';
 $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E'];
 
-/* who sends whom money, and what for */
 $pairs = [
     [$main,          '01500000003', [300, 900],   ['Rickshaw and lunch', 'Your share of the Uber', 'Chotpoti money', 'Book photocopy']],
     [$main,          $other,        [500, 2500],  ['House rent share, Mirpur 10', 'Internet bill share', 'Groceries split']],
@@ -60,13 +49,11 @@ $pairs = [
     ['01700000011',  '01700000006', [500, 2000],  ['Futsal booking', 'Office lunch']],
 ];
 
-/* merchant id => amount range */
 $shops = [
     'M101' => [1400, 6800], 'M102' => [650, 4200], 'M103' => [1100, 2600], 'M104' => [480, 1850],
     'M105' => [350, 5500],  'M106' => [180, 650],  'M107' => [220, 1400],  'M108' => [380, 1200],
 ];
 
-/* recurring bills: payer => [billtype, organization id, consumer no, amount range] */
 $bills = [
     $main          => [['electricity_bills', '445', 'DESCO-40218867', [1100, 2600]],
                        ['gas_bills',         '111', 'TGL-7730152',    [1080, 1080]],
@@ -98,7 +85,6 @@ $pick  = static fn(array $a) => $a[array_rand($a)];
 $events = [];
 $add = static function (array $e) use (&$events): void { $events[] = $e; };
 
-/* ---- income ------------------------------------------------------------ */
 foreach ($people as $phone => [$first, , , , $bank, $range]) {
     for ($mo = 6; $mo >= 0; $mo--) {
         $day = $mo * 30 + mt_rand(-2, 2);
@@ -116,7 +102,6 @@ foreach ($people as $phone => [$first, , , , $bank, $range]) {
     }
 }
 
-/* ---- people paying people --------------------------------------------- */
 foreach ($pairs as [$from, $to, $range, $notes]) {
     $n = in_array($main, [$from, $to], true) ? mt_rand(7, 11) : mt_rand(4, 7);
     for ($i = 0; $i < $n; $i++) {
@@ -125,7 +110,6 @@ foreach ($pairs as [$from, $to, $range, $notes]) {
     }
 }
 
-/* ---- shops -------------------------------------------------------------- */
 foreach ($people as $phone => $_) {
     $n = $phone === $main ? 34 : mt_rand(10, 20);
     for ($i = 0; $i < $n; $i++) {
@@ -138,7 +122,6 @@ foreach ($people as $phone => $_) {
     }
 }
 
-/* ---- phone top ups ------------------------------------------------------ */
 foreach ($people as $phone => $_) {
     $n = $phone === $main ? 14 : mt_rand(5, 9);
     for ($i = 0; $i < $n; $i++) {
@@ -151,7 +134,6 @@ foreach ($people as $phone => $_) {
     }
 }
 
-/* ---- bills, paid a few days into the next month ------------------------- */
 foreach ($bills as $phone => $list) {
     foreach ($list as [$type, $org, $consumer, $range]) {
         for ($mo = 5; $mo >= 1; $mo--) {
@@ -166,7 +148,6 @@ foreach ($bills as $phone => $list) {
     }
 }
 
-/* ---- cash out now and then --------------------------------------------- */
 foreach ([$main => 4, $other => 3, '01900000004' => 3, '01600000005' => 2, '01400000009' => 2] as $phone => $n) {
     for ($i = 0; $i < $n; $i++) {
         $agent = $pick(['AG1001', 'AG1002', 'AG1003']);
@@ -177,7 +158,6 @@ foreach ([$main => 4, $other => 3, '01900000004' => 3, '01600000005' => 2, '0140
     }
 }
 
-/* ---- tuition ----------------------------------------------------------- */
 $year = (int) date('Y', $today);
 $add(['t' => strtotime("$year-06-08 11:20"), 'from' => $main, 'to' => null, 'to_ref' => 'BRAC University',
       'amount' => 21500.0, 'type' => 'Education Fee', 'category' => 'Education', 'note' => "Summer $year fee for 22101487",
@@ -190,8 +170,6 @@ $add(['t' => $when(14, 16, 40), 'from' => '01300000007', 'to' => null, 'to_ref' 
       'fee' => ['556', '2106118', 'Shahriar Kabir', "Fall $year"]]);
 
 usort($events, static fn($a, $b) => $a['t'] <=> $b['t']);
-
-/* ======================================================================= */
 
 $pdo = db();
 $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
@@ -228,7 +206,7 @@ foreach ($people as $phone => [$first, $last, $gender, $dob]) {
 
 $agentFloat = ['AG1001' => 50000.0, 'AG1002' => 50000.0, 'AG1003' => 50000.0];
 $merchantTotal = [];
-$ledger = [];                       // phone => list of rows, for notifications later
+$ledger = [];
 $ts = static fn(int $t): string => date('Y-m-d H:i:s', $t);
 
 $record = static function (array $e, string $status, ?float $sAfter, ?float $rAfter,
@@ -251,7 +229,6 @@ foreach ($events as $e) {
     $to    = $e['to'];
 
     if ($from !== null && $balance[$from] < $debit) {
-        // keep a handful of these, the admin console has a tab for them
         if (mt_rand(0, 5) === 0) {
             $record($e, 'failed', null, null, $fee, 0.0,
                     'Insufficient balance. You need ' . money($debit) . ' and you have ' . money($balance[$from]) . '.');
@@ -311,7 +288,6 @@ foreach ($merchantTotal as $id => $total) {
     q('UPDATE merchants SET total_received_amount = ? WHERE merchant_id = ?', [$total, $id]);
 }
 
-/* ---- savings goals, funded out of the balance they have now ------------- */
 $goals = [
     [$main,         'New laptop for thesis',  85000, date('Y-m-d', strtotime('+3 months', $today)), [6000, 5000, 4500, 3000]],
     [$main,         'Emergency fund',         50000, null,                                          [3000, 2500, 2000]],
@@ -341,7 +317,6 @@ foreach ($balance as $phone => $b) {
     q('UPDATE account SET balance = ? WHERE phone = ?', [$b, $phone]);
 }
 
-/* ---- requests ----------------------------------------------------------- */
 $req = static fn(string $by, string $of, float $amt, string $note, string $status, int $ago, ?string $grp = null)
     => q('INSERT INTO money_requests (requester_phone, payer_phone, amount, note, split_group, status, created_at)
           VALUES (?,?,?,?,?,?,?)', [$by, $of, $amt, $note, $grp, $status, date('Y-m-d H:i:s', $when($ago))]);
@@ -354,7 +329,6 @@ foreach (['01500000003', '01900000010', $other] as $p) {
     $req($main, $p, 612.5, 'Friday dinner at Kacchi Bhai (4 ways)', $p === $other ? 'paid' : 'pending', 4, 'SP7C31A0B2');
 }
 
-/* ---- favourites --------------------------------------------------------- */
 foreach ([[$main, $other, 'Tanvir (flatmate)'], [$main, '01500000003', 'Farhana'],
           [$main, '01600000005', 'Sadia apu'], [$main, '01900000010', 'Maliha'],
           [$other, $main, 'Nusrat'], [$other, '01900000004', 'Rakib bhai']] as [$o, $s, $l]) {
@@ -362,7 +336,6 @@ foreach ([[$main, $other, 'Tanvir (flatmate)'], [$main, '01500000003', 'Farhana'
       [$o, $s, $l, $ts($when(mt_rand(30, 150)))]);
 }
 
-/* ---- notifications for the two demo accounts ---------------------------- */
 foreach ([$main, $other] as $phone) {
     $rows = array_slice($ledger[$phone] ?? [], -18);
     foreach ($rows as $k => $e) {
@@ -381,7 +354,6 @@ q("INSERT INTO notifications (user_phone, title, body, icon, amount, created_at)
   [$main, 'Money requested', 'Tanvir Ahmed asked you for ' . money(350) . '. Note: Star Kabab on Thursday, your share',
    'request', 350, $ts($when(1, 20))]);
 
-/* ---- support desk ------------------------------------------------------- */
 $tickets = [
     [$main,          'I paid my DESCO bill twice by mistake last month, the second one was DESCO-40218867 again. Can it be reversed?', 1, 26],
     ['01600000005',  'Cash out at agent AG1002 said the agent did not have enough cash. The agent says they do. Which one is right?', 1, 17],
@@ -396,7 +368,6 @@ foreach ($tickets as [$phone, $msg, $solved, $ago]) {
        $ts($when($ago))]);
 }
 
-/* ---- sign in trail and audit ------------------------------------------- */
 $ips = ['103.94.135.22', '114.130.54.17', '27.147.201.9', '103.112.48.201'];
 foreach ($people as $phone => $_) {
     for ($k = 0; $k < ($phone === $main ? 6 : 2); $k++) {
@@ -418,7 +389,6 @@ q('INSERT INTO audit_log (actor, action, detail, ip, created_at) VALUES (?,?,?,?
 
 $pdo->commit();
 
-/* ---- check the books balance ------------------------------------------- */
 $bad = 0;
 foreach ($balance as $phone => $b) {
     $fromLedger = (float) scalar(

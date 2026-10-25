@@ -1,22 +1,4 @@
 #!/usr/bin/env python3
-"""
-Browser checks for TakaLagbe!, run in a real browser through Playwright.
-
-  1. crawl     every page a customer and an admin can reach: status and console errors
-  2. contrast  every piece of text on every page, light and dark, against WCAG AA
-  3. ui        theme, dialogs, keyboard, hold to send, filters, pages, 390px width
-  4. nojs      the same flows with scripting switched off
-  5. writes    sign up, create, edit, delete and a refused peek, checked in the database
-  6. shots     screenshots of the main pages, desktop and phone, both themes
-
-Point it at a server running on a copy of the database filled by
-tools/seed_demo.php, because it signs people up and moves money:
-
-  php tools/seed_demo.php --yes          (with TKL_DB_NAME=takalagbe_test)
-  python tests/browser_checks.py
-
-It uses the Edge that comes with Windows; set TKL_BROWSER=chrome for Chrome.
-"""
 import os, re, subprocess, sys, time
 from urllib.parse import urljoin, urlparse
 from playwright.sync_api import sync_playwright
@@ -59,24 +41,14 @@ def admin_in(page):
 
 
 def too_wide(page, url):
-    """True when url scrolls sideways at phone width on two loads in a row.
-    A download manager that hooks the browser's traffic (IDM's driver does it
-    here, even with IDM closed) now and then drops a piece of the page on the
-    way in. With a closing tag gone, <main> lands inside the header and the
-    page lays out wide, but the next load comes in whole. A layout that is
-    really too wide is too wide every time."""
     for tries in range(2):
         page.goto(url)
-        # a phone quietly zooms out to fit a page that is too wide, so compare
-        # with the 390 we asked for, not with whatever width it settled on
         if not page.evaluate("document.documentElement.scrollWidth > 390"):
             if tries:
                 print("  note %s came in broken once, fine on a second load" % urlparse(url).path)
             return False
     return True
 
-
-# ------------------------------------------------------------------ crawl
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEMO_TEXT = "".join(open(os.path.join(HERE, "..", f), encoding="utf-8").read()
@@ -86,7 +58,6 @@ SKIP = re.compile(r"logout|language.php|format=csv|#|^mailto:")
 
 
 def crawl(context, start, limit=150):
-    """Follows every same-site link from start. Returns {url: (status, errors)}."""
     page = context.new_page()
     errors = []
     page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
@@ -99,7 +70,6 @@ def crawl(context, start, limit=150):
         if url in seen:
             continue
         seen.add(url)
-        # a hundred receipts are one page as far as the crawl is concerned
         shape = re.sub(r"=[^&]*", "=", url)
         per_shape[shape] = per_shape.get(shape, 0) + 1
         if per_shape[shape] > 3:
@@ -118,8 +88,6 @@ def crawl(context, start, limit=150):
     return result
 
 
-# --------------------------------------------------------------- contrast
-
 CONTRAST_JS = r"""
 () => {
   const parse = c => {
@@ -135,14 +103,11 @@ CONTRAST_JS = r"""
                                  b: top.b * top.a + under.b * (1 - top.a), a: 1});
   const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); };
 
-  // every background this element could be sitting on; a gradient gives one per stop
   const backgrounds = el => {
     let stack = [];
     for (let e = el; e; e = e.parentElement) {
       const cs = getComputedStyle(e);
       if (cs.backgroundImage.includes('gradient')) {
-        // a see-through stop (a glow laid over the card) is painted on top of
-        // the solid stops underneath it, so test it mixed with each of them
         const stops = [...cs.backgroundImage.matchAll(/rgba?\([^)]+\)/g)].map(m => parse(m[0]));
         const solid = stops.filter(s => s.a >= 1), glass = stops.filter(s => s.a < 1);
         const under = solid.length ? solid : [{r: 255, g: 255, b: 255, a: 1}];
@@ -205,14 +170,10 @@ def contrast(context, urls, theme):
     return total, failures
 
 
-# --------------------------------------------------------------------- main
-
 def main():
     os.makedirs(OUT, exist_ok=True)
     with sync_playwright() as p:
         browser = p.chromium.launch(channel=CHANNEL)
-        # the site speaks Bangla unless told otherwise; these checks read the
-        # English, and section 7 goes through it again in Bangla
         bangla_context = browser.new_context
 
         def english_context(**kw):
@@ -221,7 +182,6 @@ def main():
             return ctx
         browser.new_context = english_context
 
-        # ---- 1. crawl --------------------------------------------------
         print("\n=== crawl ===")
         cust = browser.new_context()
         sign_in(cust.new_page())
@@ -245,7 +205,6 @@ def main():
         r = anon.new_page().goto(BASE + "/account.php")
         check("a signed out visitor is sent to sign in", r.url.endswith("login.php"), r.url)
 
-        # ---- 2. contrast -----------------------------------------------
         print("\n=== contrast, WCAG AA ===")
         for theme in ("light", "dark"):
             total, fails = contrast(cust, list(pages), theme)
@@ -255,7 +214,6 @@ def main():
             check("%s theme: %d text and background pairs all reach 4.5:1 (3:1 for large text)"
                   % (theme, total + t2 + t3), not fails, fails[:12])
 
-        # ---- 3. interactions -------------------------------------------
         print("\n=== interactions ===")
         page = cust.new_page()
         page.goto(BASE + "/account.php")
@@ -288,7 +246,7 @@ def main():
         check("and focus goes back to the button that opened it",
               page.evaluate("document.activeElement.getAttribute('href')") == "#askMoney")
 
-        page.goto(BASE + "/sendmoney.php")
+        page.goto(BASE + "/send_money.php")
         page.click('[data-fill="amount"][data-value="500"]')
         check("an amount chip fills the amount", page.input_value("#amount") == "500")
         check("the cost of the transfer is worked out as you type", "Balance after" in page.inner_text("#sendSum"))
@@ -297,16 +255,16 @@ def main():
         page.fill("#receiver_phone", OTHER)
         page.fill("#amount", "25")
         page.fill("#pin", PIN)
-        page.click(".hold")                      # a quick click must not send
+        page.click(".hold")
         time.sleep(.6)
-        check("a quick click on the hold button does not send", page.url.endswith("sendmoney.php"))
+        check("a quick click on the hold button does not send", page.url.endswith("send_money.php"))
         page.focus("#note")
-        page.keyboard.press("Enter")             # the keyboard sends straight away
+        page.keyboard.press("Enter")
         page.wait_for_url("**/receipt.php*")
         check("Enter sends the money", abs(bal0 - 25 - float(val(
               "SELECT balance FROM account WHERE phone='%s'" % USER))) < .001)
 
-        page.goto(BASE + "/sendmoney.php")
+        page.goto(BASE + "/send_money.php")
         page.fill("#receiver_phone", OTHER)
         page.fill("#amount", "15")
         page.fill("#pin", PIN)
@@ -333,12 +291,11 @@ def main():
         check("the QR code is drawn", page.locator(".qr-lg svg path").count() == 1)
 
         ap = adm.new_page()
-        ap.goto(BASE + "/admin_merchant.php")
+        ap.goto(BASE + "/admin_merchants.php")
         ap.fill("#orgFilter", "wasa")
         shown = ap.eval_on_selector_all("#orgTable tbody tr:not([hidden])", "r => r.length")
         check("the biller filter narrows the table", 0 < shown < 16, shown)
 
-        # ---- phone width
         phone = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
         sign_in(phone.new_page())
         pp = phone.new_page()
@@ -362,15 +319,12 @@ def main():
               rp.evaluate("getComputedStyle(document.querySelector('.veil')).display") == "none"
               and rp.evaluate("getComputedStyle(document.querySelector('.hero .rosette')).animationName") == "none")
 
-        # ---- 4. no script ----------------------------------------------
-        # with scripting off Playwright cannot wait for an element to
-        # stop moving, so these clicks go straight through
         print("\n=== with scripting off ===")
         nojs = browser.new_context(java_script_enabled=False)
         np_ = nojs.new_page()
         sign_in(np_)
         bal0 = float(val("SELECT balance FROM account WHERE phone='%s'" % USER))
-        np_.goto(BASE + "/sendmoney.php")
+        np_.goto(BASE + "/send_money.php")
         np_.fill("#receiver_phone", OTHER)
         np_.fill("#amount", "40")
         np_.fill("#pin", PIN)
@@ -398,7 +352,6 @@ def main():
         check("a savings deposit works with scripting off",
               abs(float(val("SELECT saved_amount FROM savings_goals WHERE id=%s" % gid)) - saved0 - 300) < .001)
 
-        # ---- 5. writes -------------------------------------------------
         print("\n=== write flows ===")
         fresh = browser.new_context().new_page()
         fresh.goto(BASE + "/signup.php")
@@ -436,12 +389,11 @@ def main():
                      "AND transaction_to<>'%s' AND status='success' LIMIT 1" % USER)
         r = page.goto(BASE + "/receipt.php?id=" + theirs)
         check("someone else's receipt is a 404, not a peek", r.status == 404 and theirs not in page.inner_text("main"))
-        r = fresh.goto(BASE + "/admin_user.php")
+        r = fresh.goto(BASE + "/admin_users.php")
         check("a customer cannot open the admin console", fresh.url.endswith("admin_login.php"))
 
-        # ---- 6. screenshots --------------------------------------------
         print("\n=== screenshots ===")
-        shots = ["login.php", "account.php", "sendmoney.php", "history.php", "analytics.php", "savings.php",
+        shots = ["login.php", "account.php", "send_money.php", "history.php", "insights.php", "savings.php",
                  "requests.php", "receipt.php?id=" + val("SELECT trx_id FROM transactions WHERE transaction_to='%s' "
                                                        "AND status='success' ORDER BY id DESC LIMIT 1" % USER),
                  "statement.php", "admin_dashboard.php"]
@@ -451,7 +403,7 @@ def main():
                 ctx = browser.new_context(viewport=vp, reduced_motion="reduce", color_scheme=theme,
                                           device_scale_factor=1 if label == "desktop" else 2)
                 ctx.add_init_script("try { localStorage.setItem('tkl-theme', '%s') } catch (e) {}" % theme)
-                out_page = ctx.new_page()          # the sign in page, before signing in
+                out_page = ctx.new_page()
                 out_page.goto(BASE + "/login.php")
                 out_page.screenshot(path=os.path.join(OUT, "login-%s-%s.png" % (label, theme)), full_page=True)
                 n += 1
@@ -467,7 +419,6 @@ def main():
                 ctx.close()
         check("%d screenshots written to tests/out" % n, n == len(shots) * 4)
 
-        # ---- 7. Bangla -------------------------------------------------
         print("\n=== Bangla ===")
         bn = bangla_context()
         bp = bn.new_page()
@@ -476,12 +427,10 @@ def main():
               and "ওয়ালেট খুলুন" in bp.content())
         sign_in(bp)
         english_left = {}
-        for path in ("account.php", "sendmoney.php", "history.php", "paybill.php", "requests.php", "savings.php",
-                     "analytics.php", "profile.php", "notifications.php", "supports.php", "about.php"):
+        for path in ("account.php", "send_money.php", "history.php", "pay_bill.php", "requests.php", "savings.php",
+                     "insights.php", "profile.php", "notifications.php", "support.php", "about.php"):
             bp.goto(BASE + "/" + path)
             bp.wait_for_load_state("networkidle")
-            # names, numbers, references and brand words are fine in English;
-            # a run of three plain English words in the page text is not
             text = bp.evaluate("""() => {
               const skip = el => el.closest('.mono, .code, input, textarea, [translate=no]');
               const w = document.createTreeWalker(document.querySelector('main'), NodeFilter.SHOW_TEXT);
@@ -489,8 +438,6 @@ def main():
               while ((n = w.nextNode())) if (!skip(n.parentElement)) out.push(n.textContent);
               return out.join(' | ');
             }""")
-            # what people typed (goal names, notes, tickets) and the billers'
-            # own names come from the demo data and stay as written
             runs = [r for r in re.findall(r"[A-Za-z']+(?: [A-Za-z']+){2,}", text)
                     if r not in DEMO_TEXT
                     and not re.search(r"TakaLagbe|PDF|CSV|SQL|PDO|CSRF|bcrypt|FOR UPDATE|Excel|password_hash", r)]

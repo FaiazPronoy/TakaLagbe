@@ -1,5 +1,4 @@
 <?php
-/* Saved numbers, so common transfers take one tap. */
 require_once __DIR__ . '/config/helpers.php';
 
 $phone = require_login();
@@ -58,7 +57,6 @@ $favourites = all(
        FROM favourites f LEFT JOIN user u ON u.phone = f.saved_phone
       WHERE f.owner_phone = ? ORDER BY sends DESC, f.created_at DESC", [$phone]);
 
-/* people you have sent to but have not saved yet */
 $suggestions = all(
     "SELECT t.transaction_to AS phone, COUNT(*) n, u.firstname, u.lastname, u.avatar_color
        FROM transactions t JOIN user u ON u.phone = t.transaction_to
@@ -70,4 +68,4 @@ $suggestions = all(
 
 $pageTitle = __('Favourites');
 $activeNav = 'home';
-include('Front_end/front_favourites.php');
+include('views/favourites.php');

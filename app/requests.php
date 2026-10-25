@@ -10,17 +10,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = post('action');
 
     try {
-        /* ask one person */
         if ($action === 'request') {
             $from   = post('from_phone');
             $amount = post('amount');
             $note   = mb_substr(post('note'), 0, 120);
 
             if (!valid_phone($from)) {
-                throw new MoneyError('Enter a valid 11 digit number.');
+                throw new MoneyError(__('Enter a valid 11 digit number.'));
             }
             if ($from === $phone) {
-                throw new MoneyError('You cannot request money from yourself.');
+                throw new MoneyError(__('You cannot request money from yourself.'));
             }
             if (!scalar('SELECT 1 FROM user WHERE phone = ?', [$from])) {
                 throw new MoneyError(__('That number is not registered on {app}.', ['app' => APP_NAME]));
@@ -32,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                    WHERE requester_phone = ? AND payer_phone = ?
                                      AND status = 'pending'", [$phone, $from], 0);
             if ($open >= 5) {
-                throw new MoneyError('You already have 5 open requests with that person.');
+                throw new MoneyError(__('You already have 5 open requests with that person.'));
             }
 
             q('INSERT INTO money_requests (requester_phone, payer_phone, amount, note)
@@ -45,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('requests.php');
         }
 
-        /* split a bill */
         if ($action === 'split') {
             $total   = post('total');
             $note    = mb_substr(post('split_note'), 0, 120);
@@ -53,30 +51,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 array_map('trim', preg_split('/[\s,;]+/', post('people'))))));
 
             if (!valid_amount($total) || (float) $total < MIN_AMOUNT) {
-                throw new MoneyError('Enter the full bill amount.');
+                throw new MoneyError(__('Enter the full bill amount.'));
             }
             if (!$numbers) {
-                throw new MoneyError('Add at least one person to split with.');
+                throw new MoneyError(__('Add at least one person to split with.'));
             }
             if (count($numbers) > 10) {
-                throw new MoneyError('You can split between up to 10 other people.');
+                throw new MoneyError(__('You can split between up to 10 other people.'));
             }
             foreach ($numbers as $n) {
                 if (!valid_phone($n)) {
-                    throw new MoneyError('"' . $n . '" is not a valid number.');
+                    throw new MoneyError(__('"{n}" is not a valid number.', ['n' => $n]));
                 }
                 if ($n === $phone) {
-                    throw new MoneyError('Your own number is counted automatically.');
+                    throw new MoneyError(__('Your own number is counted automatically.'));
                 }
                 if (!scalar('SELECT 1 FROM user WHERE phone = ?', [$n])) {
                     throw new MoneyError(__('{phone} is not registered on {app}.', ['phone' => $n, 'app' => APP_NAME]));
                 }
             }
 
-            $heads = count($numbers) + 1;                 // everyone plus you
+            $heads = count($numbers) + 1;
             $share = round((float) $total / $heads, 2);
             if ($share < 1) {
-                throw new MoneyError('Each share works out below one taka.');
+                throw new MoneyError(__('Each share works out below one taka.'));
             }
             $group = 'SP' . strtoupper(bin2hex(random_bytes(4)));
 
@@ -99,14 +97,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             redirect('requests.php');
         }
 
-        /* pay or not */
         if ($action === 'decline' || $action === 'cancel') {
             $id  = (int) post('request_id');
             $col = $action === 'decline' ? 'payer_phone' : 'requester_phone';
             $req = one("SELECT * FROM money_requests
                          WHERE id = ? AND $col = ? AND status = 'pending'", [$id, $phone]);
             if (!$req) {
-                throw new MoneyError('That request was not found.');
+                throw new MoneyError(__('That request was not found.'));
             }
             q("UPDATE money_requests SET status = 'declined' WHERE id = ?", [$id]);
 
@@ -148,4 +145,4 @@ $iOwe = (float) scalar(
 
 $pageTitle = __('Requests');
 $activeNav = 'requests';
-include('Front_end/front_requests.php');
+include('views/requests.php');

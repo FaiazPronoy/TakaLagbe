@@ -1,5 +1,4 @@
 <?php
-/* The notification centre. */
 require_once __DIR__ . '/config/helpers.php';
 
 $phone = require_login();
@@ -30,4 +29,4 @@ $unread = unread_count($phone);
 
 $pageTitle = __('Notifications');
 $activeNav = 'notifications';
-include('Front_end/front_notifications.php');
+include('views/notifications.php');

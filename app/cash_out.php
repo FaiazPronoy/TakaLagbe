@@ -32,12 +32,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = db();
         $pdo->beginTransaction();
         try {
-            // lock the agent first, the same order cash_in.php uses, so two
-            // people cashing out at one agent cannot both be promised the same notes
             $float = (float) scalar('SELECT cash_in_amount FROM agent_details
                                       WHERE agent_id = ? FOR UPDATE', [$agentId], 0);
             if ($float < (float) $amount) {
-                throw new MoneyError('This agent does not have enough cash right now. Try another agent.');
+                throw new MoneyError(__('This agent does not have enough cash right now. Try another agent.'));
             }
             $trx = move_money([
                 'from'     => $phone,
@@ -49,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'note'     => 'Cash out at agent ' . $agentId,
                 'fee_pct'  => FEE_CASH_OUT_PCT,
             ]);
-            /* the agent hands over notes, so their float drops */
             q('UPDATE agent_details SET cash_in_amount = cash_in_amount - ? WHERE agent_id = ?',
               [(float) $amount, $agentId]);
             $pdo->commit();
@@ -70,4 +67,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $pageTitle = __('Cash out');
 $activeNav = 'home';
-include('Front_end/front_cashout.php');
+include('views/cash_out.php');

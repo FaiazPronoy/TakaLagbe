@@ -1,6 +1,4 @@
 <?php
-/* The icon set. 24px grid, 1.6 stroke, drawn with currentColor so an icon
-   takes the colour of the text around it. */
 
 const ICONS = [
     'home'      => '<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/><path d="M10 20v-6h4v6"/>',
@@ -61,7 +59,6 @@ const ICONS = [
     'hand'      => '<path d="M7 11V6.5a1.5 1.5 0 0 1 3 0V11"/><path d="M10 10V4.5a1.5 1.5 0 0 1 3 0V10"/><path d="M13 10V5.5a1.5 1.5 0 0 1 3 0V12"/><path d="M16 9.5a1.5 1.5 0 0 1 3 0V14a7 7 0 0 1-7 7h-.5a6.5 6.5 0 0 1-5.3-2.8L3.5 14.5a1.6 1.6 0 0 1 2.4-2.1L7 13.5"/>',
 ];
 
-/** An inline SVG icon. Decorative unless a label is given. */
 function icon(string $name, string $label = ''): string
 {
     $body = ICONS[$name] ?? ICONS['info'];
@@ -72,10 +69,6 @@ function icon(string $name, string $label = ''): string
          . ' stroke-linecap="round" stroke-linejoin="round"' . $a11y . '>' . $body . '</svg>';
 }
 
-/**
- * The engraved rosette behind the balance card, the kind printed on a
- * banknote. A circle rolled around inside a ring, drawn once per petal.
- */
 function guilloche(int $petals = 28): string
 {
     $paths = '';

@@ -1,5 +1,4 @@
 <?php
-/* QR payload build and parse. */
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/lib/qr.php';
 
@@ -12,4 +11,4 @@ $payload = 'TKL|' . $phone . '|' . $user['firstname'] . ' ' . $user['lastname']
 
 $pageTitle = __('My QR code');
 $activeNav = 'home';
-include('Front_end/front_qr.php');
+include('views/qr.php');

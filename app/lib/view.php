@@ -1,10 +1,8 @@
 <?php
-/* Small pieces of markup the pages share. */
 
 require_once __DIR__ . '/../config/helpers.php';
 require_once __DIR__ . '/icons.php';
 
-/** The colour a kind of transaction wears everywhere: its tile, its row, its heading. */
 function trx_tone(string $type): int
 {
     static $map = [
@@ -15,7 +13,6 @@ function trx_tone(string $type): int
     return $map[$type] ?? 8;
 }
 
-/** Icon for each transaction type. */
 function trx_icon(string $type): string
 {
     static $map = [
@@ -33,14 +30,11 @@ function trx_icon(string $type): string
     return icon($map[$type] ?? 'exchange');
 }
 
-/** true when the money moved away from this user. */
 function trx_is_out(array $t, string $phone): bool
 {
     return $t['transaction_from'] === $phone;
 }
 
-/* Joins the names of both sides onto a ledger query, so a list of rows does
-   not go back to the user table once per row. */
 const TRX_WITH_NAMES = "SELECT t.*,
         CONCAT(uf.firstname, ' ', uf.lastname) AS from_name,
         CONCAT(ut.firstname, ' ', ut.lastname) AS to_name
@@ -48,7 +42,6 @@ const TRX_WITH_NAMES = "SELECT t.*,
    LEFT JOIN user uf ON uf.phone = t.transaction_from
    LEFT JOIN user ut ON ut.phone = t.transaction_to";
 
-/** The other side of a transaction, ready to display. */
 function trx_counterparty(array $t, string $phone): string
 {
     $out   = trx_is_out($t, $phone);
@@ -61,7 +54,6 @@ function trx_counterparty(array $t, string $phone): string
     return ($name ?: $other) . ' (' . $other . ')';
 }
 
-/** One row of the activity list, as an <li>. */
 function trx_entry(array $t, string $phone): string
 {
     $out    = trx_is_out($t, $phone);
@@ -80,10 +72,6 @@ function trx_entry(array $t, string $phone): string
          . '</a></li>';
 }
 
-/**
- * A round badge with someone's initials. Their colour is whatever they picked,
- * so the letters go dark on the light ones (brass, gold) to stay readable.
- */
 function avatar(?string $first, ?string $last, ?string $colour, string $class = ''): string
 {
     $colour = preg_match('/^#[0-9A-Fa-f]{6}$/', (string) $colour) ? $colour : '#4A73B5';
@@ -92,13 +80,11 @@ function avatar(?string $first, ?string $last, ?string $colour, string $class = 
         return $v <= 0.03928 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4;
     }, str_split(substr($colour, 1), 2));
     $lum = 0.2126 * $r + 0.7152 * $g + 0.0722 * $b;
-    // white on it would fall under 4.5:1 once the background is lighter than this
     $ink = $lum > 0.183 ? ' dark' : '';
     return '<span class="avatar' . $ink . ($class ? ' ' . $class : '') . '" style="background:' . $colour . '"'
          . ' aria-hidden="true">' . e(initials($first, $last)) . '</span>';
 }
 
-/** The six digit PIN, as one ordinary field so it posts without any script. */
 function pin_field(string $id = 'pin', string $label = ''): string
 {
     $label = $label !== '' ? $label : __('Transaction PIN');
@@ -109,7 +95,6 @@ function pin_field(string $id = 'pin', string $label = ''): string
          . '<span class="hint center" id="' . $id . '-hint">' . e(__('Your secret 6 digits. Nobody from TakaLagbe will ever ask for it.')) . '</span></div>';
 }
 
-/** A refused form, said plainly at the top of it. */
 function error_note(?string $error): string
 {
     if ($error === null || $error === '') {
@@ -118,7 +103,6 @@ function error_note(?string $error): string
     return '<div class="note bad" role="alert">' . icon('alert') . '<span>' . e($error) . '</span></div>';
 }
 
-/** What to show instead of an empty list: what it is for, and how to fill it. */
 function empty_state(string $iconName, string $title, string $text, string $action = '', int $level = 3,
                      int $tone = 5): string
 {
@@ -126,7 +110,6 @@ function empty_state(string $iconName, string $title, string $text, string $acti
          . "<h$level>" . e($title) . "</h$level><p>" . e($text) . '</p>' . $action . '</div>';
 }
 
-/** The page title block. $back is [href, label], $badge is [icon, tone]. */
 function page_head(string $title, string $lede = '', ?array $back = null, string $actions = '',
                    string $eyebrow = '', ?array $badge = null): string
 {
@@ -151,7 +134,6 @@ function page_head(string $title, string $lede = '', ?array $back = null, string
     return $html . '</div>';
 }
 
-/** Amount chips that fill a field. They need script, so they only appear with it. */
 function amount_chips(string $target, array $values): string
 {
     $html = '<div class="chips js-only">';
@@ -162,13 +144,11 @@ function amount_chips(string $target, array $values): string
     return $html . '</div>';
 }
 
-/** Colour for a category, used by the charts. */
 function category_colour(string $c): string
 {
     return TRX_CATEGORIES[$c] ?? TRX_CATEGORIES['Other'];
 }
 
-/** Builds the donut chart as stroked circle segments. */
 function donut_slices(array $data, int $size = 170, int $thickness = 24, string $label = ''): string
 {
     $total = array_sum(array_column($data, 'value'));
@@ -184,7 +164,6 @@ function donut_slices(array $data, int $size = 170, int $thickness = 24, string 
 
     foreach ($data as $d) {
         $len  = $d['value'] / $total * $circ;
-        // a hair of space between slices, so neighbours stay apart
         $gap  = count($data) > 1 ? min(2.0, $len / 3) : 0;
         $svg .= '<circle cx="' . $centre . '" cy="' . $centre . '" r="' . $r . '"'
               . ' fill="none" stroke="' . e($d['colour']) . '" stroke-width="' . $thickness . '"'

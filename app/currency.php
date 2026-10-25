@@ -3,7 +3,6 @@ require_once __DIR__ . '/config/helpers.php';
 
 require_login();
 
-/* how many taka one unit of each currency is worth */
 const RATES = [
     'USD' => ['US Dollar',        122.50, "\u{1F1FA}\u{1F1F8}"],
     'EUR' => ['Euro',             132.80, "\u{1F1EA}\u{1F1FA}"],
@@ -27,4 +26,4 @@ $single = $rateOf($from) / $rateOf($to);
 
 $pageTitle = __('Currency converter');
 $activeNav = '';
-include('Front_end/front_currency.php');
+include('views/currency.php');

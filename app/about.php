@@ -1,5 +1,4 @@
 <?php
-/* What the project is, and how it is built. */
 require_once __DIR__ . '/config/helpers.php';
 
 require_login();
@@ -14,4 +13,4 @@ $stats = [
 
 $pageTitle = __('About');
 $activeNav = '';
-include('Front_end/front_about.php');
+include('views/about.php');

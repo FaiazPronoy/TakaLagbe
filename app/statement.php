@@ -12,7 +12,6 @@ if ($from > $to) {
 }
 $type = get('type');
 
-// a statement is what actually moved, so declined attempts stay in the history page
 $where  = "(t.transaction_from = ? OR t.transaction_to = ?) AND t.status = 'success'
            AND DATE(t.transaction_time) BETWEEN ? AND ?";
 $params = [$phone, $phone, $from, $to];
@@ -24,7 +23,6 @@ if ($type !== '') {
 $rows = all(TRX_WITH_NAMES . " WHERE $where
              ORDER BY t.transaction_time ASC, t.id ASC", $params);
 
-/** The balance straight after the last transaction before $moment. */
 $balanceAt = static function (string $moment) use ($phone): float {
     $r = one("SELECT sender_balance_after, receiver_balance_after, transaction_from
                 FROM transactions
@@ -42,14 +40,13 @@ $balanceAt = static function (string $moment) use ($phone): float {
 $opening = $balanceAt($from . ' 00:00:00');
 $closing = $balanceAt(date('Y-m-d', strtotime($to . ' +1 day')) . ' 00:00:00');
 
-/* CSV */
 if (get('format') === 'csv') {
     $name = 'takalagbe-statement-' . $from . '-to-' . $to . '.csv';
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $name . '"');
 
     $fh = fopen('php://output', 'w');
-    fwrite($fh, "\xEF\xBB\xBF");                    // BOM so Excel reads Bangla
+    fwrite($fh, "\xEF\xBB\xBF");
     fputcsv($fh, ['Statement for', $user['firstname'] . ' ' . $user['lastname'] . ' (' . $phone . ')']);
     fputcsv($fh, ['Period', $from . ' to ' . $to]);
     fputcsv($fh, ['Opening balance', number_format($opening, 2, '.', '')]);
@@ -97,4 +94,4 @@ foreach ($rows as $t) {
 
 $pageTitle = __('Statement');
 $activeNav = 'history';
-include('Front_end/front_statement.php');
+include('views/statement.php');

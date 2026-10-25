@@ -1,10 +1,6 @@
 <?php
-/* Bangla for every sentence the customer side shows. Keys are the English
-   exactly as written in the page; {name} gaps are filled in afterwards.
-   The voice is the wallet talking to a friend: warm, plain, never stiff. */
 return [
     'text' => [
-        // the frame: top bar, dock, footer
         'Skip to content' => 'মূল অংশে যান',
         'Switch theme' => 'থিম বদলান',
         'Notifications' => 'নোটিফিকেশন',
@@ -30,7 +26,6 @@ return [
         '· Send. Pay. Save.' => '· পাঠান। দিন। জমান।',
         'Made by Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan. All rights reserved.' => 'ফাইয়াজ আবরার জামান প্রনয়, সিনথিয়া খন্দকার ও জহিরুল ইসলাম জিশানের তৈরি। সর্বস্বত্ব সংরক্ষিত।',
 
-        // sign in, sign up, reset
         'Send money to friends, pay your bills, split the kacchi, and save up for Eid. All from one wallet.' =>
             'বন্ধুকে টাকা পাঠান, বিল দিন, কাচ্চির বিল ভাগ করুন, ঈদের জন্য জমান। সব এক ওয়ালেটে।',
         'Money never goes missing halfway, even if two things happen at once' => 'দুটো কাজ একসাথে হলেও টাকা মাঝপথে হারায় না',
@@ -115,7 +110,6 @@ return [
         'Those details do not match any account.' => 'এই তথ্যের সাথে কোনো অ্যাকাউন্ট মিলছে না।',
         'Too many attempts. Please try again later.' => 'অনেকবার চেষ্টা হয়েছে। একটু পরে আবার চেষ্টা করুন।',
 
-        // home
         'Send money' => 'সেন্ড মানি',
         'Add money' => 'অ্যাড মানি',
         'Cash out' => 'ক্যাশ আউট',
@@ -154,7 +148,6 @@ return [
         'declined' => 'বাতিল',
         'done' => 'সফল',
 
-        // shared by the money forms
         'Your secret 6 digits. Nobody from TakaLagbe will ever ask for it.' => 'আপনার গোপন ৬ অঙ্ক। TakaLagbe থেকে কেউ কখনো এটা চাইবে না।',
         'Wrong transaction PIN.' => 'পিন ভুল হয়েছে।',
         'How much?' => 'কত টাকা?',
@@ -174,7 +167,6 @@ return [
         'That did not work. Please try again.' => 'হলো না। আবার চেষ্টা করুন।',
         'That account cannot receive money right now.' => 'এই অ্যাকাউন্ট এখন টাকা নিতে পারছে না।',
 
-        // add money, cash in, cash out
         'Pull money in from your bank or card. Free, always.' => 'ব্যাংক বা কার্ড থেকে টাকা আনুন। সবসময় ফ্রি।',
         'From where?' => 'কোথা থেকে?',
         'Pick your bank or card' => 'ব্যাংক বা কার্ড বেছে নিন',
@@ -200,7 +192,6 @@ return [
         'Collect {amount} from agent {agent}.' => 'এজেন্ট {agent} এর কাছ থেকে {amount} নিয়ে নিন।',
         'Cash out could not be completed. Please try again.' => 'ক্যাশ আউট হলো না। আবার চেষ্টা করুন।',
 
-        // send money
         'Zero charge between TakaLagbe users. Up to {max} in one go.' => 'TakaLagbe থেকে TakaLagbe এ কোনো চার্জ নেই। একবারে সর্বোচ্চ {max}।',
         'Your people, one tap away' => 'আপনার মানুষগুলো, এক ট্যাপ দূরে',
         'Paying the request from {name} for {amount}. It is marked as paid once this goes through.' =>
@@ -220,7 +211,6 @@ return [
         '{phone} is not registered on {app}.' => '{phone} নম্বরে {app} অ্যাকাউন্ট নেই।',
         'The transfer could not be completed. Nothing has left your account.' => 'টাকা পাঠানো গেল না। আপনার অ্যাকাউন্ট থেকে কিছু কাটেনি।',
 
-        // bills and fees
         'Pay a bill' => 'বিল দিন',
         'Current, gas, water, wifi, tuition. Sorted in a minute, receipt included.' => 'বিদ্যুৎ, গ্যাস, পানি, ওয়াইফাই, টিউশন। এক মিনিটে শেষ, রসিদসহ।',
         'All time' => 'এ পর্যন্ত মোট',
@@ -274,7 +264,6 @@ return [
         'This semester fee has already been paid for that student ID.' => 'এই স্টুডেন্ট আইডির এই সেমিস্টারের ফি আগেই দেওয়া হয়েছে।',
         'The fee could not be paid. Please try again.' => 'ফি দেওয়া গেল না। আবার চেষ্টা করুন।',
 
-        // recharge and shops
         'Mobile recharge' => 'মোবাইল রিচার্জ',
         'Top up any number and get {pct}% back. Small, but it adds up.' => 'যেকোনো নম্বরে রিচার্জ করুন, {pct}% ফেরত পান। অল্প, কিন্তু জমতে জমতে অনেক।',
         'Which number?' => 'কোন নম্বরে?',
@@ -296,14 +285,7 @@ return [
         'Please choose a merchant.' => 'একটা দোকান বেছে নিন।',
         'The payment could not be completed. Please try again.' => 'পেমেন্ট হলো না। আবার চেষ্টা করুন।',
         'Make a payment' => 'পেমেন্ট',
-
-        // balance, currency
-        'Check balance' => 'ব্যালেন্স দেখুন',
-        'PIN first, so whoever borrowed your phone sees nothing.' => 'আগে পিন, যাতে ফোন যার হাতেই থাকুক কিছু দেখতে না পায়।',
         'Your balance' => 'আপনার ব্যালেন্স',
-        'Checked {when}' => 'দেখা হলো {when}',
-        'Another {amount} is set aside in savings goals.' => 'আরও {amount} সঞ্চয়ের জারে রাখা আছে।',
-        'Show me' => 'দেখান',
         'Bangladeshi Taka' => 'বাংলাদেশি টাকা',
         'Rough rates for a quick idea. Planning that Kolkata or KL trip?' => 'মোটামুটি রেট, দ্রুত আন্দাজের জন্য। কলকাতা বা কুয়ালালামপুর যাচ্ছেন?',
         'From' => 'থেকে',
@@ -326,7 +308,6 @@ return [
         'Australian Dollar' => 'অস্ট্রেলিয়ান ডলার',
         'Canadian Dollar' => 'কানাডিয়ান ডলার',
 
-        // history, receipt, statement
         'Every taka in and out. Even the ones that bounced, and why.' => 'প্রতিটা টাকার আসা-যাওয়া। আটকে যাওয়াগুলোও, কেন আটকাল সহ।',
         'Filter transactions' => 'লেনদেন বাছাই',
         'Search' => 'খুঁজুন',
@@ -395,7 +376,6 @@ return [
         'Generated {when} from the transaction ledger. Declined attempts are left out; they are listed in your history.' =>
             'লেনদেনের খাতা থেকে তৈরি, {when}। বাতিল চেষ্টাগুলো এখানে নেই; সেগুলো লেনদেনের তালিকায় আছে।',
 
-        // requests and splits
         'Lent someone money for lunch? Ask for it back. Dinner with the gang? Split it.' => 'কাউকে দুপুরের খাবারের টাকা ধার দিয়েছেন? ফেরত চান। বন্ধুদের সাথে ডিনার? ভাগ করে নিন।',
         'Ask for money' => 'টাকা চান',
         'They owe you' => 'আপনি পাবেন',
@@ -437,7 +417,6 @@ return [
         'Request declined.' => 'অনুরোধ ফিরিয়ে দেওয়া হলো।',
         'Request cancelled.' => 'অনুরোধ বাতিল হলো।',
 
-        // savings
         'Put money in a jar and it stays out of reach, so the laptop fund survives Eid shopping.' => 'জারে টাকা রাখুন, হাতের নাগালের বাইরে থাকবে, যাতে ল্যাপটপের টাকা ঈদের শপিংয়ে না যায়।',
         'New jar' => 'নতুন জার',
         'Spendable' => 'খরচযোগ্য',
@@ -475,7 +454,6 @@ return [
         'Goal "{goal}" created.' => '"{goal}" জার তৈরি হলো।',
         'Goal closed and {amount} returned to your balance.' => 'জার বন্ধ হলো, {amount} ব্যালেন্সে ফিরে গেছে।',
 
-        // favourites
         'Favourites' => 'প্রিয় মানুষ',
         'Ammu, the flatmate, the friend who always forgets. One tap from home.' => 'আম্মু, রুমমেট, সেই বন্ধু যে সবসময় ভুলে যায়। হোম থেকে এক ট্যাপে।',
         'Add someone' => 'কাউকে যোগ করুন',
@@ -499,7 +477,6 @@ return [
         'That number is already in your favourites.' => 'এই নম্বর আগেই তালিকায় আছে।',
         'You do not need to save your own number.' => 'নিজের নম্বর রাখার দরকার নেই।',
 
-        // notifications
         'Mark all read' => 'সব পড়া হয়েছে',
         'Delete every notification you have already read?' => 'পড়া সব নোটিফিকেশন মুছে দেবেন?',
         'Clear read' => 'পড়াগুলো মুছুন',
@@ -514,7 +491,6 @@ return [
         'All notifications marked as read.' => 'সব নোটিফিকেশন পড়া হিসেবে চিহ্নিত হলো।',
         'Read notifications cleared.' => 'পড়া নোটিফিকেশনগুলো মুছে ফেলা হলো।',
 
-        // profile
         'Profile' => 'প্রোফাইল',
         'member since {when}' => '{when} থেকে সদস্য',
         'active' => 'সক্রিয়',
@@ -563,11 +539,9 @@ return [
         'The new PIN must be exactly 6 digits.' => 'নতুন পিন ঠিক ৬ অঙ্কের হতে হবে।',
         'The two new PINs do not match.' => 'নতুন দুটো পিন মিলছে না।',
         'Transaction PIN changed.' => 'লেনদেনের পিন বদলানো হলো।',
-        // what the audit log calls things, shown under account activity
         'Login' => 'সাইন ইন',
         'Logout' => 'সাইন আউট',
         'Signup' => 'অ্যাকাউন্ট খোলা',
-        'Balance checked' => 'ব্যালেন্স দেখা',
         'Bill split' => 'বিল ভাগ',
         'Limit changed' => 'সীমা বদল',
         'Money requested' => 'টাকা চাওয়া হয়েছে',
@@ -580,7 +554,6 @@ return [
         'Account frozen' => 'অ্যাকাউন্ট বন্ধ',
         'Account reopened' => 'অ্যাকাউন্ট আবার চালু',
 
-        // what the script says
         'Switch to light theme' => 'লাইট থিমে যান',
         'Switch to dark theme' => 'ডার্ক থিমে যান',
         'Sending…' => 'পাঠানো হচ্ছে…',
@@ -593,7 +566,6 @@ return [
         'Hide it again' => 'আবার লুকান',
         'Copied' => 'কপি হয়েছে',
 
-        // QR
         'QR code' => 'QR কোড',
         'Show yours to get paid. Scan theirs to pay. Easy.' => 'টাকা নিতে আপনারটা দেখান। দিতে তারটা স্ক্যান করুন। ব্যস।',
         'QR code for {phone}' => '{phone} এর QR কোড',
@@ -610,7 +582,6 @@ return [
         'Found {who}. Opening…' => '{who} কে পাওয়া গেছে। খুলছি…',
         'The camera was not allowed.' => 'ক্যামেরার অনুমতি পাওয়া যায়নি।',
 
-        // insights
         '30 days' => '৩০ দিন',
         '3 months' => '৩ মাস',
         '12 months' => '১২ মাস',
@@ -644,7 +615,6 @@ return [
         'Monday' => 'সোমবার', 'Tuesday' => 'মঙ্গলবার', 'Wednesday' => 'বুধবার', 'Thursday' => 'বৃহস্পতিবার',
         'Friday' => 'শুক্রবার', 'Saturday' => 'শনিবার', 'Sunday' => 'রবিবার',
 
-        // support
         'Support' => 'সাপোর্ট',
         'Something off? Tell us. Replies land in your notifications.' => 'কিছু গড়বড়? আমাদের বলুন। উত্তর আসবে নোটিফিকেশনে।',
         'Write to us' => 'আমাদের লিখুন',
@@ -680,7 +650,6 @@ return [
         'Yes. Every transfer runs inside one database transaction. If anything fails the whole thing is rolled back, so money is never taken from one side without reaching the other.' =>
             'হ্যাঁ। প্রতিটা ট্রান্সফার একটা ডেটাবেস ট্রানজেকশনের ভেতরে চলে। কিছু ব্যর্থ হলে পুরোটা ফিরে যায়, তাই এক দিক থেকে কেটে অন্য দিকে না পৌঁছানোর সুযোগ নেই।',
 
-        // about
         'About {app}' => '{app} সম্পর্কে',
         'One wallet for sending, paying, saving and splitting, made in Dhaka.' => 'পাঠানো, দেওয়া, জমানো আর ভাগ করার এক ওয়ালেট, ঢাকায় তৈরি।',
         'Version {v}' => 'ভার্সন {v}',
@@ -724,7 +693,6 @@ return [
         'Everything is written down' => 'সবকিছু লেখা থাকে',
         'An audit log of who did what, and a ledger that keeps declined attempts too.' => 'কে কী করেছে তার অডিট লগ, আর বাতিল চেষ্টাও রাখে এমন খাতা।',
 
-        // not found
         'Nothing here' => 'এখানে কিছু নেই',
         'That page or record does not exist, or it belongs to someone else.' => 'এই পাতা বা তথ্য নেই, অথবা এটা অন্য কারো।',
         'Back to home' => 'হোমে ফিরুন',
@@ -732,7 +700,6 @@ return [
         'Page not found' => 'পাতা পাওয়া যায়নি',
         'Education fee' => 'শিক্ষা ফি',
 
-        // names stored in the ledger, translated when shown
         'Send Money' => 'সেন্ড মানি',
         'Add Money' => 'অ্যাড মানি',
         'Cash In' => 'ক্যাশ ইন',
@@ -769,9 +736,30 @@ return [
         'Your password was reset. If this was not you, contact support now.' => 'আপনার পাসওয়ার্ড রিসেট হয়েছে। এটা আপনি না করে থাকলে এখনই সাপোর্টে জানান।',
         'Your account is ready. Add money to get started.' => 'আপনার অ্যাকাউন্ট তৈরি। শুরু করতে টাকা যোগ করুন।',
         'We have your message and will get back to you.' => 'আপনার বার্তা পেয়েছি, শিগগির জানাব।',
+        'That request is for {amount} to {name}. Change the number or amount back to pay it.' => 'অনুরোধটি {name} কে {amount} পাঠানোর জন্য। পরিশোধ করতে নম্বর বা পরিমাণ আগের মতো করুন।',
+        '{amount} sent to {name}.' => '{name} কে {amount} পাঠানো হয়েছে।',
+        '{amount} paid to {name}.' => '{name} কে {amount} পরিশোধ করা হয়েছে।',
+        '{amount} recharged to {number} on {operator}.' => '{operator} এ {number} নম্বরে {amount} রিচার্জ হয়েছে।',
+        '{amount} added from {bank}.' => '{bank} থেকে {amount} যোগ হয়েছে।',
+        '{amount} added to your wallet.' => 'আপনার ওয়ালেটে {amount} যোগ হয়েছে।',
+        'This agent does not have enough cash right now. Try another agent.' => 'এই এজেন্টের কাছে এখন যথেষ্ট টাকা নেই। অন্য এজেন্ট চেষ্টা করুন।',
+        'Give the goal a name.' => 'জারের একটা নাম দিন।',
+        'The deadline has to be in the future.' => 'শেষ তারিখ ভবিষ্যতের হতে হবে।',
+        'You can keep up to 8 goals open at a time.' => 'একসাথে সর্বোচ্চ ৮টি জার খোলা রাখা যায়।',
+        '{amount} moved into "{goal}".' => '"{goal}" জারে {amount} রাখা হলো।',
+        'That goal only holds {amount}.' => 'এই জারে আছে মাত্র {amount}।',
+        '{amount} returned to your balance.' => '{amount} ব্যালেন্সে ফিরে গেছে।',
+        'That goal was not found.' => 'জারটি পাওয়া যায়নি।',
+        'You cannot request money from yourself.' => 'নিজের কাছে টাকা চাওয়া যায় না।',
+        'You already have 5 open requests with that person.' => 'এই মানুষটির কাছে আপনার ইতিমধ্যে ৫টি খোলা অনুরোধ আছে।',
+        'Enter the full bill amount.' => 'বিলের পুরো পরিমাণ লিখুন।',
+        'You can split between up to 10 other people.' => 'সর্বোচ্চ আরও ১০ জনের সাথে ভাগ করা যায়।',
+        '"{n}" is not a valid number.' => '"{n}" সঠিক নম্বর নয়।',
+        'Your own number is counted automatically.' => 'আপনার নিজের নম্বর আপনাআপনি গোনা হয়।',
+        'Each share works out below one taka.' => 'প্রতিটি ভাগ এক টাকার কম হয়ে যাচ্ছে।',
+        'That request was not found.' => 'অনুরোধটি পাওয়া যায়নি।',
     ],
 
-    // notifications are stored in English; these rebuild the known shapes
     'patterns' => [
         '/^You received (.+?) from (.+?)\. Note: (.*)$/s' => '$2 আপনাকে $1 পাঠিয়েছেন। নোট: $3',
         '/^You received (.+?) from (.+?)\.$/' => '$2 আপনাকে $1 পাঠিয়েছেন।',
@@ -782,7 +770,6 @@ return [
         '/^(.+?) split a bill of (.+?)\. Your share is (.+?)\.$/' => '$1 $2 এর একটা বিল ভাগ করেছেন। আপনার ভাগ $3।',
         '/^(.+?) declined your request for (.+?)\.$/' => '$1 আপনার $2 এর অনুরোধ ফিরিয়ে দিয়েছেন।',
         '/^You hit your target for "(.+)"\.$/' => '"$1" এর লক্ষ্য পূরণ হয়েছে!',
-        // the notes the app writes on its own transactions
         '/^Top up from (.+)$/' => '$1 থেকে অ্যাড মানি',
         '/^Cash in at agent (.+)$/' => 'এজেন্ট $1 এ ক্যাশ ইন',
         '/^Cash out at agent (.+)$/' => 'এজেন্ট $1 থেকে ক্যাশ আউট',

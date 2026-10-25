@@ -1,12 +1,8 @@
 <?php
-/* Session, auth and the small shared helpers. */
 
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/../lib/lang.php';
 
-/* the request */
-
-/** True when the visitor is on HTTPS, including behind a proxy that ends TLS for us. */
 function is_https(): bool
 {
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
@@ -14,9 +10,6 @@ function is_https(): bool
         || ($_SERVER['SERVER_PORT'] ?? '') === '443';
 }
 
-/* Refuses a Host header this copy does not serve, and a form posted from
-   another site. The CSRF token already stops the second; checking Origin
-   as well costs nothing. */
 function guard_request(): void
 {
     if (PHP_SAPI === 'cli') {
@@ -36,14 +29,11 @@ function guard_request(): void
 }
 guard_request();
 
-/* session */
 function start_session(): void
 {
     if (session_status() !== PHP_SESSION_NONE) {
         return;
     }
-    // not readable from JavaScript, only sent over HTTPS when the site is on
-    // HTTPS, and left off cross-site POSTs
     session_set_cookie_params([
         'httponly' => true,
         'secure'   => is_https(),
@@ -54,7 +44,6 @@ function start_session(): void
 }
 start_session();
 
-/* auth */
 function current_phone(): ?string
 {
     return $_SESSION['user_phone'] ?? null;
@@ -65,7 +54,6 @@ function is_logged_in(): bool
     return current_phone() !== null;
 }
 
-/** Bounce anyone who is not signed in back to the login page. */
 function require_login(): string
 {
     if (!is_logged_in()) {
@@ -73,7 +61,7 @@ function require_login(): string
         exit;
     }
     $u = current_user();
-    if ($u === null) {                 // account deleted while signed in
+    if ($u === null) {
         session_unset();
         header('Location: login.php');
         exit;
@@ -82,7 +70,7 @@ function require_login(): string
         session_unset();
         session_destroy();
         start_session();
-        flash('error', 'Your account has been frozen. Please contact support.');
+        flash('error', __('Your account has been frozen by support. Contact us to reopen it.'));
         header('Location: login.php');
         exit;
     }
@@ -100,7 +88,6 @@ function balance_of(string $phone): float
     return (float) scalar('SELECT balance FROM account WHERE phone = ?', [$phone], 0);
 }
 
-/** Called right after a successful login: stops session fixation. */
 function login_user(array $user): void
 {
     session_regenerate_id(true);
@@ -109,11 +96,6 @@ function login_user(array $user): void
     $_SESSION['last_seen']  = time();
 }
 
-/**
- * Checks the six digit transaction PIN.
- * Wrong tries are recorded, and after too many the account is frozen so a
- * stolen session cannot be used to drain the balance by guessing.
- */
 function verify_pin(string $phone, string $pin): bool
 {
     $hash = (string) scalar('SELECT pin_hash FROM user WHERE phone = ?', [$phone], '');
@@ -140,7 +122,6 @@ function verify_pin(string $phone, string $pin): bool
     return false;
 }
 
-/** How many wrong PIN tries are left before the account freezes. */
 function pin_tries_left(string $phone): int
 {
     $bad = (int) scalar(
@@ -152,7 +133,6 @@ function pin_tries_left(string $phone): int
     return max(0, LOGIN_MAX_ATTEMPTS - $bad);
 }
 
-/* admin */
 function require_admin(): string
 {
     if (!isset($_SESSION['admin_user'])) {
@@ -162,7 +142,6 @@ function require_admin(): string
     return $_SESSION['admin_user'];
 }
 
-/* CSRF */
 function csrf_token(): string
 {
     if (empty($_SESSION['csrf'])) {
@@ -176,14 +155,12 @@ function csrf_field(): string
     return '<input type="hidden" name="csrf" value="' . csrf_token() . '">';
 }
 
-/** Returns true when the posted token matches the session token. */
 function csrf_ok(): bool
 {
     return isset($_POST['csrf'], $_SESSION['csrf'])
         && hash_equals($_SESSION['csrf'], (string) $_POST['csrf']);
 }
 
-/** Use at the top of every POST handler. */
 function require_csrf(): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !csrf_ok()) {
@@ -192,11 +169,6 @@ function require_csrf(): void
     }
 }
 
-/* One shot tokens.
-
-   The CSRF token lasts the whole session, so it stops another site posting
-   for you but it does not stop the same form being posted twice. Anything
-   that moves money gets one of these instead, and the handler spends it. */
 function once_field(string $form): string
 {
     $token = bin2hex(random_bytes(16));
@@ -207,7 +179,6 @@ function once_field(string $form): string
     return '<input type="hidden" name="once" value="' . $token . '">';
 }
 
-/** Spends the token. False if it was never issued or has already been used. */
 function once_ok(string $form): bool
 {
     $token = (string) ($_POST['once'] ?? '');
@@ -218,7 +189,6 @@ function once_ok(string $form): bool
     return true;
 }
 
-/** Use in any POST handler that moves money. */
 function require_fresh(string $form): void
 {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !once_ok($form)) {
@@ -227,7 +197,6 @@ function require_fresh(string $form): void
     }
 }
 
-/* flash */
 function flash(string $type, string $message): void
 {
     $_SESSION['flash'] = [$type, $message];
@@ -243,7 +212,6 @@ function take_flash(): ?array
     return $f;
 }
 
-/* formatting */
 function e($v): string
 {
     return htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
@@ -260,7 +228,6 @@ function short_date($ts): string
     return date('d M Y, g:i a', strtotime((string) $ts));
 }
 
-/** "3 minutes ago" style stamps for the notification feed. */
 function time_ago($ts): string
 {
     $diff = time() - strtotime((string) $ts);
@@ -283,21 +250,17 @@ function mask_phone(string $phone): string
         : $phone;
 }
 
-/** Guess the operator from the number so recharge can pre-fill it. */
 function operator_of(string $phone): string
 {
     return OPERATOR_PREFIX[substr($phone, 0, 3)] ?? 'Unknown';
 }
 
-/** Display name for a phone number, falling back to the number itself. */
 function name_of(string $phone): string
 {
     $r = one('SELECT firstname, lastname FROM user WHERE phone = ?', [$phone]);
     return $r ? $r['firstname'] . ' ' . $r['lastname'] : $phone;
 }
 
-/* notifications */
-/** Writes a notification. */
 function notify(string $phone, string $title, string $body,
                 string $icon = 'bell', ?float $amount = null): void
 {
@@ -307,7 +270,6 @@ function notify(string $phone, string $title, string $body,
           [$phone, mb_substr($title, 0, 80), mb_substr($body, 0, 300),
            mb_substr($icon, 0, 16), $amount]);
     } catch (Throwable $ignore) {
-        // a notification is not worth failing the page for
     }
 }
 
@@ -319,7 +281,6 @@ function unread_count(string $phone): int
     );
 }
 
-/* audit */
 function audit(string $actor, string $action, string $detail = ''): void
 {
     try {
@@ -335,7 +296,6 @@ function client_ip(): string
     return $_SERVER['REMOTE_ADDR'] ?? 'cli';
 }
 
-/* validation */
 function valid_phone($p): bool
 {
     return (bool) preg_match('/^01[3-9]\d{8}$/', (string) $p);
@@ -346,7 +306,6 @@ function valid_pin($p): bool
     return (bool) preg_match('/^\d{6}$/', (string) $p);
 }
 
-/** A real calendar date in Y-m-d, the format a date input sends. */
 function valid_date($d): bool
 {
     $dt = DateTime::createFromFormat('!Y-m-d', (string) $d);
@@ -368,7 +327,6 @@ function get(string $key, string $default = ''): string
     return trim((string) ($_GET[$key] ?? $default));
 }
 
-/** Sends the browser to $url and stops. */
 function redirect(string $url): void
 {
     header('Location: ' . $url);

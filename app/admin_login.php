@@ -1,5 +1,4 @@
 <?php
-/* Admin sign in. Same bcrypt and rate limiting as the customer side. */
 require_once __DIR__ . '/config/helpers.php';
 
 if (isset($_SESSION['admin_user'])) {
@@ -38,4 +37,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include('Front_end/front_admin_login.php');
+include('views/admin_login.php');
