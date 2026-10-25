@@ -1,3 +1,7 @@
+/*! TakaLagbe! Copyright 2024-2026 Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan. All rights reserved. See LICENSE. */
+/* TakaLagbe! front end. Plain JavaScript, no library.
+   Everything here is extra: with scripting off every form still posts and
+   every dialog still opens, through a plain link to its #id. */
 (function () {
   'use strict';
 

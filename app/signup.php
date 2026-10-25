@@ -28,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pin       = post('Pin');
     $pinAgain  = post('PinConfirm');
 
+    /* ---- validation ------------------------------------------------ */
     if (!valid_phone($phone)) {
         $errors['Phone'] = __('Enter a valid 11 digit Bangladeshi number, for example 01712345678.');
     }
@@ -67,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors['Pin'] = __('Please choose a less obvious PIN.');
     }
 
+    /* ---- uniqueness ------------------------------------------------ */
     if (!$errors) {
         if (scalar('SELECT 1 FROM user WHERE phone = ?', [$phone])) {
             $errors['Phone'] = __('This number is already registered.');
@@ -79,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    /* ---- create ----------------------------------------------------- */
     if (!$errors) {
         $palette = ['#1E3A63', '#A87A2B', '#A9412C', '#5A4A86', '#C09A4E', '#2C6E4E'];
         $colour  = $palette[array_rand($palette)];

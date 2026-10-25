@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone    = post('Phone');
     $password = post('Password');
 
+    /* how many bad tries has this number had recently? */
     $failed = (int) scalar(
         "SELECT COUNT(*) FROM login_attempts
           WHERE kind = 'login' AND identifier = ? AND successful = 0

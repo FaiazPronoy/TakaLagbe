@@ -9,6 +9,7 @@ $bal   = balance_of($phone);
 $error   = '';
 $prefill = ['to' => get('to'), 'amount' => get('amount'), 'note' => get('note')];
 
+/* an unpaid request can pre-fill the whole form */
 $requestId = (int) get('request');
 if ($requestId) {
     $req = one("SELECT * FROM money_requests
@@ -54,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo = db();
         $pdo->beginTransaction();
         try {
+            // a request only counts as paid when this is the payment it asked for
             $req = null;
             if ($reqId) {
                 $req = one("SELECT * FROM money_requests

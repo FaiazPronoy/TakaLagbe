@@ -1,5 +1,6 @@
 <?php
 
+/* Single PDO connection, prepared statements everywhere. */
 require_once __DIR__ . '/config.php';
 
 function db(): PDO
@@ -29,6 +30,7 @@ function db(): PDO
     return $pdo;
 }
 
+/* --- tiny query helpers so pages stay short --------------------------- */
 function q(string $sql, array $params = []): PDOStatement
 {
     $st = db()->prepare($sql);

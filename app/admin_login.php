@@ -1,4 +1,5 @@
 <?php
+/* Admin sign in. Same bcrypt and rate limiting as the customer side. */
 require_once __DIR__ . '/config/helpers.php';
 
 if (isset($_SESSION['admin_user'])) {
