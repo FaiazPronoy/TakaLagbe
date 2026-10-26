@@ -24,7 +24,7 @@ return [
         'About' => 'আমাদের কথা',
         'Currency converter' => 'মুদ্রা রূপান্তর',
         '· Send. Pay. Save.' => '· পাঠান। দিন। জমান।',
-        'Made by Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan. All rights reserved.' => 'ফাইয়াজ আবরার জামান প্রনয়, সিনথিয়া খন্দকার ও জহিরুল ইসলাম জিশানের তৈরি। সর্বস্বত্ব সংরক্ষিত।',
+        'Made by Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Md. Jahirul Islam Zishan. All rights reserved.' => 'ফাইয়াজ আবরার জামান প্রনয়, সিনথিয়া খন্দকার ও মোঃ জহিরুল ইসলাম জিশানের তৈরি। সর্বস্বত্ব সংরক্ষিত।',
 
         'Send money to friends, pay your bills, split the kacchi, and save up for Eid. All from one wallet.' =>
             'বন্ধুকে টাকা পাঠান, বিল দিন, কাচ্চির বিল ভাগ করুন, ঈদের জন্য জমান। সব এক ওয়ালেটে।',

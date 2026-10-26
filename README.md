@@ -10,7 +10,7 @@ with an admin console to run the whole system.
 |---|---|
 | **Course** | CSE370: Database Systems, BRAC University |
 | **Type** | Group project |
-| **Made by** | Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan |
+| **Made by** | Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Md. Jahirul Islam Zishan |
 | **Live demo** | https://takalagbe.site.je |
 | **Versions** | [v1.0, the first version, and v2.0, the rebuild](https://github.com/FaiazPronoy/TakaLagbe/releases) |
 | **History** | Built in Spring 2024 for the course. Rebuilt and published here in October 2026. |
@@ -180,12 +180,12 @@ them across the team and reviewed each part before it was merged.
   - Bill and tuition payments, and the biller lists
   - Statements and receipts
   - The Bangla translation
-- **Jahirul Islam Zishan** (জহিরুল ইসলাম জিশান)
+- **Md. Jahirul Islam Zishan** (মোঃ জহিরুল ইসলাম জিশান)
   - Mobile recharge and the QR code pages
   - Notifications and support tickets
 
 ## Licence
 
-Copyright 2024-2026 Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Jahirul Islam Zishan. All rights reserved.
+Copyright 2024-2026 Faiaz Abrar Zaman Pronoy, Sinthia Khandoker and Md. Jahirul Islam Zishan. All rights reserved.
 You may read the code and run it to try it out. You may not copy it, hand it in
 as your own work, or publish it. See [LICENSE](LICENSE).
